@@ -8,4 +8,6 @@ namespace TeaBot.Attributes
     public class HelpCommandIgnoreAttribute : Attribute
     {
     }
+
+    // yeah i know this is a very big attribute, don't question me on this one
 }
