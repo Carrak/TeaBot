@@ -1,0 +1,153 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+
+namespace TeaBot.Preconditions
+{
+    // Credit for this entire class goes to Joe4ever
+    // https://github.com/Joe4evr
+
+    /// <summary>
+    ///     Sets how often a user is allowed to use this command
+    ///     or any command in this module.
+    /// </summary>
+    /// <remarks>
+    ///     <note type="warning">
+    ///         This is backed by an in-memory collection
+    ///         and will not persist with restarts.
+    ///     </note>
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class RatelimitAttribute : PreconditionAttribute
+    {
+        private readonly uint _invokeLimit;
+        private readonly bool _noLimitInDMs;
+        private readonly bool _noLimitForAdmins;
+        private readonly bool _applyPerGuild;
+        private readonly TimeSpan _invokeLimitPeriod;
+        private readonly ConcurrentDictionary<(ulong, ulong?), CommandTimeout> _invokeTracker = new ConcurrentDictionary<(ulong, ulong?), CommandTimeout>();
+
+        public RatelimitFlags RatelimitFlags { get; set; } = RatelimitFlags.None;
+
+        /// <param name="times">
+        ///     The number of times a user may use the command within a certain period.
+        /// </param>
+        /// <param name="period">
+        ///     The amount of time since first invoke a user has until the limit is lifted.
+        /// </param>
+        /// <param name="measure">
+        ///     The scale in which the <paramref name="period"/> parameter should be measured.
+        /// </param>
+        /// <param name="flags">
+        ///     Flags to set behavior of the ratelimit.
+        /// </param>
+        public RatelimitAttribute(double period, Measure measure, uint times = 1)
+        {
+            _invokeLimit = times;
+            _noLimitInDMs = (RatelimitFlags & RatelimitFlags.NoLimitInDMs) == RatelimitFlags.NoLimitInDMs;
+            _noLimitForAdmins = (RatelimitFlags & RatelimitFlags.NoLimitForAdmins) == RatelimitFlags.NoLimitForAdmins;
+            _applyPerGuild = (RatelimitFlags & RatelimitFlags.ApplyPerGuild) == RatelimitFlags.ApplyPerGuild;
+
+            _invokeLimitPeriod = measure switch
+            {
+                Measure.Seconds => TimeSpan.FromSeconds(period),
+                Measure.Days => TimeSpan.FromDays(period),
+                Measure.Hours => TimeSpan.FromHours(period),
+                Measure.Minutes => TimeSpan.FromMinutes(period),
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(period),
+                    message: "Argument was not within the valid range.")
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        {
+            if (_noLimitInDMs && context.Channel is IPrivateChannel)
+                return Task.FromResult(PreconditionResult.FromSuccess());
+
+            if (_noLimitForAdmins && context.User is IGuildUser gu && gu.GuildPermissions.Administrator)
+                return Task.FromResult(PreconditionResult.FromSuccess());
+
+            DateTime now = DateTime.UtcNow;
+            (ulong, ulong?) key = _applyPerGuild ? (context.User.Id, context.Guild?.Id) : (context.User.Id, null);
+
+            CommandTimeout timeout = (_invokeTracker.TryGetValue(key, out CommandTimeout t)
+                && ((now - t.FirstInvoke) < _invokeLimitPeriod))
+                    ? t : new CommandTimeout(now);
+
+            timeout.TimesInvoked++;
+
+            if (timeout.TimesInvoked <= _invokeLimit)
+            {
+                _invokeTracker[key] = timeout;
+                return Task.FromResult(PreconditionResult.FromSuccess());
+            }
+            else
+            {
+                if (!timeout.Warned)
+                {
+                    int cooldown = _invokeLimitPeriod.Seconds - (DateTime.Now - t.FirstInvoke).Seconds;
+                    timeout.Warned = true;
+                    return Task.FromResult(PreconditionResult.FromError($"Cooldown! **{cooldown}** more seconds!"));
+                }
+                else
+                {
+                    return Task.FromResult(PreconditionResult.FromError(""));
+                }
+            }
+        }
+
+        private sealed class CommandTimeout
+        {
+            public uint TimesInvoked { get; set; }
+            public DateTime FirstInvoke { get; }
+            public bool Warned { get; set; } = false;
+
+            public CommandTimeout(DateTime timeStarted)
+            {
+                FirstInvoke = timeStarted;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Determines the scale of the period parameter.
+    /// </summary>
+    public enum Measure
+    {
+        Days,
+        Hours,
+        Minutes,
+        Seconds
+    }
+
+    /// <summary>
+    ///     Determines the behavior of the <see cref="RatelimitAttribute"/>.
+    /// </summary>
+    [Flags]
+    public enum RatelimitFlags
+    {
+        /// <summary>
+        ///     Set none of the flags.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        ///     Set whether or not there is no limit to the command in DMs.
+        /// </summary>
+        NoLimitInDMs = 1 << 0,
+
+        /// <summary>
+        ///     Set whether or not there is no limit to the command for guild admins.
+        /// </summary>
+        NoLimitForAdmins = 1 << 1,
+
+        /// <summary>
+        ///     Set whether or not to apply a limit per guild.
+        /// </summary>
+        ApplyPerGuild = 1 << 2
+    }
+}
+
