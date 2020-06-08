@@ -31,9 +31,10 @@ namespace TeaBot
         private const string DefaultPrefix = "tea ";
 
         /// <summary>
-        ///     The directory of the TeaBot project used for saving exceptions.
+        ///     The directory of the TeaBot project.
         /// </summary>
         public static string ProjectDirectory { get; } = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\";
+        public static string ProjectDirectory2 { get; } = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent + @"\";
 
         /// <summary>
         ///     The main color used for embeds across the entire bot.
@@ -55,7 +56,6 @@ namespace TeaBot
         /// </summary>
         public async Task RunBotAsync()
         {
-
             // Instantiate the essentials
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
@@ -70,15 +70,14 @@ namespace TeaBot
                 .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
 
-            JObject config = JObject.Parse(File.ReadAllText($"{ProjectDirectory}teabotconfig.json"));
-
-            //string token = Environment.GetEnvironmentVariable("TeaBotToken", EnvironmentVariableTarget.Machine);
-            string token = config["token"].ToString();
+            JObject config = JObject.Parse(File.ReadAllText($"{ProjectDirectory2}teabotconfig.json"));
 
             // Initialize the connection to the database
             var connectionString = config["connection"].ToString();
             DbConnection = new NpgsqlConnection(connectionString);
             await DbConnection.OpenAsync();
+
+            string token = config["token"].ToString();
 
             HttpClient = new HttpClient();
 
@@ -176,7 +175,6 @@ namespace TeaBot
                 case CommandError.BadArgCount:
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
-                    //Console.WriteLine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName);
                     string prefix = await GetPrefixAsync(context);
 
                     string toSend = $"Usage: `{prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
@@ -236,35 +234,35 @@ namespace TeaBot
                 return;
             }
 
-            Dictionary<string, string> endsWithAutoresponses = new Dictionary<string, string>
+            string[,] endsWithAutoresponses =
             {
                 { "бах", "Композитор, кстати (c) DarvinBet#4371" },
                 { "баха", "Композитор, кстати (c) DarvinBet#4371" }
             };
 
-            Dictionary<string, string> containsAutoresponses = new Dictionary<string, string>
+            string[,] containsAutoresponses =
             {
                 { "who asked", "it is i, the person who asked" },
-                { "whoever asked", "it is i, the person who asked" },
+                { "whoever asked", "it is i, the person who asked" }
             };
 
             string message = context.Message.Content.ToLower();
 
-            foreach (string key in containsAutoresponses.Keys)
+            for (int i = 0; i < containsAutoresponses.GetLength(0); i++)
             {
-                if (message.Contains(key))
+                if (message.Contains(containsAutoresponses[i, 0]))
                 {
-                    await context.Channel.SendMessageAsync(containsAutoresponses.GetValueOrDefault(key));
-                    return;
+                    await context.Channel.SendMessageAsync(containsAutoresponses[i, 1]);
+                    break;
                 }
             }
 
-            foreach (string key in endsWithAutoresponses.Keys)
+            for (int i = 0; i < endsWithAutoresponses.GetLength(0); i++)
             {
-                if (message.EndsWith(key))
+                if (message.EndsWith(endsWithAutoresponses[i, 0]))
                 {
-                    await context.Channel.SendMessageAsync(endsWithAutoresponses.GetValueOrDefault(key));
-                    return;
+                    await context.Channel.SendMessageAsync(endsWithAutoresponses[i, 1]);
+                    break;
                 }
             }
         }
@@ -302,7 +300,7 @@ namespace TeaBot
             embed.AddField("Getting started", $"Use `{prefix}help` for the list of command modules and more info.")
                 .AddField("Invite the bot!", "[Click me to invite!](https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8)")
                 .WithTitle("I am TeaBot!")
-                .WithDescription("TeaBot is a bot created for various handy features, fun commands, math, anime art search and detailed server statistics. The bot is pretty new, so it's still in active development. Expect the said handy features to come soon!")
+                .WithDescription("TeaBot is a bot created for various handy features, fun commands, math, anime art search and detailed server statistics.")
                 .WithCurrentTimestamp()
                 .WithColor(Tea.MainColor)
                 .WithFooter(infoFooter);
@@ -317,6 +315,8 @@ namespace TeaBot
         /// <returns>Prefix for the guild in the provided context or <see cref="DefaultPrefix"/> if the context is null.</returns>
         public static async Task<string> GetPrefixAsync(SocketCommandContext context = null)
         {
+            
+
             if (context is null || context.IsPrivate)
             {
                 return DefaultPrefix;
@@ -366,15 +366,10 @@ namespace TeaBot
             await using var reader = await cmd.ExecuteReaderAsync();
 
             await reader.ReadAsync();
+            string prefix = reader.IsDBNull(0) ? DefaultPrefix : reader.GetString(0);
+            await reader.CloseAsync();
 
-            if (!reader.IsDBNull(0))
-            {
-                string prefix = reader.GetString(0);
-                reader.Close();
-                return prefix;
-            }
-            else
-                return DefaultPrefix;
+            return prefix;
         }
     }
 }

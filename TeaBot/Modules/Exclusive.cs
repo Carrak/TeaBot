@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
+using System.Text.RegularExpressions;
 
 namespace TeaBot.Modules
 {
@@ -23,8 +24,20 @@ namespace TeaBot.Modules
             int randomIndex = new Random().Next(0, messages.Count());
             var quote = messages.ElementAt(randomIndex);
             await ReplyAsync(ReplacePings(quote.Content) + "\n" + string.Join("\n", quote.Attachments.Select(x => x.Url)));
+
             string ReplacePings(string text)
             {
+                var pings = Regex.Matches(text, @"\<\@[\s\S]*?\>");
+
+                foreach (var ping in pings)
+                {
+                    string pingString = ping.ToString();
+                    text = text.Replace(pingString, $"@{Context.Client.GetUser(MentionUtils.ParseUser(pingString)).ToString()}");
+                }
+
+                return text;
+
+                /*
                 int pingStart = text.IndexOf("<@");
                 int pingEnd = text.IndexOf(">");
 
@@ -39,14 +52,9 @@ namespace TeaBot.Modules
                 }
 
                 return text;
+                */
+                
             }
-        }
-
-        [Command("head", true)]
-        [Exclusive(618581538963062789)]
-        public async Task Head()
-        {
-            await ReplyAsync("I don't have a head and jame horny btw");
         }
     }
 }
