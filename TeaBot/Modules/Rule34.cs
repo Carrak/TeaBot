@@ -17,7 +17,6 @@ namespace TeaBot.Modules
     [Summary("Commands for searching on rule34.xxx and managing the search.")]
     public class Rule34 : InteractiveBase
     {
-
         [Command("r34", RunMode = RunMode.Async)]
         [Summary("Searches an image with given tags on rule34.xxx")]
         [Note("Use space to split multiple tags. If a tag contains a space, use `_`. If you want to exclude a tag from your search without adding it to your blacklist, put a `-` before it. For the full list of tags, visit https://rule34.xxx/index.php?page=tags&s=list.")]
@@ -25,12 +24,13 @@ namespace TeaBot.Modules
         public async Task FindR34Post([Remainder] string tags)
         {
             List<string> blacklist = new List<string>();
+            string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
 
             var defaultBlacklist = await GetBlacklist(R34BlacklistType.Default);
             var userBlacklist = await GetBlacklist(R34BlacklistType.User);
 
-            if (await CheckTags(tags, defaultBlacklist, $"Your tag combination contains tags blacklisted by default.\nDo `{await Tea.GetPrefixAsync(Context)}blacklist` for more info.") ||
-                await CheckTags(tags, userBlacklist, $"Your tag combination contains tags blacklisted by you.\nDo `{await Tea.GetPrefixAsync(Context)}blacklist` for more info."))
+            if (await CheckTags(tags, defaultBlacklist, $"Your tag combination contains tags blacklisted by default.\nDo `{prefix}blacklist` for more info.") ||
+                await CheckTags(tags, userBlacklist, $"Your tag combination contains tags blacklisted by you.\nDo `{prefix}blacklist` for more info."))
                 return;
 
             blacklist.AddRange(defaultBlacklist);
@@ -39,7 +39,7 @@ namespace TeaBot.Modules
             if (!Context.IsPrivate)
             {
                 var guildBlacklist = await GetBlacklist(R34BlacklistType.Guild);
-                if (await CheckTags(tags, guildBlacklist, $"Your tag combination contains tags blacklisted by the guild.\nDo `{await Tea.GetPrefixAsync(Context)}blacklist` for more info."))
+                if (await CheckTags(tags, guildBlacklist, $"Your tag combination contains tags blacklisted by the guild.\nDo `{prefix}blacklist` for more info."))
                     return;
                 blacklist.AddRange(guildBlacklist);
             }
@@ -72,7 +72,7 @@ namespace TeaBot.Modules
                 .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC")
                 .WithUrl(post.FileUrl)
                 .WithCurrentTimestamp()
-                .WithColor(Tea.MainColor);
+                .WithColor(TeaEssentials.MainColor);
 
             if (post.Tags.Contains("webm"))
             {
@@ -90,7 +90,11 @@ namespace TeaBot.Modules
 
         [Command("blacklist")]
         [Alias("bl")]
-        [Summary("All tags that will be blocked in the rule34 command.")]
+        [Summary("All tags that will be blocked in the rule34 command. Use these commands to manage your blacklist (with the prefix):\n" +
+            "`bla` - add a tag to your blacklist\n" +
+            "`blr` - remove a tag from your blacklist\n" +
+            "`gbla` - add a tag to the server's blacklist\n" +
+            "`glbr` - remove a tag from the server's blacklist")]
         public async Task BlackList()
         {
             List<string> defaultBlacklist = await GetBlacklist(R34BlacklistType.Default);
@@ -100,7 +104,7 @@ namespace TeaBot.Modules
 
             embed.WithAuthor(Context.User)
                 .WithCurrentTimestamp()
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithDescription("This is the list of all tags that are blacklisted from your r34 search.")
                 .AddField("Default blacklist (these cannot be changed)", FormatBlacklistedTags(defaultBlacklist))
                 .AddField($"User blacklist (your blacklisted tags) - {userBlacklistLimit - userBlacklist.Count} left", FormatBlacklistedTags(userBlacklist));
@@ -196,7 +200,7 @@ namespace TeaBot.Modules
             }
 
             string query = $"DELETE FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}";
-            await using var cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
             if (rowsAffected >= 1)
@@ -249,7 +253,7 @@ namespace TeaBot.Modules
                             $"EXISTS (SELECT * FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}), " +
                             $"COUNT(*) >= {limit} FROM r34.{blacklistName} WHERE {idName}={id}";
 
-            await using var cmd1 = new NpgsqlCommand(conditionsQuery, Tea.DbConnection);
+            await using var cmd1 = new NpgsqlCommand(conditionsQuery, TeaEssentials.DbConnection);
             await using var reader = await cmd1.ExecuteReaderAsync();
 
             await reader.ReadAsync();
@@ -271,7 +275,7 @@ namespace TeaBot.Modules
             await reader.CloseAsync();
 
             string query = $"INSERT INTO r34.{blacklistName} ({idName}, tag) VALUES ({id}, '{tag}')";
-            await using var cmd2 = new NpgsqlCommand(query, Tea.DbConnection);
+            await using var cmd2 = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await cmd2.ExecuteNonQueryAsync();
 
             await ReplyAsync(successMessage);
@@ -287,7 +291,7 @@ namespace TeaBot.Modules
                 _ => null
             };
 
-            await using var cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             List<string> blacklist = new List<string>();

@@ -29,10 +29,10 @@ namespace TeaBot.Modules
             footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
                 .WithText(Context.Message.Author.ToString());
 
-            string prefix = await Tea.GetPrefixAsync(Context);
+            string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
 
             embed.WithCurrentTimestamp()
-              .WithColor(Tea.MainColor)
+              .WithColor(TeaEssentials.MainColor)
               .WithTitle("Help / Commands")
               .WithDescription("Basics of the guiding through the bot")
               .AddField("Basic help commands",
@@ -87,7 +87,7 @@ namespace TeaBot.Modules
 
                     embed.WithTitle($"{module.Name} commands")
                         .WithDescription(module.Summary)
-                        .WithColor(Tea.MainColor)
+                        .WithColor(TeaEssentials.MainColor)
                         .WithCurrentTimestamp()
                         .WithFooter(footer)
                         .AddField("Commands", commands);
@@ -103,8 +103,7 @@ namespace TeaBot.Modules
         [Summary("Information about the bot")]
         public async Task Info()
         {
-            var embed = Tea.GetInfoEmbed(await Tea.GetPrefixAsync(Context));
-
+            var embed = TeaUtilities.GetInfoEmbed(await DatabaseUtilities.GetPrefixAsync(Context.Guild));
             await ReplyAsync(embed: embed);
         }
 
@@ -130,7 +129,7 @@ namespace TeaBot.Modules
                 .WithDescription("This is a list of all commands categorized by their respective modules")
                 .WithCurrentTimestamp()
                 .WithFooter(footer)
-                .WithColor(Tea.MainColor);
+                .WithColor(TeaEssentials.MainColor);
 
             await ReplyAsync(embed: embed.Build());
         }

@@ -39,7 +39,7 @@ namespace TeaBot.ReactionCallbackCommands
             embed.WithTitle($"{cmd.Name} {(cmd.Parameters.Count > 0 ? $"[{string.Join("] [", cmd.Parameters)}]" : "")}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary ?? "No description for this command yet!")
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithFooter($"Page {page + 1} / {TotalPages}");
 
             if (cmd.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)

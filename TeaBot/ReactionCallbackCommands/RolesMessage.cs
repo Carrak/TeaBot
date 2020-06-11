@@ -36,7 +36,7 @@ namespace TeaBot.ReactionCallbackCommands
             var embed = new EmbedBuilder();
 
             embed.WithTitle($"{Context.Guild} roles")
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithDescription(string.Join("\n", roles))
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .WithCurrentTimestamp();

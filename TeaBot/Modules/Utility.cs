@@ -25,7 +25,7 @@ namespace TeaBot.Modules
             string avatarUrl = user.GetAvatarUrl(size: 2048);
 
             embed.WithImageUrl(avatarUrl)
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithTitle($"Avatar of {user}")
                 .WithUrl(avatarUrl)
                 .WithFooter($"Executed by {Context.User}");
@@ -54,7 +54,7 @@ namespace TeaBot.Modules
             };
 
             embed.WithFooter($"Executed by {Context.User}")
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithCurrentTimestamp()
                 .WithTitle($"Information about {user}")
                 .WithThumbnailUrl(user.GetAvatarUrl(size: 2048))
@@ -68,7 +68,7 @@ namespace TeaBot.Modules
 
                 string query = $"SELECT last_message_timestamp, guildid, channelid, messageid FROM guildusers WHERE userid = {guildUser.Id} AND guildid = {Context.Guild.Id}";
 
-                var cmd = new NpgsqlCommand(query, Tea.DbConnection);
+                var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
                 var reader = await cmd.ExecuteReaderAsync();
 
                 string lastMessage = "No information";
@@ -121,7 +121,7 @@ namespace TeaBot.Modules
             string query = $"SELECT COUNT(last_message_timestamp) FROM guildusers WHERE guildid = {guild.Id} AND" +
                                 "(now()::timestamp - last_message_timestamp) <= interval '2 weeks'";
 
-            var reader = await new NpgsqlCommand(query, Tea.DbConnection).ExecuteReaderAsync();
+            var reader = await new NpgsqlCommand(query, TeaEssentials.DbConnection).ExecuteReaderAsync();
             await reader.ReadAsync();
             long activeMembersCount = reader.GetInt64(0);
             reader.Close();
@@ -132,7 +132,7 @@ namespace TeaBot.Modules
             TimeSpan timeDifference = DateTime.UtcNow - guild.GetUser(Context.Client.CurrentUser.Id).JoinedAt.Value.DateTime;
 
             embed.WithTitle($"{guild} Info")
-                .WithColor(Tea.MainColor)
+                .WithColor(TeaEssentials.MainColor)
                 .WithCurrentTimestamp()
                 .WithThumbnailUrl(guild.IconUrl)
                 .WithFooter($"Executed by {Context.User}")
@@ -147,7 +147,7 @@ namespace TeaBot.Modules
                 .AddField("System channel", guild.SystemChannel is null ? "-" : guild.SystemChannel.Mention)
                 .AddField("Region", guild.VoiceRegionId)
                 .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {percentage}\n" +
-                $"`Note: only includes people who have sent a message {(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({PeriodToString(timeDifference.Days, "day", false)})")}`");
+                $"`Note: only includes people who have sent a message {(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? PeriodToString(timeDifference.Days, "day", false) : "Today")})")}`");
 
             await ReplyAsync(embed: embed.Build());
         }
@@ -181,7 +181,7 @@ namespace TeaBot.Modules
             await roleMessage.DisplayAsync();
         }
 
-        #region Utility
+        #region Utility methods
 
         /// <summary>
         ///     Creates a string containing the primary permissions of a user.

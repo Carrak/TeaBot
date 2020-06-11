@@ -13,7 +13,7 @@ namespace TeaBot.Attributes
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             string query = "SELECT userid FROM botadmins";
-            await using var cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())

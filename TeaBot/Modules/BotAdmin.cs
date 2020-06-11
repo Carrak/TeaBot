@@ -134,7 +134,7 @@ namespace TeaBot.Modules
         [Alias("sqlq")]
         public async Task SQLEval([Remainder] string query)
         {
-            await using var cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             List<List<object>> rows = new List<List<object>>();
@@ -190,7 +190,7 @@ namespace TeaBot.Modules
         [Alias("sqlnq")]
         public async Task SQlEvalNonQuery([Remainder] string query)
         {
-            NpgsqlCommand cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            NpgsqlCommand cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             await ReplyAsync($"Success! {rowsAffected} rows affected.");
         }

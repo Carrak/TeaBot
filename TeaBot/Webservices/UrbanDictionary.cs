@@ -31,7 +31,7 @@ namespace TeaBot.Webservices
         public static async Task<string> GetDefinitionJSONAsync(string word)
         {
             word = WebUtilities.FormatStringForURL(word);
-            var response = await Tea.HttpClient.GetAsync($"http://api.urbandictionary.com/v0/define?term={word}");
+            var response = await TeaEssentials.HttpClient.GetAsync($"http://api.urbandictionary.com/v0/define?term={word}");
             if (!response.IsSuccessStatusCode)
                 return null;
 

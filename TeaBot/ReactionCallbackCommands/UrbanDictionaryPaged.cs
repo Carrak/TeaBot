@@ -29,7 +29,7 @@ namespace TeaBot.ReactionCallbackCommands
             UrbanDictionaryDefinition definition = _definitions.ElementAt(page);
 
             var embed = new EmbedBuilder();
-            embed.WithColor(Tea.MainColor)
+            embed.WithColor(TeaEssentials.MainColor)
                 .WithAuthor(Context.User)
                 .WithTitle($"Definition of {definition.Word}")
                 .WithUrl($"https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(definition.Word)}")

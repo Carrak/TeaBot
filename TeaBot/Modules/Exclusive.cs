@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
-using System.Text.RegularExpressions;
 using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
@@ -15,7 +15,6 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : InteractiveBase
     {
-
         [Command("quote", true)]
         [Exclusive(364771834325106689)]
         [Ratelimit(5, Measure.Seconds)]
@@ -37,7 +36,7 @@ namespace TeaBot.Modules
                     text = text.Replace(pingString, $"@{Context.Client.GetUser(MentionUtils.ParseUser(pingString))}");
                 }
 
-                return text;                
+                return text;
             }
         }
     }

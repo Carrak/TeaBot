@@ -59,7 +59,7 @@ namespace TeaBot.Webservices
 
             tags = WebUtilities.FormatStringForURL(tags);
             int random = new Random().Next(0, Math.Min(2001, postsCount));
-            var response = await Tea.HttpClient.GetAsync($"https://rule34.xxx/index.php?page=dapi&s=post&q=index&pid={random}&tags={tags}&limit=1");
+            var response = await TeaEssentials.HttpClient.GetAsync($"https://rule34.xxx/index.php?page=dapi&s=post&q=index&pid={random}&tags={tags}&limit=1");
 
             if (!response.IsSuccessStatusCode)
                 return null;
@@ -84,7 +84,7 @@ namespace TeaBot.Webservices
         {
             tags = WebUtilities.FormatStringForURL(tags);
 
-            var response = await Tea.HttpClient.GetAsync($"https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=0&tags={tags}");
+            var response = await TeaEssentials.HttpClient.GetAsync($"https://rule34.xxx/index.php?page=dapi&s=post&q=index&limit=0&tags={tags}");
 
             if (!response.IsSuccessStatusCode)
             {

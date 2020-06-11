@@ -34,7 +34,7 @@ namespace TeaBot.Modules
         {
             if (Context.Message.MentionedRoles.Count > 0 || Context.Message.MentionedUsers.Count > 0)
             {
-                string prefix = await Tea.GetPrefixAsync(Context);
+                string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
                 await ReplyAsync($"No pinging when using `{prefix}say`!");
                 return;
             }

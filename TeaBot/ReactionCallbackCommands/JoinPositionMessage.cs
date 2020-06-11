@@ -42,7 +42,7 @@ namespace TeaBot.ReactionCallbackCommands
 
             var users = CurrentPage(_users, _displayPerPage).Select((tuple, index) => $"{tuple.Item2 + 1}. {tuple.Item1}"); ;
 
-            embed.WithColor(Tea.MainColor)
+            embed.WithColor(TeaEssentials.MainColor)
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .WithFooter($"Page {page + 1} / {TotalPages} {(_ignoreBots ? "" : "| Use <tea joinpostop nobots> to ignore bots")}")
                 .WithTitle("Join position top")

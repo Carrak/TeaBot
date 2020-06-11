@@ -32,7 +32,7 @@ namespace TeaBot.Modules
             }
 
             string query = $"UPDATE guilds SET prefix={(newPrefix == "tea " ? "NULL" : $"'{newPrefix}'")} WHERE id={Context.Guild.Id}";
-            NpgsqlCommand cmd = new NpgsqlCommand(query, Tea.DbConnection);
+            NpgsqlCommand cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await cmd.ExecuteNonQueryAsync();
 
             await ReplyAsync($"Successfully changed prefix to `{newPrefix}`");
