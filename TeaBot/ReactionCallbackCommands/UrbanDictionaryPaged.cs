@@ -9,6 +9,9 @@ using TeaBot.Webservices;
 
 namespace TeaBot.ReactionCallbackCommands
 {
+    /// <summary>
+    ///     Class for paging urban dictionary search results
+    /// </summary>
     class UrbanDictionaryPaged : PagedMessageBase
     {
         private readonly IEnumerable<UrbanDictionaryDefinition> _definitions;

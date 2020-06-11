@@ -33,6 +33,9 @@ namespace TeaBot
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
+        /// <summary>
+        ///     Determines the behaviour when a command is executed
+        /// </summary>
         private Task HandleCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
         {
             if (commandInfo.IsSpecified)
