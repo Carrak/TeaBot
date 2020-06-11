@@ -50,7 +50,7 @@ namespace TeaBot.Modules
 
         [Command("random")]
         [Alias("rand")]
-        [Summary("Produces a random number within the given range")]
+        [Summary("Produces a random number within the range `[min; max]`")]
         public async Task Random(int min, int max)
         {
             if (min > max)
@@ -59,7 +59,7 @@ namespace TeaBot.Modules
                 return;
             }
 
-            await ReplyAsync(new Random().Next(min, max).ToString());
+            await ReplyAsync(new Random().Next(min, max+1).ToString());
         }
 
         [Command("prime")]
