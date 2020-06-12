@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Npgsql;
+using TeaBot.Main;
 
 namespace TeaBot
 {
@@ -9,6 +10,7 @@ namespace TeaBot
     {
         public static async Task InsertValuesIntoDb(SocketCommandContext context)
         {
+
             if (context.IsPrivate)
                 return;
 

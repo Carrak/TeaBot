@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace TeaBot.Webservices
 {
-    static class WebUtilities
+    public static class WebUtilities
     {
         /// <summary>
         ///     Converts XML to JSON
