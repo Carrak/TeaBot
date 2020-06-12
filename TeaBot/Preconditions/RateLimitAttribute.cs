@@ -73,8 +73,8 @@ namespace TeaBot.Preconditions
             DateTime now = DateTime.UtcNow;
             (ulong, ulong?) key = _applyPerGuild ? (context.User.Id, context.Guild?.Id) : (context.User.Id, null);
 
-            CommandTimeout timeout = (_invokeTracker.TryGetValue(key, out CommandTimeout t)
-                && ((now - t.FirstInvoke) < _invokeLimitPeriod))
+            CommandTimeout timeout = _invokeTracker.TryGetValue(key, out CommandTimeout t)
+                && now - t.FirstInvoke < _invokeLimitPeriod
                     ? t : new CommandTimeout(now);
 
             timeout.TimesInvoked++;

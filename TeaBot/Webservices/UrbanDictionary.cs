@@ -4,12 +4,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TeaBot.Main;
 
 namespace TeaBot.Webservices
 {
     public static class UrbanDictionary
     {
-        public static IEnumerable<UrbanDictionaryDefinition> DeserealiseDefinition(string json)
+        public static IEnumerable<UrbanDictionaryDefinition> DeserealiseDefinitions(string json)
         {
             JArray jobj = (JArray)JObject.Parse(json)["list"];
 
@@ -46,7 +47,7 @@ namespace TeaBot.Webservices
             foreach (var match in mc)
             {
                 string reference = match.ToString();
-                string refWord = reference.Substring(1, reference.Length - 2);
+                string refWord = reference[1..^1];
                 toFormat = toFormat.Replace(reference, $"{reference}(https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(refWord)})");
             }
             return toFormat;

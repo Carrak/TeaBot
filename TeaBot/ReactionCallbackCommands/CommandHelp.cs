@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
+using TeaBot.Main;
 
 namespace TeaBot.ReactionCallbackCommands
 {
@@ -14,17 +15,17 @@ namespace TeaBot.ReactionCallbackCommands
     /// </summary>
     public class CommandHelp : PagedMessageBase
     {
-        private readonly IReadOnlyList<CommandMatch> _commands;
+        private readonly IEnumerable<CommandMatch> _commands;
 
         public CommandHelp(InteractiveService interactive,
             SocketCommandContext context,
-            IReadOnlyList<CommandMatch> commands,
+            IEnumerable<CommandMatch> commands,
             RunMode runmode = RunMode.Async,
             TimeSpan? timeout = null,
             ICriterion<SocketReaction> criterion = null) : base(interactive, context, runmode, timeout, criterion)
         {
             _commands = commands;
-            SetTotalPages(_commands.Count);
+            SetTotalPages(_commands.Count());
         }
 
         protected override Embed ConstructEmbed()

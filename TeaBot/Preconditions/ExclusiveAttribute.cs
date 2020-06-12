@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace TeaBot.Attributes
+namespace TeaBot.Preconditions
 {
     /// <summary>
     ///     Marks commands or modules that can only be executed in a specific set of guilds

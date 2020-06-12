@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Npgsql;
+using TeaBot.Main;
 
-namespace TeaBot.Attributes
+namespace TeaBot.Preconditions
 {
     /// <summary>
     ///     Marks commands or modules can only be executed by users whose IDs are stored in the database in the table "botadmins"

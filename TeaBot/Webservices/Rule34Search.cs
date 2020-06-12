@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TeaBot.Main;
 
 namespace TeaBot.Webservices
 {
