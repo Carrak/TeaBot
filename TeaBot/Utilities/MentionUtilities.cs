@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
-using Discord;
-using Discord.WebSocket;
-using System.Linq;
-using Discord.Commands;
+﻿using Discord.WebSocket;
 
 namespace TeaBot.Utilities
 {

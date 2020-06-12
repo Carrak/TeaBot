@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
-using TeaBot.Preconditions;
-using TeaBot.Utilities;
 using TeaBot.Main;
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
@@ -38,8 +36,8 @@ namespace TeaBot.Modules
                 embed.WithImageUrl(quote.Attachments.First().Url);
             else if (quote.Embeds.Count() > 0)
                 embed.WithImageUrl(quote.Embeds.First().Url);
-            
-            
+
+
             await ReplyAsync(embed: embed.Build());
         }
     }
