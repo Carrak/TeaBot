@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Attributes;
@@ -53,7 +52,7 @@ namespace TeaBot.Modules
             if (count == 0)
             {
                 string toSend = "The search did not yield any results.";
-                if (tags.Contains("+"))
+                if (tags.Contains(" "))
                     toSend += "\nAre you having a problem? Make sure to separate tags with a space and insert `_` instead of spaces in tags that contain them.";
                 await ReplyAsync(toSend);
                 return;
