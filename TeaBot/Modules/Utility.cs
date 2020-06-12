@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Npgsql;
@@ -47,11 +46,11 @@ namespace TeaBot.Modules
         {
             var embed = new EmbedBuilder();
 
-            string activity = user.Activity switch
+            string activity = user.Activity?.Type switch
             {
                 null => "-",
-                _ when user.Activity.Type.ToString() == "4" => $"{user.Activity.Name}",
-                _ when user.Activity.Type == ActivityType.Listening => $"Listening to **{user.Activity.Name}**",
+                ActivityType.CustomStatus => $"{user.Activity.Name}",
+                ActivityType.Listening => $"Listening to **{user.Activity.Name}**",
                 _ => $"{user.Activity.Type} **{user.Activity.Name}**"
             };
 
