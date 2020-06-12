@@ -3,10 +3,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
-using TeaBot.Preconditions;
 using TeaBot.Commands;
+using TeaBot.Preconditions;
+using TeaBot.Utilities;
 
 namespace TeaBot.Modules
 {
@@ -82,6 +82,21 @@ namespace TeaBot.Modules
             result = Regex.Replace(result, "sh*", "sh");
 
             await ReplyAsync(result);
+        }
+
+        [Command("waifumeter")]
+        [Alias("ratewaifu", "ratewf", "waifurate")]
+        [Summary("Get to know how much of a waifu something or someone is")]
+        public async Task WaifuMeter([Remainder] string subject)
+        {
+            subject = subject.DeafenMentions(Context.Message);
+            int percentage = 0;
+            foreach (char character in subject.ToLower())
+            {
+                percentage += character;
+            }
+            percentage = new Random(percentage).Next(0, 101);
+            await ReplyAsync($"**{subject}** is **{percentage}%** waifu.");
         }
     }
 }
