@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using Newtonsoft.Json;
 
-namespace TeaBot.Webservices
+namespace TeaBot.Utilities
 {
     public static class WebUtilities
     {

@@ -4,7 +4,7 @@ using Discord;
 using Discord.WebSocket;
 using TeaBot.Main;
 
-namespace TeaBot
+namespace TeaBot.Utilities
 {
     public static class TeaUtilities
     {

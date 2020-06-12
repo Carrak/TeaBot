@@ -4,7 +4,7 @@ using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
 
-namespace TeaBot
+namespace TeaBot.Utilities
 {
     public class DatabaseUtilities
     {

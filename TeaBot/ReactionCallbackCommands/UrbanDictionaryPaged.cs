@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Main;
+using TeaBot.Utilities;
 using TeaBot.Webservices;
 
 namespace TeaBot.ReactionCallbackCommands
