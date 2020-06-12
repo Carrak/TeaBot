@@ -8,7 +8,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace TeaBot
+namespace TeaBot.Main
 {
     class Init
     {

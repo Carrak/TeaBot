@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Npgsql;
 
-namespace TeaBot
+namespace TeaBot.Main
 {
     public static class TeaEssentials
     {
