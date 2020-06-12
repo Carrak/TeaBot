@@ -118,20 +118,6 @@ namespace TeaBot.Modules
             return message;
         }
 
-        [Command("bancoffee")]
-        public async Task BanCoffee()
-        {
-            var coffeebot = Context.Guild.GetUser(690898245484019714);
-            if (coffeebot is null)
-            {
-                await ReplyAsync("must've died already");
-                return;
-            }
-            await coffeebot.BanAsync();
-            await ReplyAsync("ok, heresy destroyed");
-            await Context.Guild.RemoveBanAsync(coffeebot);
-        }
-
         [Command("sqlquery")]
         [Alias("sqlq")]
         public async Task SQLEval([Remainder] string query)
@@ -195,6 +181,13 @@ namespace TeaBot.Modules
             NpgsqlCommand cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             await ReplyAsync($"Success! {rowsAffected} rows affected.");
+        }
+
+        [Command("consolewrite")]
+        public Task ConsoleWrite([Remainder] string text)
+        {
+            Console.WriteLine(text);
+            return Task.CompletedTask;
         }
     }
 }
