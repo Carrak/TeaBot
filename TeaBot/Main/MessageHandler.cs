@@ -7,8 +7,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
+using TeaBot.Commands;
 
-namespace TeaBot
+namespace TeaBot.Main
 {
     public class MessageHandler
     {
@@ -34,16 +35,6 @@ namespace TeaBot
         }
 
         /// <summary>
-        ///     Determines the behaviour when a command is executed
-        /// </summary>
-        private Task HandleCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
-        {
-            if (commandInfo.IsSpecified)
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss} Executed    {context.User} executed the {commandInfo.Value.Name} command in {(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")}");
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
         ///     Determines the behaviour when a message is received.
         /// </summary>
         /// <param name="arg">The received message.</param>
@@ -51,10 +42,10 @@ namespace TeaBot
         {
             if (!(arg is SocketUserMessage message) || message.Author.IsBot) return;
 
-            var context = new SocketCommandContext(_client, message);
+            string prefix = await DatabaseUtilities.GetPrefixAsync((message.Channel as SocketGuildChannel)?.Guild);
+            var context = new TeaCommandContext(_client, message, prefix);
 
             await DatabaseUtilities.InsertValuesIntoDb(context);
-            string prefix = await DatabaseUtilities.GetPrefixAsync(context.Guild);
 
             // Autoresponse for bot mention
             if (message.Content.Replace("!", "") == _client.CurrentUser.Mention.Replace("!", ""))
@@ -75,25 +66,34 @@ namespace TeaBot
         }
 
         /// <summary>
+        ///     Determines the behaviour when a command is executed
+        /// </summary>
+        private Task HandleCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
+        {
+            if (commandInfo.IsSpecified)
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss} Executed    {context.User} executed the {commandInfo.Value.Name} command in {(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         ///     Determines the behaviour when a command fails to execute.
         /// </summary>
-        private async Task HandleErrorsAsync(SocketCommandContext context, IResult result, int argPosition)
+        private async Task HandleErrorsAsync(TeaCommandContext context, IResult result, int argPosition)
         {
             switch (result.Error)
             {
                 case CommandError.BadArgCount:
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
-                    string prefix = await DatabaseUtilities.GetPrefixAsync(context.Guild);
 
-                    string toSend = $"Usage: `{prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
+                    string toSend = $"Usage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
                         toSend += $"\nNote: {notes.Content}";
                     }
 
-                    toSend += $"\nFor more information refer to `{prefix}help {command.Name}`";
+                    toSend += $"\nFor more information refer to `{context.Prefix}help {command.Name}`";
 
                     await context.Channel.SendMessageAsync(toSend);
                     break;
@@ -101,7 +101,7 @@ namespace TeaBot
                     Console.WriteLine(result.ErrorReason);
                     _ = context.Channel.SendMessageAsync("An exception occured while executing this command! Please contact Carrak#8088 if this keeps happening.");
 
-                    string directory = TeaEssentials.ProjectDirectory + @"\Exceptions";
+                    string directory = TeaEssentials.ProjectDirectory + Path.DirectorySeparatorChar + "Exceptions";
                     if (!Directory.Exists(directory))
                     {
                         Directory.CreateDirectory(directory);
