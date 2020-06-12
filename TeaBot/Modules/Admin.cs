@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Attributes;

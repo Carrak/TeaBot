@@ -1,5 +1,4 @@
 ﻿using Discord.Addons.Interactive;
-using TeaBot.Attributes;
 
 namespace TeaBot.Commands
 {

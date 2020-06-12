@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using TeaBot.Commands;
 

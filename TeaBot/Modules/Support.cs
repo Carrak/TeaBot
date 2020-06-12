@@ -1,13 +1,12 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using TeaBot.Attributes;
+using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands;
-using TeaBot.Commands;
-using System.Collections.Generic;
 using TeaBot.Utilities;
 
 namespace TeaBot.Modules
@@ -68,8 +67,8 @@ namespace TeaBot.Modules
         {
             var result = _commandService.Search(Context, name);
 
-            if (result.IsSuccess && 
-                (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) && 
+            if (result.IsSuccess &&
+                (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) &&
                 commands.Count() > 0)
             {
                 var commandHelp = new CommandHelp(Interactive, Context, commands);
