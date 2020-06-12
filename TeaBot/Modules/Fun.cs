@@ -6,11 +6,12 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using TeaBot.Preconditions;
+using TeaBot.Commands;
 
 namespace TeaBot.Modules
 {
     [Summary("Commands targeted at entertainment")]
-    public class Fun : InteractiveBase
+    public class Fun : TeaInteractiveBase
     {
         [Command("gacha", true)]
         [Summary("This one could grow into something bigger, but this is just a pointless command for now.")]

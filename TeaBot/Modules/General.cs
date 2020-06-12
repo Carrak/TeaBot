@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
+using TeaBot.Commands;
 using Discord.Commands;
 using TeaBot.Attributes;
 using TeaBot.Preconditions;
@@ -15,7 +16,7 @@ using TeaBot.Webservices;
 namespace TeaBot.Modules
 {
     [Summary("Commands without a specific category")]
-    public class General : InteractiveBase
+    public class General : TeaInteractiveBase
     {
         [Command("ping", RunMode = RunMode.Async)]
         [Summary("Pong! (returns the bot's ping)")]
@@ -34,7 +35,7 @@ namespace TeaBot.Modules
         {
             if (Context.Message.MentionedRoles.Count > 0 || Context.Message.MentionedUsers.Count > 0)
             {
-                string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
+                string prefix = Context.Prefix;
                 await ReplyAsync($"No pinging when using `{prefix}say`!");
                 return;
             }
@@ -172,7 +173,7 @@ namespace TeaBot.Modules
                 return;
             }
 
-            var definitions = UrbanDictionary.DeserealiseDefinition(json);
+            var definitions = UrbanDictionary.DeserealiseDefinitions(json);
             if (definitions is null)
             {
                 await ReplyAsync($"No definition exists for `{word}`");

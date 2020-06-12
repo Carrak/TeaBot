@@ -4,13 +4,16 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using TeaBot.Attributes;
+using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands;
+using TeaBot.Commands;
+using System.Collections.Generic;
 
 namespace TeaBot.Modules
 {
     //[HelpCommandIgnore]
     [Summary("Commands that are meant to guide users through the bot")]
-    public class Support : InteractiveBase
+    public class Support : TeaInteractiveBase
     {
         readonly CommandService _commandService;
 
@@ -29,7 +32,7 @@ namespace TeaBot.Modules
             footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
                 .WithText(Context.Message.Author.ToString());
 
-            string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
+            string prefix = Context.Prefix;
 
             embed.WithCurrentTimestamp()
               .WithColor(TeaEssentials.MainColor)
@@ -64,38 +67,40 @@ namespace TeaBot.Modules
         {
             var result = _commandService.Search(Context, name);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && 
+                (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) && 
+                commands.Count() > 0)
             {
-                var commandHelp = new CommandHelp(Interactive, Context, result.Commands);
+                var commandHelp = new CommandHelp(Interactive, Context, commands);
                 await commandHelp.DisplayAsync();
             }
             else
             {
-                var search = _commandService.Modules.Where(x => x.Name.ToLower() == name.ToLower());
+                var module = _commandService.Modules.FirstOrDefault(x => x.Name.ToLower() == name.ToLower() && !x.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute));
 
-                if (search.Count() > 0)
+                if (module is null)
                 {
-                    ModuleInfo module = search.FirstOrDefault();
+                    await ReplyAsync($"Such command/module does not exist! `[{name}]`");
+                    return;
+                }
 
-                    var embed = new EmbedBuilder();
+                var embed = new EmbedBuilder();
 
-                    var footer = new EmbedFooterBuilder();
-                    footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
+                var footer = new EmbedFooterBuilder();
+                footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
                         .WithText(Context.Message.Author.ToString());
 
-                    string commands = string.Join(" ", module.Commands.Select(command => $"`{command.Name}`").Distinct());
+                string moduleCommands = string.Join(" ", module.Commands.Select(command => $"`{command.Name}`").Distinct());
 
-                    embed.WithTitle($"{module.Name} commands")
-                        .WithDescription(module.Summary)
-                        .WithColor(TeaEssentials.MainColor)
-                        .WithCurrentTimestamp()
-                        .WithFooter(footer)
-                        .AddField("Commands", commands);
+                embed.WithTitle($"{module.Name} commands")
+                    .WithDescription(module.Summary)
+                    .WithColor(TeaEssentials.MainColor)
+                    .WithCurrentTimestamp()
+                    .WithFooter(footer)
+                    .AddField("Commands", moduleCommands);
 
-                    await ReplyAsync(embed: embed.Build());
-                }
-                else
-                    await ReplyAsync($"Such command/module does not exist! `[{name}]`");
+                await ReplyAsync(embed: embed.Build());
+
             }
         }
 

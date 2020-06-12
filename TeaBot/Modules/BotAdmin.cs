@@ -4,17 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Attributes;
+using TeaBot.Commands;
+using TeaBot.Main;
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
     [HelpCommandIgnore]
     [BotAdmin]
     [Summary("Commands that can only be used by bot admins")]
-    public class BotAdmin : InteractiveBase
+    public class BotAdmin : TeaInteractiveBase
     {
         [Command("message", RunMode = RunMode.Async)]
         [Alias("msg")]

@@ -2,15 +2,15 @@
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using TeaBot.Commands;
 
 
 namespace TeaBot.Modules
 {
     [RequireNsfw(ErrorMessage = "The channel is not flagged as NSFW!")]
     [Summary("Commands that can only be executed in NSFW channels")]
-    public class NSFW : InteractiveBase
+    public class NSFW : TeaInteractiveBase
     {
-
         [Command("nhentai")]
         [Alias("nh")]
         [Summary("Sends the specified doujin")]

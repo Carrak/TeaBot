@@ -4,13 +4,15 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Attributes;
+using TeaBot.Commands;
+using TeaBot.Main;
 
 namespace TeaBot.Modules
 {
     [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "This command requires **Administrator** permissions!")]
     [RequireContext(ContextType.Guild, ErrorMessage = "")]
     [Summary("Commands that can only be executed by server admins")]
-    public class Admin : InteractiveBase
+    public class Admin : TeaInteractiveBase
     {
         [Command("prefix")]
         [Summary("Change the prefix of the bot for this server")]

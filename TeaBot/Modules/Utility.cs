@@ -9,12 +9,14 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Npgsql;
 using TeaBot.Attributes;
+using TeaBot.Commands;
+using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands;
 
 namespace TeaBot.Modules
 {
     [Summary("Commands for information regarding guilds or users")]
-    public class Utility : InteractiveBase
+    public class Utility : TeaInteractiveBase
     {
         [Command("avatar")]
         [Alias("av")]

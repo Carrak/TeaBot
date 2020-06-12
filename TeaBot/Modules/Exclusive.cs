@@ -8,12 +8,13 @@ using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Preconditions;
+using TeaBot.Commands;
 
 namespace TeaBot.Modules
 {
     [HelpCommandIgnore]
     [Summary("Commands that can only be executed in specific servers")]
-    public class Exclusive : InteractiveBase
+    public class Exclusive : TeaInteractiveBase
     {
         [Command("quote", true)]
         [Exclusive(364771834325106689)]

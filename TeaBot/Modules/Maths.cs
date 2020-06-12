@@ -2,11 +2,12 @@
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using TeaBot.Commands;
 
 namespace TeaBot.Modules
 {
     [Summary("Various math commands")]
-    public class Maths : InteractiveBase
+    public class Maths : TeaInteractiveBase
     {
         [Command("solvequadratic")]
         [Summary("Solves a quadratic equation of the look `ax^2 + bx + c = 0` with given coefficients")]
@@ -59,7 +60,7 @@ namespace TeaBot.Modules
                 return;
             }
 
-            await ReplyAsync(new Random().Next(min, max+1).ToString());
+            await ReplyAsync(new Random().Next(min, max + 1).ToString());
         }
 
         [Command("prime")]

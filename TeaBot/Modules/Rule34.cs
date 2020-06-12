@@ -8,14 +8,17 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Attributes;
+using TeaBot.Commands;
+using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.Webservices;
+
 
 namespace TeaBot.Modules
 {
     [RequireNsfw(ErrorMessage = "The channel is not flagged as NSFW!")]
     [Summary("Commands for searching on rule34.xxx and managing the search.")]
-    public class Rule34 : InteractiveBase
+    public class Rule34 : TeaInteractiveBase
     {
         [Command("r34", RunMode = RunMode.Async)]
         [Summary("Searches an image with given tags on rule34.xxx")]
@@ -24,7 +27,7 @@ namespace TeaBot.Modules
         public async Task FindR34Post([Remainder] string tags)
         {
             List<string> blacklist = new List<string>();
-            string prefix = await DatabaseUtilities.GetPrefixAsync(Context.Guild);
+            string prefix = Context.Prefix;
 
             var defaultBlacklist = await GetBlacklist(R34BlacklistType.Default);
             var userBlacklist = await GetBlacklist(R34BlacklistType.User);
