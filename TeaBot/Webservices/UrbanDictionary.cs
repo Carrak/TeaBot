@@ -28,6 +28,18 @@ namespace TeaBot.Webservices
             }
 
             return definitions;
+
+            static string ParseAndPlaceReferenceHyperlinks(string toFormat)
+            {
+                var mc = Regex.Matches(toFormat, @"\[[\s\S]*?\]");
+                foreach (var match in mc)
+                {
+                    string reference = match.ToString();
+                    string refWord = reference[1..^1];
+                    toFormat = toFormat.Replace(reference, $"{reference}(https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(refWord)})");
+                }
+                return toFormat;
+            }
         }
 
         public static async Task<string> GetDefinitionJSONAsync(string word)
@@ -40,18 +52,6 @@ namespace TeaBot.Webservices
             string content = await response.Content.ReadAsStringAsync();
 
             return content;
-        }
-
-        private static string ParseAndPlaceReferenceHyperlinks(string toFormat)
-        {
-            var mc = Regex.Matches(toFormat, @"\[[\s\S]*?\]");
-            foreach (var match in mc)
-            {
-                string reference = match.ToString();
-                string refWord = reference[1..^1];
-                toFormat = toFormat.Replace(reference, $"{reference}(https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(refWord)})");
-            }
-            return toFormat;
         }
     }
 
