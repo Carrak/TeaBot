@@ -85,18 +85,40 @@ namespace TeaBot.Modules
         }
 
         [Command("waifumeter")]
-        [Alias("ratewaifu", "ratewf", "waifurate")]
+        [Alias("ratewaifu", "ratewf", "waifurate", "rw")]
         [Summary("Get to know how much of a waifu something or someone is")]
         public async Task WaifuMeter([Remainder] string subject)
         {
             subject = subject.DeafenMentions(Context.Message);
+
             int percentage = 0;
             foreach (char character in subject.ToLower())
             {
                 percentage += character;
             }
             percentage = new Random(percentage).Next(0, 101);
-            await ReplyAsync($"**{subject}** is **{percentage}%** waifu.");
+
+            string addon;
+            if (percentage == 100)
+                addon = "Absolute waifu material!";
+            else if (percentage >= 90)
+                addon = "Very good!";
+            else if (percentage >= 70)
+                addon = "Decent waifu!";
+            else if (percentage == 69)
+                addon = "NICE!";
+            else if (percentage >= 50)
+                addon = "Not bad, but could be better.";
+            else if (percentage >= 30)
+                addon = "Kinda wack.";
+            else if (percentage >= 10)
+                addon = "Hope for the best.";
+            else if (percentage > 0)
+                addon = "Ew, what is that?";
+            else
+                addon = "Absolutely terrible, is this even a waifu?";
+
+            await ReplyAsync($"**{subject}** is **{percentage}%** waifu. {addon}");
         }
     }
 }
