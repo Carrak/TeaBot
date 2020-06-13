@@ -305,7 +305,8 @@ namespace TeaBot.Modules
 
         private Task<bool> CheckTags(string tags, List<string> blacklist, string errorMessage)
         {
-            if (blacklist.Any(tag => tags.Contains(tag)))
+            var tagsArr = tags.Split(" ");
+            if (blacklist.Any(tag => tagsArr.Contains(tag)))
             {
                 Context.Channel.SendMessageAsync(errorMessage);
                 return Task.FromResult(true);
