@@ -80,7 +80,7 @@ namespace TeaBot.Modules
 
                 if (module is null)
                 {
-                    await ReplyAsync($"Such command/module does not exist! `[{name}]`");
+                    await ReplyAsync($"Such command/module does not exist! `{name}`");
                     return;
                 }
 
