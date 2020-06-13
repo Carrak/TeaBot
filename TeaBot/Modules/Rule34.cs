@@ -46,15 +46,16 @@ namespace TeaBot.Modules
                 blacklist.AddRange(guildBlacklist);
             }
 
+            bool hasSpace = tags.Contains(' ');
             tags += ' ' + string.Join(' ', blacklist.Select(x => $"-{x}"));
 
             int count = await Rule34Search.GetResultCountAsync(tags);
             if (count == 0)
             {
-                string toSend = "The search did not yield any results.";
-                if (tags.Contains(" "))
-                    toSend += "\nAre you having a problem? Make sure to separate tags with a space and insert `_` instead of spaces in tags that contain them.";
-                await ReplyAsync(toSend);
+                string noResultsMessage = "The search did not yield any results.";
+                if (hasSpace)
+                    noResultsMessage += "\nAre you having a problem? Make sure to separate tags with a space and insert `_` instead of spaces in tags that contain them.";
+                await ReplyAsync(noResultsMessage);
                 return;
             }
 
