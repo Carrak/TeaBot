@@ -44,7 +44,7 @@ namespace TeaBot.ReactionCallbackCommands
 
             embed = SetDefaultFooter(embed);
 
-            if (cmd.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
+            if (cmd.Attributes.FirstOrDefault(attr => attr is NoteAttribute) is NoteAttribute notes)
                 embed.AddField("Note", notes.Content);
 
             return embed.Build();
