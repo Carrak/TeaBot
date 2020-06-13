@@ -12,6 +12,7 @@ using TeaBot.Utilities;
 namespace TeaBot.Modules
 {
     //[HelpCommandIgnore]
+    [EssentialModule]
     [Summary("Commands that are meant to guide users through the bot")]
     public class Support : TeaInteractiveBase
     {

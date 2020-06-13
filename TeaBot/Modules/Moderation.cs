@@ -2,10 +2,12 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using TeaBot.Attributes;
 using TeaBot.Commands;
 
 namespace TeaBot.Modules
 {
+    [EssentialModule]
     [Summary("Commands meant for moderating the server.")]
     public class Moderation : TeaInteractiveBase
     {

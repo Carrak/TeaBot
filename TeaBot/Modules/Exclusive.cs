@@ -12,6 +12,7 @@ using System.Collections.Generic;
 
 namespace TeaBot.Modules
 {
+    [EssentialModule]
     [HelpCommandIgnore]
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : TeaInteractiveBase

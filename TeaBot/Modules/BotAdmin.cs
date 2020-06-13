@@ -13,6 +13,7 @@ using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
+    [EssentialModule]
     [HelpCommandIgnore]
     [BotAdmin]
     [Summary("Commands that can only be used by bot admins")]

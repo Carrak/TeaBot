@@ -9,6 +9,7 @@ using TeaBot.Main;
 
 namespace TeaBot.Modules
 {
+    [EssentialModule]
     [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "This command requires **Administrator** permissions!")]
     [RequireContext(ContextType.Guild, ErrorMessage = "")]
     [Summary("Commands that can only be executed by server admins")]

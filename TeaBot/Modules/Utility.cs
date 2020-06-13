@@ -14,6 +14,7 @@ using TeaBot.ReactionCallbackCommands;
 
 namespace TeaBot.Modules
 {
+    [EssentialModule]
     [Summary("Commands for information regarding guilds or users")]
     public class Utility : TeaInteractiveBase
     {
