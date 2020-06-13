@@ -71,7 +71,6 @@ namespace TeaBot.Modules
 
                 var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
                 var reader = await cmd.ExecuteReaderAsync();
-
                 string lastMessage = "No information";
                 if (reader.HasRows)
                 {
@@ -85,7 +84,7 @@ namespace TeaBot.Modules
                     string messageUrl = $"https://discordapp.com/channels/{gid}/{cid}/{mid}";
                     lastMessage = $"{DateString(sent, true)}\n[Click here to jump to the message!]({messageUrl})";
                 }
-                reader.Close();
+                await reader.CloseAsync();
 
                 IEnumerable<SocketRole> roles = guildUser.Roles.Where(x => !x.IsEveryone).OrderByDescending(x => x.Position);
 
@@ -125,7 +124,7 @@ namespace TeaBot.Modules
             var reader = await new NpgsqlCommand(query, TeaEssentials.DbConnection).ExecuteReaderAsync();
             await reader.ReadAsync();
             long activeMembersCount = reader.GetInt64(0);
-            reader.Close();
+            await reader.CloseAsync();
 
             int totalUserCount = guild.Users.Where(user => !user.IsBot).Count();
             string percentage = ((double)activeMembersCount / totalUserCount).ToString("#0.00%");

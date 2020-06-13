@@ -170,7 +170,7 @@ namespace TeaBot.Modules
                 result.Append(toAdd);
             }
 
-            //reader.Close();
+            await reader.CloseAsync();
             await ReplyAsync($"`{result.Replace("\n", "`\n`")}`".TrimEnd('`'));
         }
 
