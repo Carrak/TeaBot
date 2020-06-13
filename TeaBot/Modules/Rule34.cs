@@ -72,9 +72,8 @@ namespace TeaBot.Modules
             var embed = new EmbedBuilder();
             embed.WithImageUrl(post.FileUrl)
                 .AddField("Tags", $"`{post.Tags.TrimStart().TrimEnd().Replace(" ", ", ")}`")
-                .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC")
+                .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC | {count} result{(count == 1 ? "" : "s")} with this tag combination")
                 .WithUrl(post.FileUrl)
-                .WithCurrentTimestamp()
                 .WithColor(TeaEssentials.MainColor);
 
             if (post.Tags.Contains("webm"))
@@ -84,8 +83,7 @@ namespace TeaBot.Modules
             }
             else
             {
-                embed.WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC")
-                .WithTitle("Click here if the image is not loading");
+                embed.WithTitle("Click here if the image is not loading");
                 await ReplyAsync(embed: embed.Build());
             }
 
