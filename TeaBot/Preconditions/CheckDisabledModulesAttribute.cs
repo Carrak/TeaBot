@@ -11,6 +11,9 @@ namespace TeaBot.Preconditions
     {
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            if (context.Guild is null)
+                return PreconditionResult.FromSuccess();
+
             string moduleName = command.Module.Name.ToLower();
 
             string query = $"SELECT EXISTS (SELECT * FROM disabled_modules WHERE guildid={context.Guild.Id} AND module_name='{moduleName}')";
@@ -21,7 +24,7 @@ namespace TeaBot.Preconditions
             var moduleDisabled = reader.GetBoolean(0);
             await reader.CloseAsync();
             return moduleDisabled ?
-                PreconditionResult.FromError("This module is disabled on this guild!") :
+                PreconditionResult.FromError("This command's module is disabled in this guild!") :
                 PreconditionResult.FromSuccess();
         }
     }
