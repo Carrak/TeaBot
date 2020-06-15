@@ -28,7 +28,8 @@ namespace TeaBot.Main
             // Instantiate the essentials
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                AlwaysDownloadUsers = true
+                AlwaysDownloadUsers = true,
+                ExclusiveBulkDelete = true
             });
             _commands = new CommandService(new CommandServiceConfig()
             {
