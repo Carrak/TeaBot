@@ -45,7 +45,7 @@ namespace TeaBot.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        [Command("quotestats")]
+        [Command("quotestats", RunMode = RunMode.Async)]
         [Exclusive(364771834325106689)]
         [Ratelimit(10, Measure.Seconds)]
         public async Task QuoteStats()
@@ -65,15 +65,14 @@ namespace TeaBot.Modules
                         topUsers[index] = (mentionedId, topUsers[index].Item2 + 1);
                 }
             }
-
             topUsers = topUsers.OrderByDescending(x => x.Item2).ToList();
-            Console.WriteLine(sw.ElapsedMilliseconds);
             var embed = new EmbedBuilder();
 
             embed.WithAuthor(Context.User)
                 .WithColor(TeaEssentials.MainColor)
                 .WithDescription(string.Join("\n", topUsers.Select((user, index) => $"{index + 1}. <@{user.Item1}> - {user.Item2} quotes")))
                 .WithTitle("Poppontheon quote top")
+                .WithFooter($"Quote count: {quotes.Count()}");
 
             await ReplyAsync(embed: embed.Build());
         }
