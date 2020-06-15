@@ -23,23 +23,6 @@ namespace TeaBot.Utilities
         }
 
         /// <summary>
-        ///     Sends the message to the bot owner.
-        /// </summary>
-        /// <param name="message">Message to send.</param>
-        public static async Task MessageOwner(SocketUserMessage message)
-        {
-            var user = (await _client.GetApplicationInfoAsync()).Owner;
-            string toSend = $"`{message.Author} ({message.Author.Id})`: {message.Content.Replace("`", "")}";
-
-            if (message.Attachments.Count > 0)
-            {
-                toSend += $"\n\n`Attachments:` \n{string.Join("\n", message.Attachments.Select(x => x.Url))}";
-            }
-
-            await user.SendMessageAsync(toSend);
-        }
-
-        /// <summary>
         /// Constructs a predetermined embed which has the primary information about the bot.
         /// </summary>
         /// <param name="prefix">Prefix used in the embed</param>

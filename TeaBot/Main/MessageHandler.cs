@@ -138,7 +138,7 @@ namespace TeaBot.Main
         {
             if (context.IsPrivate && context.Message.Author.Id != 180648791291068417)
             {
-                await TeaUtilities.MessageOwner(context.Message);
+                await MessageOwner(context.Message);
                 return;
             }
 
@@ -173,6 +173,29 @@ namespace TeaBot.Main
                     break;
                 }
             }
+        }
+
+
+        /// <summary>
+        ///     Sends the message to the bot owner.
+        /// </summary>
+        /// <param name="message">Message to send.</param>
+        public async Task MessageOwner(SocketUserMessage message)
+        {
+            var user = (await _client.GetApplicationInfoAsync()).Owner;
+
+            var embed = new EmbedBuilder();
+            embed.WithAuthor(message.Author)
+                .WithColor(TeaEssentials.MainColor)
+                .WithDescription(message.Content)
+                .WithFooter($"User ID - {message.Author.Id}");
+
+            if (message.Attachments.Count > 0)
+                embed.WithImageUrl(message.Attachments.ElementAt(0).Url);
+            else if (message.Embeds.Count > 0)
+                embed.WithImageUrl(message.Embeds.ElementAt(0).Url);
+
+            await user.SendMessageAsync(embed: embed.Build());
         }
 
     }
