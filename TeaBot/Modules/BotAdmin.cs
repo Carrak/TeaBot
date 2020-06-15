@@ -101,21 +101,6 @@ namespace TeaBot.Modules
             else await ReplyAsync("Couldn't rename! [The name must be 32 or fewer in length]");
         }
 
-        [Command("leave")]
-        public async Task Leave(ulong guildID)
-        {
-            await Context.Client.GetGuild(guildID).LeaveAsync();
-            await ReplyAsync("Success!");
-        }
-
-        string HidePreviews(string message)
-        {
-            var words = message.Split(new string[] { "\n", " " }, StringSplitOptions.None);
-            var hyperlinks = words.Where(word => word.StartsWith("https://") || word.StartsWith("http://")).ToList();
-            hyperlinks.ForEach(link => message = message.Replace(link, Format.EscapeUrl(link)));
-            return message;
-        }
-
         [Command("sqlquery")]
         [Alias("sqlq")]
         public async Task SQLEval([Remainder] string query)
