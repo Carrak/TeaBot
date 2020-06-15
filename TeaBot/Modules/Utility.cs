@@ -128,7 +128,9 @@ namespace TeaBot.Modules
             await reader.CloseAsync();
 
             int totalUserCount = guild.Users.Where(user => !user.IsBot).Count();
-            string percentage = ((double)activeMembersCount / totalUserCount).ToString("#0.00%");
+            double activeUsersPercentage = ((double)activeMembersCount / totalUserCount);
+
+            int userRolesCount = guild.Roles.Where(x => !x.IsEveryone && !x.IsManaged).Count();
 
             TimeSpan timeDifference = DateTime.UtcNow - guild.GetUser(Context.Client.CurrentUser.Id).JoinedAt.Value.DateTime;
 
@@ -141,13 +143,14 @@ namespace TeaBot.Modules
                 $"Member count: {guild.MemberCount - botsCount} (+ {botsCount} bots)\n" +
                 $"Online members: {guild.Users.Where(user => user.Status == UserStatus.Online || user.Status == UserStatus.Idle || user.Status == UserStatus.DoNotDisturb).Count() - botsCount}\n" +
                 $"Channel categories: {guild.CategoryChannels.Count}\n" +
-                $"Channels: {guild.Channels.Count}\n" +
-                $"Roles: {guild.Roles.Count}\n")
+                $"Text channels: {guild.Channels.Where(x => x is ITextChannel).Count()}\n" +
+                $"Voice channels: {guild.Channels.Where(x => x is IVoiceChannel).Count()}\n" +
+                $"Roles: {userRolesCount} (+ {guild.Roles.Count - userRolesCount} integrated or Discord managed roles)\n")
                 .AddField("Created", DateString(guild.CreatedAt.DateTime))
                 .AddField("Owner", guild.Owner.Mention)
                 .AddField("System channel", guild.SystemChannel is null ? "-" : guild.SystemChannel.Mention)
                 .AddField("Region", guild.VoiceRegionId)
-                .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {percentage}\n" +
+                .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {activeUsersPercentage:#0.00%}\n" +
                 $"`Note: only includes people who have sent a message {(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? PeriodToString(timeDifference.Days, "day", false) : "Today")})")}`");
 
             await ReplyAsync(embed: embed.Build());
