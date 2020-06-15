@@ -52,11 +52,10 @@ namespace TeaBot.Modules
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;
             var quotes = await channel.GetMessagesAsync().FlattenAsync();
-            var sw = System.Diagnostics.Stopwatch.StartNew();
             List<(ulong, int)> topUsers = new List<(ulong, int)>();
             foreach (var quote in quotes)
             {
-                foreach (var mentionedId in quote.MentionedUserIds)
+                foreach (var mentionedId in quote.MentionedUserIds.Distinct())
                 {
                     var index = topUsers.FindIndex(x => x.Item1 == mentionedId);
                     if (index == -1)
