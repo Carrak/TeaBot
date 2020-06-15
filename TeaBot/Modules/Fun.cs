@@ -58,6 +58,8 @@ namespace TeaBot.Modules
         [Summary("Don't.")]
         public async Task Uwufy([Remainder] string text)
         {
+            text = text.DeafenMentions(Context.Message);
+
             var split = text.ToLower().Split(" ").Where(x => x != "").ToArray();
             Random random = new Random();
 
