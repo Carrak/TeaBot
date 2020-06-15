@@ -70,8 +70,8 @@ namespace TeaBot.Modules
 
             embed.WithAuthor(Context.User)
                 .WithColor(TeaEssentials.MainColor)
-                .WithDescription(string.Join("\n", topUsers.Select((user, index) => $"{index+1}. <@{user.Item1}> - {user.Item2} quotes")))
-                .WithTitle("Poppontheon quote top");
+                .WithDescription(string.Join("\n", topUsers.Select((user, index) => $"{index + 1}. <@{user.Item1}> - {user.Item2} quotes")))
+                .WithTitle("Poppontheon quote top")
 
             await ReplyAsync(embed: embed.Build());
         }

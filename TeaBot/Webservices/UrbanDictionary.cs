@@ -74,6 +74,5 @@ namespace TeaBot.Webservices
 
         [JsonProperty("thumbs_down")]
         public int ThumbsDown;
-
     }
 }

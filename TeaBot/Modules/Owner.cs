@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -9,8 +10,6 @@ using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TeaBot.Modules
 {

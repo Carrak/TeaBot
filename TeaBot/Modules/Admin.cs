@@ -104,7 +104,7 @@ namespace TeaBot.Modules
             if (rowsAffected == 0)
             {
                 await ReplyAsync($"This module is not disabled. `{moduleName}`");
-            } 
+            }
             else
             {
                 await ReplyAsync($"Successfully enabled this module back. `{moduleName}`");
