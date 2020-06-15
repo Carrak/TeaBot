@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -8,7 +9,6 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
-using System.Collections.Generic;
 
 namespace TeaBot.Modules
 {
@@ -17,13 +17,15 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : TeaInteractiveBase
     {
-        [Command("quote", true)]
+        [Command("quote")]
         [Exclusive(364771834325106689)]
         [Ratelimit(2, Measure.Seconds)]
-        public async Task Quote()
+        public async Task Quote(IUser user = null)
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;
             var quotes = await channel.GetMessagesAsync().FlattenAsync();
+            if (user != null)
+                quotes = quotes.Where(quote => quote.MentionedUserIds.Contains(user.Id));
             int randomIndex = new Random().Next(0, quotes.Count());
             var quote = quotes.ElementAt(randomIndex);
 
