@@ -39,7 +39,12 @@ namespace TeaBot.Modules
             switch (pair)
             {
                 case (true, true):
-                    await ReplyAsync($"`[{Context.Message.Author}] Couldn't deliver the message to {id}! [ Both user and channel are null ]`");
+                    var embed = new EmbedBuilder();
+                    embed.WithAuthor(Context.User)
+                        .WithColor(Color.Red)
+                        .WithTitle("Couldn't deliver message")
+                        .WithDescription("Both user and channel are null");
+                    await ReplyAsync(embed: embed.Build());
                     break;
                 case (false, true):
                     await DM();
@@ -48,7 +53,7 @@ namespace TeaBot.Modules
                     await Channel();
                     break;
                 case (false, false):
-                    await ReplyAsync($"`[{Context.Message.Author}] Both message and channel are not null, where would you like to send the message to? (Reply with \"user\" or \"channel\")`");
+                    await ReplyAsync("Both message and channel are not null, where would you like to send the message to? (Reply with \"user\" or \"channel\")");
                     var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(20));
 
                     if (response == null)
@@ -63,7 +68,6 @@ namespace TeaBot.Modules
                             await Channel();
                             break;
                     }
-
                     break;
             }
 
@@ -71,13 +75,27 @@ namespace TeaBot.Modules
             {
                 var dmchannel = await user.GetOrCreateDMChannelAsync();
                 await dmchannel.SendMessageAsync(message);
-                await ReplyAsync($"`[{Context.Message.Author}] Message delivered to {user}!` \n`Message:` {HidePreviews(message)}");
+
+                var embed = new EmbedBuilder();
+                embed.WithAuthor(Context.User)
+                    .WithDescription(message)
+                    .WithColor(TeaEssentials.MainColor)
+                    .WithTitle($"Message delivered to {user}");
+
+                await ReplyAsync(embed: embed.Build());
             }
 
             async Task Channel()
             {
-                await channel.SendMessageAsync(message);
-                await ReplyAsync($"`[{Context.Message.Author}] Message delivered to #{channel} in {(channel as IGuildChannel).Guild.Name}!` \n`Message:`{HidePreviews(message)}");
+                var msg = await channel.SendMessageAsync(message);
+
+                var embed = new EmbedBuilder();
+                embed.WithAuthor(Context.User)
+                    .WithDescription(message)
+                    .WithColor(TeaEssentials.MainColor)
+                    .WithTitle($"Message delivered to #{channel} in {(channel as IGuildChannel).Guild.Name}");
+
+                await ReplyAsync(embed: embed.Build());
             }
         }
 
