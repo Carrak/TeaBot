@@ -3,14 +3,22 @@ using Discord;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TeaBot.Utilities
 {
-    public class DatabaseUtilities
+    public class DatabaseService
     {
-        public static async Task InsertValuesIntoDb(SocketCommandContext context)
-        {
+        private readonly CommandService _commands;
 
+        public DatabaseService(CommandService commands)
+        {
+            _commands = commands;
+        } 
+
+        public async Task InsertValuesIntoDb(SocketCommandContext context)
+        {
             if (context.IsPrivate)
                 return;
 
@@ -30,7 +38,7 @@ namespace TeaBot.Utilities
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public static async Task InsertValuesIntoDb(ulong guildId)
+        public async Task InsertValuesIntoDb(ulong guildId)
         {
             string query = "DO $$ BEGIN " +
                     $"PERFORM conditional_insert('guilds', 'guilds.id = {guildId}', 'id', '{guildId}'); " +
@@ -43,9 +51,9 @@ namespace TeaBot.Utilities
         /// <summary>
         ///     Sends a query to the PostgreSQL database to add the guild if it's not already present and retrieve the prefix for the given guild.
         /// </summary>
-        /// <param name="guildId">ID of the guild to retrieve the prefix for.</param>
+        /// <param name="guild">The guild to retrieve the prefix for.</param>
         /// <returns>Prefix for the guild.</returns>
-        public static async Task<string> GetPrefixAsync(IGuild guild)
+        public async Task<string> GetPrefixAsync(IGuild guild)
         {
             if (guild is null)
                 return TeaEssentials.DefaultPrefix;
@@ -60,6 +68,26 @@ namespace TeaBot.Utilities
             await reader.CloseAsync();
 
             return prefix;
+        }
+
+        public async Task<List<ModuleInfo>> GetDisabledModules(IGuild guild)
+        {
+            List<ModuleInfo> disabledModules = new List<ModuleInfo>();
+
+            if (guild is null)
+                return disabledModules;
+
+            string query = $"SELECT module_name FROM disabled_modules WHERE guildid = {guild.Id}";
+            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            if (reader.HasRows)
+            {
+                while (await reader.ReadAsync())
+                    disabledModules.Add(_commands.Modules.First(module => module.Name.ToLower() == reader.GetString(0)));
+            }
+            await reader.CloseAsync();
+            return disabledModules;
         }
     }
 }
