@@ -16,9 +16,12 @@ namespace TeaBot.Main
         static void Main() => new Init().RunBotAsync().GetAwaiter().GetResult();
 
         // Discord.NET essentials.
-        private static DiscordSocketClient _client;
-        private static CommandService _commands;
-        private static IServiceProvider _services;
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private IServiceProvider _services;
+
+        private DatabaseService _database;
+        private TeaService _tea;
 
         /// <summary>
         ///    Establishes the database connection, instantiates the Discord client, commands and services, registers a few events and starts the bot. 
@@ -37,15 +40,19 @@ namespace TeaBot.Main
             });
             _services = new ServiceCollection()
                 .AddSingleton(_client)
+                .AddSingleton(_commands)
                 .AddSingleton<InteractiveService>()
                 .AddSingleton<MessageHandler>()
+                .AddSingleton<DatabaseService>()
+                .AddSingleton<TeaService>()
                 .BuildServiceProvider();
 
-            // Create a message handler
-            var messageHandler = new MessageHandler(_services, _commands, _client);
-            await messageHandler.InitAsync();
+            _database = new DatabaseService(_commands);
+            _tea = new TeaService(_client);
 
-            TeaUtilities.SetClient(_client);
+            // Create a message handler
+            var messageHandler = new MessageHandler(_services, _commands, _client, _database);
+            await messageHandler.InitAsync();
 
             // Register events
             _client.Log += Log;
@@ -85,9 +92,9 @@ namespace TeaBot.Main
         {
             if (guild.SystemChannel != null)
             {
-                await DatabaseUtilities.InsertValuesIntoDb(guild.Id);
-                string prefix = await DatabaseUtilities.GetPrefixAsync(guild);
-                var embed = TeaUtilities.GetInfoEmbed(prefix);
+                await _database.InsertValuesIntoDb(guild.Id);
+                string prefix = await _database.GetPrefixAsync(guild);
+                var embed = await _tea.GetInfoEmbedAsync(prefix);
                 await guild.SystemChannel.SendMessageAsync(embed: embed);
             }
         }
