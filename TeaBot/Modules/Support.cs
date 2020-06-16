@@ -16,11 +16,15 @@ namespace TeaBot.Modules
     [Summary("Commands that are meant to guide users through the bot")]
     public class Support : TeaInteractiveBase
     {
-        readonly CommandService _commandService;
+        private readonly CommandService _commandService;
+        private readonly DatabaseService _database;
+        private readonly TeaService _tea;
 
-        public Support(CommandService commandService)
+        public Support(CommandService commandService, DatabaseService database, TeaService tea)
         {
             _commandService = commandService;
+            _database = database;
+            _tea = tea;
         }
 
         [Command("help")]
@@ -54,8 +58,7 @@ namespace TeaBot.Modules
               .WithFooter(footer);
 
             string modules = string.Join("\n",
-                _commandService.Modules.Where(x => !x.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute))
-                .Select(module => $"`[{module.Name}]` - {module.Summary ?? "No summary for this module!"}"));
+                GetModules().Select(module => $"`[{module.Name}]` - {module.Summary ?? "No summary for this module!"}"));
 
             embed.AddField("Current modules", modules);
 
@@ -91,14 +94,15 @@ namespace TeaBot.Modules
                 footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
                         .WithText(Context.Message.Author.ToString());
 
-                string moduleCommands = string.Join(" ", module.Commands.Select(command => $"`{command.Name}`").Distinct());
+                string moduleCommands = ModuleCommandsString(module);
 
                 embed.WithTitle($"{module.Name} commands")
                     .WithDescription(module.Summary)
                     .WithColor(TeaEssentials.MainColor)
                     .WithCurrentTimestamp()
                     .WithFooter(footer)
-                    .AddField("Commands", moduleCommands);
+                    .AddField("Commands", moduleCommands)
+                    .AddField("Essential module (cannot be disabled)", module.Attributes.Any(attribute => attribute is EssentialModuleAttribute));
 
                 await ReplyAsync(embed: embed.Build());
 
@@ -109,7 +113,7 @@ namespace TeaBot.Modules
         [Summary("Information about the bot")]
         public async Task Info()
         {
-            var embed = TeaUtilities.GetInfoEmbed(await DatabaseUtilities.GetPrefixAsync(Context.Guild));
+            var embed = await _tea.GetInfoEmbedAsync(await _database.GetPrefixAsync(Context.Guild));
             await ReplyAsync(embed: embed);
         }
 
@@ -118,12 +122,12 @@ namespace TeaBot.Modules
         public async Task AllCommands()
         {
             var embed = new EmbedBuilder();
-            var modules = _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute));
+            var modules = GetModules();
 
             var fields = modules.Select(module => new EmbedFieldBuilder
             {
                 Name = module.Name,
-                Value = string.Join(" ", module.Commands.Select(command => $"`{command.Name}` ").Distinct())
+                Value = ModuleCommandsString(module)
             });
 
             var footer = new EmbedFooterBuilder();
@@ -132,7 +136,7 @@ namespace TeaBot.Modules
 
             embed.WithFields(fields)
                 .WithTitle("TeaBot commands")
-                .WithDescription("This is a list of all commands categorized by their respective modules")
+                .WithDescription($"This is a list of all commands categorized by their respective modules\n`*` notation means there's more than one command with a given name\nDo `{Context.Prefix}help [command]` more information about a command.")
                 .WithCurrentTimestamp()
                 .WithFooter(footer)
                 .WithColor(TeaEssentials.MainColor);
@@ -145,6 +149,25 @@ namespace TeaBot.Modules
         public async Task Invite()
         {
             await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");
+        }
+
+        /// <summary>
+        ///     Creates a string out of <paramref name="module"/> commands.
+        /// </summary>
+        /// <param name="module">The module to use commands from.</param>
+        /// <returns>String containing all commands of a module presented in a readable way.</returns>
+        private string ModuleCommandsString(ModuleInfo module)
+        {
+            return string.Join(" ", module.Commands.Select(command => $"`{command.Name}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`").Distinct());
+        }
+
+        /// <summary>
+        ///     Sorts out modules that are meant to be ignored or that are disabled in the guild.
+        /// </summary>
+        /// <returns>Collection of modules</returns>
+        private IEnumerable<ModuleInfo> GetModules()
+        {
+            return _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module));
         }
     }
 }
