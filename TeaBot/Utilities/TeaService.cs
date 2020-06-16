@@ -4,18 +4,14 @@ using TeaBot.Main;
 
 namespace TeaBot.Utilities
 {
-    public static class TeaUtilities
+    public class TeaService
     {
         /// <summary>
         ///     Discord client to be used by utility methods.
         /// </summary>
-        private static DiscordSocketClient _client;
+        private DiscordSocketClient _client;
 
-        /// <summary>
-        ///     Sets the client instance to use for methods in this class.
-        /// </summary>
-        /// <param name="client">The client to use.</param>
-        public static void SetClient(DiscordSocketClient client)
+        public TeaService(DiscordSocketClient client)
         {
             _client = client;
         }
@@ -25,7 +21,7 @@ namespace TeaBot.Utilities
         /// </summary>
         /// <param name="prefix">Prefix used in the embed</param>
         /// <returns>Info embed</returns>
-        public static Embed GetInfoEmbed(string prefix)
+        public Embed GetInfoEmbed(string prefix)
         {
             var embed = new EmbedBuilder();
 
