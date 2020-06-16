@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Npgsql;
+using TeaBot.Commands;
 using TeaBot.Main;
 
 namespace TeaBot.Preconditions
@@ -9,23 +11,16 @@ namespace TeaBot.Preconditions
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     class CheckDisabledModulesAttribute : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var teaContext = context as TeaCommandContext;
+
             if (context.Guild is null)
-                return PreconditionResult.FromSuccess();
+                return Task.FromResult(PreconditionResult.FromSuccess());
 
-            string moduleName = command.Module.Name.ToLower();
-
-            string query = $"SELECT EXISTS (SELECT * FROM disabled_modules WHERE guildid={context.Guild.Id} AND module_name='{moduleName}')";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            await reader.ReadAsync();
-            var moduleDisabled = reader.GetBoolean(0);
-            await reader.CloseAsync();
-            return moduleDisabled ?
-                PreconditionResult.FromError("This command's module is disabled in this guild!") :
-                PreconditionResult.FromSuccess();
+            return teaContext.DisabledModules.Contains(command.Module) ?
+                Task.FromResult(PreconditionResult.FromError("This command's module is disabled in this guild!")) :
+                Task.FromResult(PreconditionResult.FromSuccess());
         }
     }
 }
