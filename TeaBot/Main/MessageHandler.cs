@@ -17,12 +17,14 @@ namespace TeaBot.Main
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
         private readonly IServiceProvider _services;
+        private readonly DatabaseService _database;
 
-        public MessageHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client)
+        public MessageHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client, DatabaseService database)
         {
             _client = client;
             _commands = commands;
             _services = services;
+            _database = database;
         }
 
         /// <summary>
@@ -43,10 +45,12 @@ namespace TeaBot.Main
         {
             if (!(arg is SocketUserMessage message) || message.Author.IsBot) return;
 
-            string prefix = await DatabaseUtilities.GetPrefixAsync((message.Channel as SocketGuildChannel)?.Guild);
-            var context = new TeaCommandContext(_client, message, prefix);
+            var guild = (message.Channel as SocketGuildChannel)?.Guild;
+            string prefix = await _database.GetPrefixAsync(guild);
+            var disabledModules = await _database.GetDisabledModules(guild);
+            var context = new TeaCommandContext(_client, message, prefix, disabledModules);
 
-            await DatabaseUtilities.InsertValuesIntoDb(context);
+            await _database.InsertValuesIntoDb(context);
 
             // Autoresponse for bot mention
             if (message.Content.Replace("!", "") == _client.CurrentUser.Mention.Replace("!", ""))
