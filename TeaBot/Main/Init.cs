@@ -7,7 +7,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using TeaBot.Utilities;
+using TeaBot.Services;
 
 namespace TeaBot.Main
 {

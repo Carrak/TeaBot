@@ -8,7 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
-using TeaBot.Utilities;
+using TeaBot.Services;
 
 namespace TeaBot.Main
 {

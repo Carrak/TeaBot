@@ -7,7 +7,7 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands;
-using TeaBot.Utilities;
+using TeaBot.Services;
 
 namespace TeaBot.Modules
 {

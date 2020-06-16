@@ -25,7 +25,9 @@ namespace TeaBot.Modules
         [Command("prefix")]
         [Summary("Change the prefix of the bot for this server")]
         [Note("If you want a space in the prefix, cover it with `\"` from both sides")]
-        public async Task Prefix(string newPrefix)
+        public async Task Prefix(
+            [Summary("The new prefix to set.")] string newPrefix
+            )
         {
             newPrefix = newPrefix.TrimStart();
 
@@ -48,11 +50,31 @@ namespace TeaBot.Modules
             await ReplyAsync($"Successfully changed prefix to `{newPrefix}`");
         }
 
+        [Command("modules")]
+        [Summary("Information about disabled modules in the guild.")]
+        [RequireContext(ContextType.Guild)]
+        public async Task Modules()
+        {
+            var embed = new EmbedBuilder();
+            string disabledModulesString = string.Join(" ", Context.DisabledModules.Select(x => $"`{x.Name}`"));
+
+            embed.WithAuthor(Context.User)
+                .WithColor(TeaEssentials.MainColor)
+                .WithTitle($"Modules disabled in {Context.Guild.Name}")
+                .WithDescription($"These modules' commands cannot be used in this guild and they also don't appear in `{Context.Prefix}help` and `{Context.Prefix}commands`")
+                .AddField($"Disabled modules", string.IsNullOrEmpty(disabledModulesString) ? "None" : disabledModulesString)
+                .WithFooter($"Do {Context.Prefix}enablemodule [module name] to enable a module back.");
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
         [Command("disablemodule")]
         [Summary("Prevents a specific module's commands from being executed on the guild.")]
         [RequireContext(ContextType.Guild)]
-        [Note("Some modules are marked as essential.")]
-        public async Task DisableModule(string moduleName)
+        [Note("Some modules are marked as essential, and therefore cannot be disabled.")]
+        public async Task DisableModule(
+            [Summary("The module to disable.")] string moduleName
+            )
         {
             moduleName = moduleName.ToLower();
             var module = _commands.Modules.FirstOrDefault(x => x.Name.ToLower() == moduleName);
@@ -89,7 +111,9 @@ namespace TeaBot.Modules
 
         [Command("enablemodule")]
         [Summary("Enables a module back in case it was disabled in the guild.")]
-        public async Task EnableModule(string moduleName)
+        public async Task EnableModule(
+            [Summary("The module to enable black in case it was disabled.")] string moduleName
+            )
         {
             moduleName = moduleName.ToLower();
             if (!_commands.Modules.Any(x => x.Name.ToLower() == moduleName))
