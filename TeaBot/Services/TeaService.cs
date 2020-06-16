@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using TeaBot.Main;
 using System.Threading.Tasks;
 
-namespace TeaBot.Utilities
+namespace TeaBot.Services
 {
     public class TeaService
     {
