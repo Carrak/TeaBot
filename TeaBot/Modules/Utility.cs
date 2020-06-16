@@ -26,11 +26,17 @@ namespace TeaBot.Modules
             var embed = new EmbedBuilder();
             string avatarUrl = user.GetAvatarUrl(size: 2048);
 
+            var footer = new EmbedFooterBuilder()
+            {
+                Text = Context.User.ToString(),
+                IconUrl = Context.User.GetAvatarUrl()
+            };
+
             embed.WithImageUrl(avatarUrl)
                 .WithColor(TeaEssentials.MainColor)
                 .WithTitle($"Avatar of {user}")
                 .WithUrl(avatarUrl)
-                .WithFooter($"Executed by {Context.User}");
+                .WithFooter(footer);
 
             await ReplyAsync(embed: embed.Build());
         }
@@ -138,7 +144,6 @@ namespace TeaBot.Modules
                 .WithColor(TeaEssentials.MainColor)
                 .WithCurrentTimestamp()
                 .WithThumbnailUrl(guild.IconUrl)
-                .WithFooter($"Executed by {Context.User}")
                 .WithDescription(
                 $"Member count: {guild.MemberCount - botsCount} (+ {botsCount} bots)\n" +
                 $"Online members: {guild.Users.Where(user => user.Status == UserStatus.Online || user.Status == UserStatus.Idle || user.Status == UserStatus.DoNotDisturb).Count() - botsCount}\n" +
