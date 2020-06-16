@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using TeaBot.Main;
+using System.Threading.Tasks;
 
 namespace TeaBot.Utilities
 {
@@ -9,7 +10,7 @@ namespace TeaBot.Utilities
         /// <summary>
         ///     Discord client to be used by utility methods.
         /// </summary>
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
 
         public TeaService(DiscordSocketClient client)
         {
@@ -21,13 +22,17 @@ namespace TeaBot.Utilities
         /// </summary>
         /// <param name="prefix">Prefix used in the embed</param>
         /// <returns>Info embed</returns>
-        public Embed GetInfoEmbed(string prefix)
+        public async Task<Embed> GetInfoEmbedAsync(string prefix)
         {
             var embed = new EmbedBuilder();
 
-            EmbedFooterBuilder infoFooter = new EmbedFooterBuilder();
-            infoFooter.WithIconUrl(_client.GetUser(180648791291068417).GetAvatarUrl())
-                .WithText("Carrak#8088 | Contact me for suggestions or bug reports!");
+            var owner = (await _client.Rest.GetApplicationInfoAsync()).Owner;
+
+            EmbedFooterBuilder infoFooter = new EmbedFooterBuilder()
+            {
+                Text = $"{owner} | Contact me for suggestions or bug reports!",
+                IconUrl = owner.GetAvatarUrl()
+            };
 
             embed.AddField("Getting started", $"Use `{prefix}help` for the list of command modules and more info.")
                 .AddField("Invite the bot!", "[Click me to invite!](https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8)")
