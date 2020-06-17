@@ -124,24 +124,16 @@ namespace TeaBot.ReactionCallbackCommands
             if (reaction.Emote.Equals(arrowForward))
             {
                 if (page < TotalPages - 1)
-                {
                     page++;
-                }
                 else
-                {
                     page = 0;
-                }
             }
             else if (reaction.Emote.Equals(arrowBackward))
             {
                 if (page > 0)
-                {
                     page--;
-                }
                 else
-                {
                     page = TotalPages - 1;
-                }
             }
             else return false;
 
