@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Npgsql;
@@ -17,6 +18,8 @@ namespace TeaBot.Main
         ///     The directory of the TeaBot project.
         /// </summary>
         public static string ProjectDirectory { get; } = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName + Path.DirectorySeparatorChar;
+        public static string ProjectDirectory2 { get; } = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        public static string ProjectDirectory3 { get; } = Directory.GetParent(@"../").FullName;
 
         /// <summary>
         ///     The main color used for embeds across the entire bot.

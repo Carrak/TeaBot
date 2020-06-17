@@ -27,7 +27,12 @@ namespace TeaBot.Main
         ///    Establishes the database connection, instantiates the Discord client, commands and services, registers a few events and starts the bot. 
         /// </summary>
         public async Task RunBotAsync()
-        { 
+        {
+            Console.WriteLine("BaseDir" + AppDomain.CurrentDomain.BaseDirectory);
+            Console.WriteLine("PDir1" + TeaEssentials.ProjectDirectory);
+            Console.WriteLine("PDir2" + TeaEssentials.ProjectDirectory2);
+            Console.WriteLine("PDir3" + TeaEssentials.ProjectDirectory3);
+
             // Instantiate the essentials
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
