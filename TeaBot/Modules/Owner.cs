@@ -10,6 +10,7 @@ using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
+using System.Text.RegularExpressions;
 
 namespace TeaBot.Modules
 {
@@ -20,26 +21,34 @@ namespace TeaBot.Modules
         public class Globals
         {
             public TeaCommandContext Context;
-            public TeaInteractiveBase InteractiveBase;
         }
 
         [Command("eval", RunMode = RunMode.Async)]
         public async Task Eval([Remainder] string toEvaluate)
         {
+            // Extract the code from the code block if it is present
+            var code = Regex.Match(toEvaluate, @"(?s)(?<=```[a-zA-Z]*\n).*?(?=```)");
+            
+            // If it isn't, return
+            if (!code.Success)
+            {
+                await ReplyAsync("Wrap the code in a code block.");
+                return;
+            }
+
+            // Execute the code
             try
             {
-                var globals = new Globals { Context = Context, InteractiveBase = this };
+                var globals = new Globals { Context = Context };
                 var sopts = ScriptOptions.Default
                     .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands")
                     .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))); ;
-                var a = await CSharpScript.EvaluateAsync(toEvaluate, sopts, globals);
+                var a = await CSharpScript.EvaluateAsync(code.Value, sopts, globals);
             }
             catch (CompilationErrorException e)
             {
                 await ReplyAsync(string.Join(Environment.NewLine, e.Diagnostics));
             }
-
-            //class Globals { }
         }
 
         [Command("sqlquery")]
