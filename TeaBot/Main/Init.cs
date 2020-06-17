@@ -20,6 +20,7 @@ namespace TeaBot.Main
         private CommandService _commands;
         private IServiceProvider _services;
 
+        // Services
         private DatabaseService _database;
         private TeaService _tea;
 
@@ -47,12 +48,12 @@ namespace TeaBot.Main
                 .AddSingleton<TeaService>()
                 .BuildServiceProvider();
 
-            _database = new DatabaseService(_commands);
-            _tea = new TeaService(_client);
+            // Set services
+            _database = _services.GetRequiredService<DatabaseService>();
+            _tea = _services.GetRequiredService<TeaService>();
 
-            // Create a message handler
-            var messageHandler = new MessageHandler(_services, _commands, _client, _database);
-            await messageHandler.InitAsync();
+            // Init a message handler
+            await _services.GetRequiredService<MessageHandler>().InitAsync();
 
             // Register events
             _client.Log += Log;
@@ -72,6 +73,10 @@ namespace TeaBot.Main
             await Task.Delay(-1);
         }
 
+        /// <summary>
+        ///     Logs client information.
+        /// </summary>
+        /// <param name="arg">The message to log</param>
         private Task Log(LogMessage arg)
         {
             Console.WriteLine(arg);
