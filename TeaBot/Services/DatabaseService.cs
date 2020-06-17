@@ -15,8 +15,12 @@ namespace TeaBot.Services
         public DatabaseService(CommandService commands)
         {
             _commands = commands;
-        } 
+        }
 
+        /// <summary>
+        ///    Sends a query to the PostgreSQL database to add the guild and the user information if they aren't already present.
+        /// </summary>
+        /// <param name="context">The context to use values from</param>
         public async Task InsertValuesIntoDb(SocketCommandContext context)
         {
             if (context.IsPrivate)
@@ -38,6 +42,10 @@ namespace TeaBot.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        ///    Sends a query to the PostgreSQL database to add the guild if it's not already present.
+        /// </summary>
+        /// <param name="guildId">The guild ID to insert</param>
         public async Task InsertValuesIntoDb(ulong guildId)
         {
             string query = "DO $$ BEGIN " +
@@ -49,10 +57,10 @@ namespace TeaBot.Services
         }
 
         /// <summary>
-        ///     Sends a query to the PostgreSQL database to add the guild if it's not already present and retrieve the prefix for the given guild.
+        ///     Retrieve the prefix for the given guild.
         /// </summary>
         /// <param name="guild">The guild to retrieve the prefix for.</param>
-        /// <returns>Prefix for the guild.</returns>
+        /// <returns>Prefix used in the provided guild.</returns>
         public async Task<string> GetPrefixAsync(IGuild guild)
         {
             if (guild is null)
