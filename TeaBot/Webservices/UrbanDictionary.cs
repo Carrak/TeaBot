@@ -19,7 +19,7 @@ namespace TeaBot.Webservices
                 return null;
 
             IEnumerable<UrbanDictionaryDefinition> definitions = JsonConvert.DeserializeObject<IEnumerable<UrbanDictionaryDefinition>>(jobj.ToString());
-            definitions = definitions.Where(x => x.Definition.Length < 2048).Where(x => x.Example.Length < 2048).TakeWhile((x, index) => index < 10);
+            definitions = definitions.Where(x => x.Definition.Length < 2048).Where(x => x.Example.Length < 2048).Take(10);
 
             foreach (var definition in definitions)
             {
@@ -31,7 +31,7 @@ namespace TeaBot.Webservices
 
             static string ParseAndPlaceReferenceHyperlinks(string toFormat)
             {
-                var mc = Regex.Matches(toFormat, @"\[[\s\S]*?\]");
+                var mc = Regex.Matches(toFormat, @"\[.*?\]");
                 foreach (var match in mc)
                 {
                     string reference = match.ToString();
