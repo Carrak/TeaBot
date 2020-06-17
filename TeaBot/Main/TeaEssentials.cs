@@ -17,9 +17,7 @@ namespace TeaBot.Main
         /// <summary>
         ///     The directory of the TeaBot project.
         /// </summary>
-        public static string ProjectDirectory { get; } = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName + Path.DirectorySeparatorChar;
-        public static string ProjectDirectory2 { get; } = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-        public static string ProjectDirectory3 { get; } = Directory.GetParent(@"../").FullName;
+        public static string ProjectDirectory { get; } = Directory.GetParent(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)).Parent.Parent.FullName + Path.DirectorySeparatorChar;
 
         /// <summary>
         ///     The main color used for embeds across the entire bot.
