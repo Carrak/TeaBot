@@ -61,14 +61,21 @@ namespace TeaBot.Modules
                 _ => $"{user.Activity.Type} **{user.Activity.Name}**"
             };
 
-            embed.WithFooter($"Executed by {Context.User}")
+            var footer = new EmbedFooterBuilder()
+            {
+                Text = Context.User.ToString(),
+                IconUrl = Context.User.GetAvatarUrl()
+            };
+
+            embed.WithFooter(footer)
                 .WithColor(TeaEssentials.MainColor)
                 .WithCurrentTimestamp()
                 .WithTitle($"Information about {user}")
                 .WithThumbnailUrl(user.GetAvatarUrl(size: 2048))
-                .AddField("Current status", user.Status)
-                .AddField("Activity", activity)
-                .AddField("Account creation date", DateString(user.CreatedAt.DateTime));
+                .AddField("Current status", user.Status, true)
+                .AddField("Activity", activity, true)
+                .AddField("ID", Context.User.Id)
+                .AddField("Account creation date", DateString(user.CreatedAt.DateTime), true);
 
             if (!Context.IsPrivate)
             {
@@ -97,12 +104,12 @@ namespace TeaBot.Modules
 
                 DateTime joined = guildUser.JoinedAt.Value.DateTime;
 
-                embed.AddField($"Joined {Context.Guild}", DateString(joined))
+                embed.AddField($"Joined {Context.Guild}", DateString(joined), true)
                     .AddField($"Last message in {Context.Guild.Name}", lastMessage)
                     .AddField($"Roles {(roles.Count() > 20 ? "(displaying 20 highest roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", roles.Where((x, index) => index < 20).Select(role => role.Mention)))
                     .AddField("Main permissions", MainPermissionsString(guildUser.GuildPermissions))
-                    .AddField("Join position", Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime).ToList().IndexOf(guildUser) + 1)
-                    .AddField("Guild nickname", guildUser.Nickname ?? "-");
+                    .AddField("Join position", Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime).ToList().IndexOf(guildUser) + 1, true)
+                    .AddField("Guild nickname", guildUser.Nickname ?? "-", true);
 
             }
 
@@ -152,9 +159,9 @@ namespace TeaBot.Modules
                 $"Voice channels: {guild.Channels.Where(x => x is IVoiceChannel).Count()}\n" +
                 $"Roles: {userRolesCount} (+ {guild.Roles.Count - userRolesCount} integrated or Discord managed roles)\n")
                 .AddField("Created", DateString(guild.CreatedAt.DateTime))
-                .AddField("Owner", guild.Owner.Mention)
-                .AddField("System channel", guild.SystemChannel is null ? "-" : guild.SystemChannel.Mention)
-                .AddField("Region", guild.VoiceRegionId)
+                .AddField("Owner", guild.Owner.Mention, true)
+                .AddField("System channel", guild.SystemChannel is null ? "-" : guild.SystemChannel.Mention, true)
+                .AddField("Region", guild.VoiceRegionId, true)
                 .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {activeUsersPercentage:#0.00%}\n" +
                 $"`Note: only includes people who have sent a message {(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? PeriodToString(timeDifference.Days, "day", false) : "Today")})")}`");
 
@@ -232,7 +239,7 @@ namespace TeaBot.Modules
             if (displayTime)
                 return $"{date:dd.MM.yyyy HH:mm:ss} UTC\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
             else
-                return $"{date:dd.MM.yyyy} / {date.ToString("MMMM d, yyyy (ddd)", new CultureInfo("en-US"))}\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
+                return $"{date:dd.MM.yyyy}\n{date.ToString("MMMM d, yyyy (ddd)", new CultureInfo("en-US"))}\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
         }
 
         /// <summary>
