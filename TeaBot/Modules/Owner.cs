@@ -11,6 +11,9 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using Microsoft.CodeAnalysis;
+using Discord;
 
 namespace TeaBot.Modules
 {
@@ -36,19 +39,79 @@ namespace TeaBot.Modules
                 return;
             }
 
-            // Execute the code
+            // Create and send the initial embed
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Gold)
+                .WithDescription("Compiling...");
+            var message = await ReplyAsync(embed: embed.Build());
+
+            // Initialize the globals and script options
+            var globals = new Globals { Context = Context };
+            var sopts = ScriptOptions.Default
+                .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", "System.Reflection")
+                .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location)));
+
+            // Compile
+            var compilationTime = Stopwatch.StartNew();
+            var script = CSharpScript.Create(code.Value, sopts, typeof(Globals));
+            var diagnostics = script.Compile();
+            compilationTime.Stop();
+
+            // If compilation fails, return
+            if (diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+            {
+                embed = new EmbedBuilder();
+                embed.WithDescription($"Compilation failed. `{compilationTime.ElapsedMilliseconds}ms`")
+                    .WithColor(Color.Red);
+
+                foreach (var diagnostic in diagnostics.Take(5))
+                {
+                    var ls = diagnostic.Location.GetLineSpan();
+                    embed.AddField($"Error at line {ls.StartLinePosition.Line}", diagnostic.GetMessage());
+                }
+
+                await message.ModifyAsync(msg => msg.Embed = embed.Build());
+                return;
+            }
+
+            // If compilation is success, continue
+            embed = new EmbedBuilder();
+            embed.WithColor(Color.Gold)
+                .WithDescription($"Compiled. `{compilationTime.ElapsedMilliseconds}ms`\nRunning...");
+
+            await message.ModifyAsync(msg => msg.Embed = embed.Build());
+
+            // Executing
+            Exception exception = null;
+            var executionTime = Stopwatch.StartNew();
             try
             {
-                var globals = new Globals { Context = Context };
-                var sopts = ScriptOptions.Default
-                    .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", "System.Reflection")
-                    .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))); ;
-                var a = await CSharpScript.EvaluateAsync(code.Value, sopts, globals);
-            }
-            catch (CompilationErrorException e)
+                await script.RunAsync(globals);
+            } 
+            catch (Exception e)
             {
-                await ReplyAsync(string.Join(Environment.NewLine, e.Diagnostics));
+                exception = e;
             }
+            executionTime.Stop();
+
+            // If an exception was raised while executing, return
+            if (exception != null)
+            {
+                embed = new EmbedBuilder();
+                embed.WithColor(Color.Red)
+                    .WithDescription($"Compiled. `{compilationTime.ElapsedMilliseconds}ms`\nRuntime error. `{executionTime.ElapsedMilliseconds}ms`")
+                    .AddField(exception.GetType().ToString(), exception.Message);
+
+                await message.ModifyAsync(msg => msg.Embed = embed.Build());
+                return;
+            }
+
+            // If execution didn't raise any exception, evaluation succeeded
+            embed = new EmbedBuilder();
+            embed.WithColor(Color.Green)
+                .WithDescription($"Compiled. `{compilationTime.ElapsedMilliseconds}ms`\nExecuted. `{executionTime.ElapsedMilliseconds}ms`");
+
+            await message.ModifyAsync(msg => msg.Embed = embed.Build());
         }
 
         [Command("sqlquery")]
@@ -115,13 +178,5 @@ namespace TeaBot.Modules
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             await ReplyAsync($"Success! {rowsAffected} rows affected.");
         }
-
-        [Command("consolewrite")]
-        public Task ConsoleWrite([Remainder] string text)
-        {
-            Console.WriteLine(text);
-            return Task.CompletedTask;
-        }
-
     }
 }
