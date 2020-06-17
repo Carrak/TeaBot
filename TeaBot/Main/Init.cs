@@ -27,7 +27,7 @@ namespace TeaBot.Main
         ///    Establishes the database connection, instantiates the Discord client, commands and services, registers a few events and starts the bot. 
         /// </summary>
         public async Task RunBotAsync()
-        {
+        { 
             // Instantiate the essentials
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
@@ -60,7 +60,17 @@ namespace TeaBot.Main
             _client.Ready += OnStart;
 
             // Retrieve the token and the pgsql db connection string
-            JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
+            JObject config;
+            try
+            {
+                config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
+            } 
+            catch (FileNotFoundException fnfe)
+            {
+                Console.WriteLine(fnfe.StackTrace);
+                config = JObject.Parse(File.ReadAllText("/root/projects/TeaBot/TeaBot/teabotconfig.json"));
+            }
+
             await TeaEssentials.InitDbConnectionAsync(config["connection"].ToString());
             string token = config["token"].ToString();
 
