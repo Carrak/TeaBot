@@ -60,17 +60,7 @@ namespace TeaBot.Main
             _client.Ready += OnStart;
 
             // Retrieve the token and the pgsql db connection string
-            JObject config;
-            try
-            {
-                config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
-                Console.WriteLine("Read without exception");
-            } 
-            catch (FileNotFoundException fnfe)
-            {
-                Console.WriteLine(fnfe.StackTrace);
-                config = JObject.Parse(File.ReadAllText("/root/projects/TeaBot/TeaBot/teabotconfig.json"));
-            }
+            JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
 
             await TeaEssentials.InitDbConnectionAsync(config["connection"].ToString());
             string token = config["token"].ToString();
