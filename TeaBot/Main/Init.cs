@@ -28,11 +28,6 @@ namespace TeaBot.Main
         /// </summary>
         public async Task RunBotAsync()
         {
-            Console.WriteLine("BaseDir" + AppDomain.CurrentDomain.BaseDirectory);
-            Console.WriteLine("PDir1" + TeaEssentials.ProjectDirectory);
-            Console.WriteLine("PDir2" + TeaEssentials.ProjectDirectory2);
-            Console.WriteLine("PDir3" + TeaEssentials.ProjectDirectory3);
-
             // Instantiate the essentials
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
@@ -81,6 +76,11 @@ namespace TeaBot.Main
 
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
+
+            Console.WriteLine("BaseDir" + AppDomain.CurrentDomain.BaseDirectory);
+            Console.WriteLine("PDir1" + TeaEssentials.ProjectDirectory);
+            Console.WriteLine("PDir2" + TeaEssentials.ProjectDirectory2);
+            Console.WriteLine("PDir3" + TeaEssentials.ProjectDirectory3);
 
             // Make sure it doesn't die
             await Task.Delay(-1);
