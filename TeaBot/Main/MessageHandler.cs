@@ -114,7 +114,7 @@ namespace TeaBot.Main
                         Directory.CreateDirectory(directory);
                     }
 
-                    string filePath = $@"{directory}\exception_{DateTime.Now:dd-MM-yyyy_HH-mm-ss}.txt";
+                    string filePath = $@"{directory}{Path.DirectorySeparatorChar}exception_{DateTime.Now:dd-MM-yyyy_HH-mm-ss}.txt";
 
                     string[] lines = {
                         $" Command:       {context.Message.Content}",
