@@ -1,7 +1,7 @@
-﻿using Discord;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using TeaBot.Main;
-using System.Threading.Tasks;
 
 namespace TeaBot.Services
 {

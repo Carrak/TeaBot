@@ -2,9 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using Npgsql;
 using TeaBot.Commands;
-using TeaBot.Main;
 
 namespace TeaBot.Preconditions
 {

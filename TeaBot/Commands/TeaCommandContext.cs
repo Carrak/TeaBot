@@ -1,6 +1,6 @@
-﻿using Discord.Commands;
+﻿using System.Collections.Generic;
+using Discord.Commands;
 using Discord.WebSocket;
-using System.Collections.Generic;
 
 namespace TeaBot.Commands
 {

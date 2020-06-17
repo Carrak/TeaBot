@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using Microsoft.CodeAnalysis;
-using Discord;
 
 namespace TeaBot.Modules
 {
@@ -31,7 +31,7 @@ namespace TeaBot.Modules
         {
             // Extract the code from the code block if it is present
             var code = Regex.Match(toEvaluate, @"(?s)(?<=```[a-zA-Z]*\n).*?(?=```)");
-            
+
             // If it isn't, return
             if (!code.Success)
             {
@@ -87,7 +87,7 @@ namespace TeaBot.Modules
             try
             {
                 await script.RunAsync(globals);
-            } 
+            }
             catch (Exception e)
             {
                 exception = e;

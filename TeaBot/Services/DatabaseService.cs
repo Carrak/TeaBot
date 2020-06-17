@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace TeaBot.Services
 {
