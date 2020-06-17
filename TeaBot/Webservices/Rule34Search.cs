@@ -50,7 +50,7 @@ namespace TeaBot.Webservices
         /// <param name="postsCount">Count of posts that a tag combination yields</param>
         /// <returns>
         ///     XML string with the contents of the response, or null in the following cases:
-        ///     1. <paramref name="postsCount"/> is less than 1
+        ///     1. <paramref name="postsCount"/> is -1
         ///     2. The status code is not a success status code
         ///     3. API limited due to abuse
         /// </returns>
