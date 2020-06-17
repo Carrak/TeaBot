@@ -136,7 +136,7 @@ namespace TeaBot.Modules
 
             embed.WithFields(fields)
                 .WithTitle("TeaBot commands")
-                .WithDescription($"This is a list of all commands categorized by their respective modules\n`*` notation means there's more than one command with a given name\nDo `{Context.Prefix}help [command]` more information about a command.")
+                .WithDescription($"This is a list of all commands categorized by their respective modules\n`*` notation means there's more than one command with a given name\nDo `{Context.Prefix}help [command]` for more information about a command.")
                 .WithCurrentTimestamp()
                 .WithFooter(footer)
                 .WithColor(TeaEssentials.MainColor);
