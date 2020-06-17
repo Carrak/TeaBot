@@ -41,7 +41,7 @@ namespace TeaBot.Modules
             {
                 var globals = new Globals { Context = Context };
                 var sopts = ScriptOptions.Default
-                    .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", )
+                    .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", "System.Reflection")
                     .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))); ;
                 var a = await CSharpScript.EvaluateAsync(code.Value, sopts, globals);
             }
