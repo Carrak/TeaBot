@@ -52,7 +52,7 @@ namespace TeaBot.Main
             _database = _services.GetRequiredService<DatabaseService>();
             _tea = _services.GetRequiredService<TeaService>();
 
-            // Init a message handler
+            // Init the message handler
             await _services.GetRequiredService<MessageHandler>().InitAsync();
 
             // Register events
@@ -63,9 +63,12 @@ namespace TeaBot.Main
             // Retrieve the token and the pgsql db connection string
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
 
-            await TeaEssentials.InitDbConnectionAsync(config["connection"].ToString());
+            // Retrieve connection string and init db connection
+            await _database.InitDbConnectionAsync(config["connection"].ToString());
+            // Retrieve token
             string token = config["token"].ToString();
 
+            // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
