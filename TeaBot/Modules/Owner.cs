@@ -14,6 +14,7 @@ using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
+using TeaBot.Services;
 
 namespace TeaBot.Modules
 {
@@ -21,7 +22,14 @@ namespace TeaBot.Modules
     [RequireOwner]
     public class Owner : TeaInteractiveBase
     {
-        public class Globals
+        private readonly DatabaseService _database;
+
+        public Owner(DatabaseService database)
+        {
+            _database = database;
+        }
+            
+        private sealed class Globals
         {
             public TeaCommandContext Context;
         }
@@ -118,7 +126,7 @@ namespace TeaBot.Modules
         [Alias("sqlq")]
         public async Task SQLEval([Remainder] string query)
         {
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = _database.GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             List<List<object>> rows = new List<List<object>>();
@@ -174,7 +182,7 @@ namespace TeaBot.Modules
         [Alias("sqlnq")]
         public async Task SQlEvalNonQuery([Remainder] string query)
         {
-            NpgsqlCommand cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            NpgsqlCommand cmd = _database.GetCommand(query);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             await ReplyAsync($"Success! {rowsAffected} rows affected.");
         }

@@ -32,6 +32,11 @@ namespace TeaBot.Services
             await Connection.OpenAsync();
         }
 
+        public NpgsqlCommand GetCommand(string query)
+        {
+            return new NpgsqlCommand(query, Connection);
+        }
+
         /// <summary>
         ///    Sends a query to the PostgreSQL database to add the guild and the user information if they aren't already present.
         /// </summary>
@@ -53,6 +58,7 @@ namespace TeaBot.Services
                     $"WHERE userid={userId} AND guildid={guildId}; " +
                     "END $$ LANGUAGE plpgsql; ";
 
+            var cmd = new NpgsqlCommand(query, Connection);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -66,6 +72,7 @@ namespace TeaBot.Services
                     $"PERFORM conditional_insert('guilds', 'guilds.id = {guildId}', 'id', '{guildId}'); " +
                     "END $$ LANGUAGE plpgsql;";
 
+            await using var cmd = GetCommand(query);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -81,6 +88,7 @@ namespace TeaBot.Services
 
             string query = $"SELECT prefix FROM guilds WHERE id={guild.Id};";
 
+            await using var cmd = GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             await reader.ReadAsync();
@@ -98,6 +106,7 @@ namespace TeaBot.Services
                 return disabledModules;
 
             string query = $"SELECT module_name FROM disabled_modules WHERE guildid = {guild.Id}";
+            await using var cmd = GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (reader.HasRows)

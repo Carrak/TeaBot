@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using TeaBot.Main;
+using TeaBot.Services;
 
 namespace TeaBot.Preconditions
 {
@@ -14,7 +16,7 @@ namespace TeaBot.Preconditions
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             string query = "SELECT userid FROM botadmins";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = services.GetRequiredService<DatabaseService>().GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())

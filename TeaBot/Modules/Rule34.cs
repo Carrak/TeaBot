@@ -10,6 +10,7 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
+using TeaBot.Services;
 using TeaBot.Webservices;
 
 
@@ -19,6 +20,13 @@ namespace TeaBot.Modules
     [Summary("Commands for searching on rule34.xxx and managing the search.")]
     public class Rule34 : TeaInteractiveBase
     {
+        private readonly DatabaseService _database;
+
+        public Rule34(DatabaseService database)
+        {
+            _database = database;
+        }
+
         [Command("r34", RunMode = RunMode.Async)]
         [Summary("Searches an image with given tags on rule34.xxx")]
         [Note("Use space to split multiple tags. If a tag contains a space, use `_`. If you want to exclude a tag from your search without adding it to your blacklist, put a `-` before it. For the full list of tags, visit https://rule34.xxx/index.php?page=tags&s=list.")]
@@ -201,7 +209,7 @@ namespace TeaBot.Modules
             }
 
             string query = $"DELETE FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = _database.GetCommand(query);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
             if (rowsAffected >= 1)
@@ -254,7 +262,7 @@ namespace TeaBot.Modules
                             $"EXISTS (SELECT * FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}), " +
                             $"COUNT(*) >= {limit} FROM r34.{blacklistName} WHERE {idName}={id}";
 
-            await using var cmd1 = new NpgsqlCommand(conditionsQuery, TeaEssentials.DbConnection);
+            await using var cmd1 = _database.GetCommand(conditionsQuery);
             await using var reader = await cmd1.ExecuteReaderAsync();
 
             await reader.ReadAsync();
@@ -276,7 +284,7 @@ namespace TeaBot.Modules
             await reader.CloseAsync();
 
             string query = $"INSERT INTO r34.{blacklistName} ({idName}, tag) VALUES ({id}, '{tag}')";
-            await using var cmd2 = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd2 = new _database.GetCommand(query);
             await cmd2.ExecuteNonQueryAsync();
 
             await ReplyAsync(successMessage);
@@ -292,7 +300,7 @@ namespace TeaBot.Modules
                 _ => null
             };
 
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = _database.GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             List<string> blacklist = new List<string>();

@@ -6,6 +6,7 @@ using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
+using TeaBot.Services;
 
 namespace TeaBot.Modules
 {
@@ -15,11 +16,13 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed by server admins")]
     public class Admin : TeaInteractiveBase
     {
-        CommandService _commands;
+        private readonly CommandService _commands;
+        private readonly DatabaseService _database;
 
-        public Admin(CommandService commands)
+        public Admin(CommandService commands, DatabaseService database)
         {
             _commands = commands;
+            _database = database;
         }
 
         [Command("prefix")]
@@ -44,7 +47,7 @@ namespace TeaBot.Modules
             }
 
             string query = $"UPDATE guilds SET prefix={(newPrefix == "tea " ? "NULL" : $"'{newPrefix}'")} WHERE id={Context.Guild.Id}";
-            NpgsqlCommand cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            NpgsqlCommand cmd = _database.GetCommand(query);
             await cmd.ExecuteNonQueryAsync();
 
             await ReplyAsync($"Successfully changed prefix to `{newPrefix}`");
@@ -92,7 +95,7 @@ namespace TeaBot.Modules
             }
 
             string conditionQuery = $"SELECT EXISTS (SELECT * FROM disabled_modules WHERE guildid={Context.Guild.Id} AND module_name='{moduleName}')";
-            await using var conditionCmd = new NpgsqlCommand(conditionQuery, TeaEssentials.DbConnection);
+            await using var conditionCmd = _database.GetCommand(conditionQuery);
             await using var conditionReader = await conditionCmd.ExecuteReaderAsync();
             await conditionReader.ReadAsync();
             if (conditionReader.GetBoolean(0))
@@ -103,7 +106,7 @@ namespace TeaBot.Modules
             await conditionReader.CloseAsync();
 
             string query = $"INSERT INTO disabled_modules (guildid, module_name) VALUES ({Context.Guild.Id}, '{moduleName}')";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = _database.GetCommand(query);
             await cmd.ExecuteNonQueryAsync();
 
             await ReplyAsync($"Successfully disabled module `{moduleName}`");
@@ -123,7 +126,7 @@ namespace TeaBot.Modules
             }
 
             string query = $"DELETE FROM disabled_modules WHERE guildid={Context.Guild.Id} AND module_name='{moduleName}'";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+            await using var cmd = _database.GetCommand(query);
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             if (rowsAffected == 0)
             {

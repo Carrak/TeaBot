@@ -11,6 +11,7 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands;
+using TeaBot.Services;
 
 namespace TeaBot.Modules
 {
@@ -18,6 +19,13 @@ namespace TeaBot.Modules
     [Summary("Commands for information regarding guilds or users")]
     public class Utility : TeaInteractiveBase
     {
+        private readonly DatabaseService _database;
+
+        public Utility(DatabaseService database)
+        {
+            _database = database;
+        }
+
         [Command("avatar")]
         [Alias("av")]
         [Summary("Get someone's avatar")]
@@ -83,7 +91,7 @@ namespace TeaBot.Modules
 
                 string query = $"SELECT last_message_timestamp, guildid, channelid, messageid FROM guildusers WHERE userid = {guildUser.Id} AND guildid = {Context.Guild.Id}";
 
-                var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
+                var cmd = _database.GetCommand(query);
                 var reader = await cmd.ExecuteReaderAsync();
                 string lastMessage = "No information";
                 if (reader.HasRows)
@@ -135,7 +143,7 @@ namespace TeaBot.Modules
             string query = $"SELECT COUNT(last_message_timestamp) FROM guildusers WHERE guildid = {guild.Id} AND" +
                                 "(now()::timestamp - last_message_timestamp) <= interval '2 weeks'";
 
-            var reader = await new NpgsqlCommand(query, TeaEssentials.DbConnection).ExecuteReaderAsync();
+            var reader = await _database.GetCommand(query).ExecuteReaderAsync();
             await reader.ReadAsync();
             long activeMembersCount = reader.GetInt64(0);
             await reader.CloseAsync();
