@@ -80,7 +80,7 @@ namespace TeaBot.Modules
                 embed.WithAuthor(Context.User)
                     .WithDescription(message)
                     .WithColor(TeaEssentials.MainColor)
-                    .WithTitle($"Message delivered to {user}");
+                    .WithFooter($"Message delivered to {user}");
 
                 await ReplyAsync(embed: embed.Build());
             }
@@ -93,7 +93,7 @@ namespace TeaBot.Modules
                 embed.WithAuthor(Context.User)
                     .WithDescription(message)
                     .WithColor(TeaEssentials.MainColor)
-                    .WithTitle($"Message delivered to #{channel} in {(channel as IGuildChannel).Guild.Name}");
+                    .WithFooter($"Message delivered to #{channel} in {(channel as IGuildChannel).Guild.Name}");
 
                 await ReplyAsync(embed: embed.Build());
             }
