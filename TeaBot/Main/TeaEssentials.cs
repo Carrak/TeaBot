@@ -28,17 +28,5 @@ namespace TeaBot.Main
         ///     HttpClient instance that is used across the bot.
         /// </summary>
         public static HttpClient HttpClient { get; private set; } = new HttpClient();
-
-        /// <summary>
-        ///     The connection to the PostgreSQL database.
-        /// </summary>
-        public static NpgsqlConnection DbConnection { get; private set; }
-
-        public static async Task InitDbConnectionAsync(string connectionString)
-        {
-            // Initialize the connection to the database
-            DbConnection = new NpgsqlConnection(connectionString);
-            await DbConnection.OpenAsync();
-        }
     }
 }

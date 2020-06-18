@@ -12,9 +12,24 @@ namespace TeaBot.Services
     {
         private readonly CommandService _commands;
 
+        /// <summary>
+        ///     The connection to the PostgreSQL database.
+        /// </summary>
+        private NpgsqlConnection Connection { get; set; }
+
         public DatabaseService(CommandService commands)
         {
             _commands = commands;
+        }
+
+        /// <summary>
+        ///     Initialize a database connection with the provided connection string.
+        /// </summary>
+        /// <param name="connectionString">The connenction string to use to open connection.</param>
+        public async Task InitDbConnectionAsync(string connectionString)
+        {
+            Connection = new NpgsqlConnection(connectionString);
+            await Connection.OpenAsync();
         }
 
         /// <summary>
@@ -38,7 +53,6 @@ namespace TeaBot.Services
                     $"WHERE userid={userId} AND guildid={guildId}; " +
                     "END $$ LANGUAGE plpgsql; ";
 
-            var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -52,7 +66,6 @@ namespace TeaBot.Services
                     $"PERFORM conditional_insert('guilds', 'guilds.id = {guildId}', 'id', '{guildId}'); " +
                     "END $$ LANGUAGE plpgsql;";
 
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -68,7 +81,6 @@ namespace TeaBot.Services
 
             string query = $"SELECT prefix FROM guilds WHERE id={guild.Id};";
 
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             await reader.ReadAsync();
@@ -86,7 +98,6 @@ namespace TeaBot.Services
                 return disabledModules;
 
             string query = $"SELECT module_name FROM disabled_modules WHERE guildid = {guild.Id}";
-            await using var cmd = new NpgsqlCommand(query, TeaEssentials.DbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (reader.HasRows)
