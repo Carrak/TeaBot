@@ -284,7 +284,7 @@ namespace TeaBot.Modules
             await reader.CloseAsync();
 
             string query = $"INSERT INTO r34.{blacklistName} ({idName}, tag) VALUES ({id}, '{tag}')";
-            await using var cmd2 = new _database.GetCommand(query);
+            await using var cmd2 = _database.GetCommand(query);
             await cmd2.ExecuteNonQueryAsync();
 
             await ReplyAsync(successMessage);
