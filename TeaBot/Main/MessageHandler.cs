@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Services;
+using TeaBot.TypeReaders;
 
 namespace TeaBot.Main
 {
@@ -34,6 +35,7 @@ namespace TeaBot.Main
         {
             _client.MessageReceived += HandleMessagesAsync;
             _commands.CommandExecuted += HandleCommandExecuted;
+            _commands.AddTypeReader<IEmote>(new IEmoteTypeReader());
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
