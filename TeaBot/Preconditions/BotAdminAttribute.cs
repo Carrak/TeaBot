@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using TeaBot.Main;
 using TeaBot.Services;
 
 namespace TeaBot.Preconditions

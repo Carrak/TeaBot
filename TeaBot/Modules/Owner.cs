@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.Scripting;
 using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
-using TeaBot.Main;
 using TeaBot.Services;
 
 namespace TeaBot.Modules
@@ -28,7 +27,7 @@ namespace TeaBot.Modules
         {
             _database = database;
         }
-            
+
         private sealed class Globals
         {
             public TeaCommandContext Context;

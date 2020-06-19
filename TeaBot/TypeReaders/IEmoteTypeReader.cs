@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Discord.Commands;
-using Discord;
 using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
 
 namespace TeaBot.TypeReaders
 {
