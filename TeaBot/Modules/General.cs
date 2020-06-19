@@ -112,6 +112,12 @@ namespace TeaBot.Modules
             await ReplyAsync(result);
         }
 
+        [Command("emote")]
+        public async Task ReadEmoji(IEmote emote)
+        {
+            await ReplyAsync(emote.ToString());
+        }
+
         [Command("choose")]
         [Summary("Force the bot to make a choice for you!")]
         [Note("Split the options using space or `|`")]

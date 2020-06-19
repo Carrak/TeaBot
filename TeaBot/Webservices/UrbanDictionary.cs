@@ -46,12 +46,10 @@ namespace TeaBot.Webservices
         {
             word = WebUtilities.FormatStringForURL(word);
             var response = await TeaEssentials.HttpClient.GetAsync($"http://api.urbandictionary.com/v0/define?term={word}");
-            if (!response.IsSuccessStatusCode)
-                return null;
 
-            string content = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
 
-            return content;
+            return await response.Content.ReadAsStringAsync();
         }
     }
 
