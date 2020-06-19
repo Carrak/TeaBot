@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
@@ -171,10 +172,14 @@ namespace TeaBot.Modules
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
         public async Task UrbanDictonary([Remainder] string word)
         {
-            string json = await UrbanDictionary.GetDefinitionJSONAsync(word);
-            if (json is null)
+            string json;
+            try 
             {
-                await ReplyAsync("Something went wrong.");
+                json = await UrbanDictionary.GetDefinitionJSONAsync(word);
+            }
+            catch (HttpRequestException)
+            {
+                await ReplyAsync("Something went wrong. Try again?");
                 return;
             }
 
