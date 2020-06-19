@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
-using TeaBot.Services;
 using TeaBot.Webservices;
-
+using TeaBot.Webservices.Rule34;
 
 namespace TeaBot.Modules
 {
@@ -20,66 +19,81 @@ namespace TeaBot.Modules
     [Summary("Commands for searching on rule34.xxx and managing the search.")]
     public class Rule34 : TeaInteractiveBase
     {
-        private readonly DatabaseService _database;
+        private readonly Rule34BlacklistService _r34;
 
-        public Rule34(DatabaseService database)
+        public Rule34(Rule34BlacklistService r34)
         {
-            _database = database;
+            _r34 = r34;
         }
 
         [Command("r34", RunMode = RunMode.Async)]
         [Summary("Searches an image with given tags on rule34.xxx")]
         [Note("Use space to split multiple tags. If a tag contains a space, use `_`. If you want to exclude a tag from your search without adding it to your blacklist, put a `-` before it. For the full list of tags, visit https://rule34.xxx/index.php?page=tags&s=list.")]
         [Ratelimit(2, Measure.Seconds)]
-        public async Task FindR34Post([Remainder] string tags)
+        public async Task FindR34Post(params string[] tags)
         {
-            List<string> blacklist = new List<string>();
-            string prefix = Context.Prefix;
+            var defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
+            var userBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id);
+            var guildBlacklist = Context.IsPrivate ? Enumerable.Empty<string>() : await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id);
 
-            var defaultBlacklist = await GetBlacklist(R34BlacklistType.Default);
-            var userBlacklist = await GetBlacklist(R34BlacklistType.User);
-
-            if (await CheckTags(tags, defaultBlacklist, $"Your tag combination contains tags blacklisted by default.\nDo `{prefix}blacklist` for more info.") ||
-                await CheckTags(tags, userBlacklist, $"Your tag combination contains tags blacklisted by you.\nDo `{prefix}blacklist` for more info."))
-                return;
-
-            blacklist.AddRange(defaultBlacklist);
-            blacklist.AddRange(userBlacklist);
-
-            if (!Context.IsPrivate)
+            Rule34Search search;
+            try
             {
-                var guildBlacklist = await GetBlacklist(R34BlacklistType.Guild);
-                if (await CheckTags(tags, guildBlacklist, $"Your tag combination contains tags blacklisted by the guild.\nDo `{prefix}blacklist` for more info."))
+                search = new Rule34Search(tags, defaultBlacklist, userBlacklist, guildBlacklist);
+            }
+            catch (R34SearchException r34se)
+            {
+                await ReplyAsync(r34se.Message);
+                return;
+            }
+
+            int count;
+            string json;
+            try
+            {
+                count = await search.GetResultCountAsync();
+
+                if (count == 0)
+                {
+                    string toReply = "The search did not yield any results.";
+                    if (tags.Count() > 1)
+                        toReply += "\nAre you having a problem? Make sure to separate tags with a space and insert `_` in tags that contain spaces.";
+                    await ReplyAsync(toReply);
                     return;
-                blacklist.AddRange(guildBlacklist);
+                }
+
+                json = await search.GetRandomPostAsync(count);
             }
-
-            bool hasSpace = tags.Contains(' ');
-            tags += ' ' + string.Join(' ', blacklist.Select(x => $"-{x}"));
-
-            int count = await Rule34Search.GetResultCountAsync(tags);
-            if (count == 0)
+            catch (HttpRequestException)
             {
-                string noResultsMessage = "The search did not yield any results.";
-                if (hasSpace)
-                    noResultsMessage += "\nAre you having a problem? Make sure to separate tags with a space and insert `_` instead of spaces in tags that contain them.";
-                await ReplyAsync(noResultsMessage);
+                await ReplyAsync("Something went wrong. Try again?");
                 return;
             }
-
-            string json = await Rule34Search.GetRandomPostAsync(tags, count);
-            if (json is null)
+            catch (R34SearchException r34se)
             {
-                await ReplyAsync("Something went wrong.");
+                await ReplyAsync(r34se.Message);
+                return;
             }
 
             var post = Rule34Search.DeserializePost(json);
 
             DateTime creation = DateTime.ParseExact(post.Creation, "ddd MMM dd HH:mm:ss +0000 yyyy", new CultureInfo("en-US"));
 
+            var tagsArr = post.Tags.TrimStart().TrimEnd().Split(" ");
+
+            // Ensure the tags fit into the limit of 1024 characters
+            string splitter = ", ";
+            int totalLength = 0;
+            int countToRetrieve;
+            for (countToRetrieve = 0; countToRetrieve < tagsArr.Length && totalLength + (countToRetrieve + 1) * splitter.Length + 2 < 1024; countToRetrieve++)
+            {
+                totalLength += tagsArr[countToRetrieve].Length;
+            }
+            string postTags = $"`{string.Join(splitter, tagsArr.Take(countToRetrieve))}`";
+
             var embed = new EmbedBuilder();
             embed.WithImageUrl(post.FileUrl)
-                .AddField("Tags", $"`{post.Tags.TrimStart().TrimEnd().Replace(" ", ", ")}`")
+                .AddField($"Tags{(countToRetrieve == tagsArr.Length ? "" : $" (displaying first {countToRetrieve} tags)")}", postTags)
                 .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC | {count} result{(count == 1 ? "" : "s")} with this tag combination")
                 .WithUrl(post.FileUrl)
                 .WithColor(TeaEssentials.MainColor);
@@ -94,7 +108,6 @@ namespace TeaBot.Modules
                 embed.WithTitle("Click here if the image is not loading");
                 await ReplyAsync(embed: embed.Build());
             }
-
         }
 
         [Command("blacklist")]
@@ -106,8 +119,8 @@ namespace TeaBot.Modules
             "`glbr` - remove a tag from the server's blacklist")]
         public async Task BlackList()
         {
-            List<string> defaultBlacklist = await GetBlacklist(R34BlacklistType.Default);
-            List<string> userBlacklist = await GetBlacklist(R34BlacklistType.User);
+            IEnumerable<string> defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
+            IEnumerable<string> userBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id);
 
             var embed = new EmbedBuilder();
 
@@ -116,19 +129,19 @@ namespace TeaBot.Modules
                 .WithColor(TeaEssentials.MainColor)
                 .WithDescription("This is the list of all tags that are blacklisted from your r34 search.")
                 .AddField("Default blacklist (these cannot be changed)", FormatBlacklistedTags(defaultBlacklist))
-                .AddField($"User blacklist (your blacklisted tags) - {userBlacklistLimit - userBlacklist.Count} left", FormatBlacklistedTags(userBlacklist));
+                .AddField($"User blacklist (your blacklisted tags) - {Rule34BlacklistService.UserBlacklistLimit - userBlacklist.Count()} left", FormatBlacklistedTags(userBlacklist));
 
             if (!Context.IsPrivate)
             {
-                List<string> guildBlacklist = await GetBlacklist(R34BlacklistType.Guild);
-                embed.AddField($"Guild blacklist (tags that apply to this server) - {guildBlacklistLimit - guildBlacklist.Count} left", FormatBlacklistedTags(guildBlacklist));
+                IEnumerable<string> guildBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id);
+                embed.AddField($"Guild blacklist (tags that apply to this guild) - {Rule34BlacklistService.GuildBlacklistLimit - guildBlacklist.Count()} left", FormatBlacklistedTags(guildBlacklist));
             }
 
             await ReplyAsync(embed: embed.Build());
 
-            static string FormatBlacklistedTags(List<string> blacklist)
+            static string FormatBlacklistedTags(IEnumerable<string> blacklist)
             {
-                return blacklist.Count == 0 ? "-" : string.Join(' ', blacklist.Select(x => $"`{x}`"));
+                return blacklist.Count() == 0 ? "-" : string.Join(' ', blacklist.Select(x => $"`{x}`"));
             }
         }
 
@@ -137,7 +150,15 @@ namespace TeaBot.Modules
         [Summary("Adds a tag to your personal r34 search blacklist.")]
         public async Task AddTag(string tag)
         {
-            await AddToBlacklist(R34BlacklistType.User, tag);
+            try
+            {
+                await _r34.AddToBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id, tag);
+                await ReplyAsync($"Succesfully added the tag to your blacklist. `{tag}`");
+            }
+            catch (BlacklistException be)
+            {
+                await ReplyAsync(be.Message);
+            }
         }
 
         [Command("blacklistremove")]
@@ -145,7 +166,15 @@ namespace TeaBot.Modules
         [Summary("Removes a tag from your personal r34 search blacklist.")]
         public async Task RemoveTag(string tag)
         {
-            await RemoveTagFromBlacklist(R34BlacklistType.User, tag);
+            try
+            {
+                await _r34.RemoveTagFromBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id, tag);
+                await ReplyAsync($"Successfully removed the tag from your blacklist. `{tag}`");
+            }
+            catch (BlacklistException be)
+            {
+                await ReplyAsync(be.Message);
+            }
         }
 
         [Command("guildblacklistadd")]
@@ -155,7 +184,15 @@ namespace TeaBot.Modules
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
         public async Task GuildAddTag(string tag)
         {
-            await AddToBlacklist(R34BlacklistType.Guild, tag);
+            try
+            {
+                await _r34.AddToBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id, tag);
+                await ReplyAsync($"Successfully added the tag to the guild's blacklist. `{tag}`");
+            }
+            catch (BlacklistException be)
+            {
+                await ReplyAsync(be.Message);
+            }
         }
 
         [Command("guildblacklistremove")]
@@ -165,164 +202,15 @@ namespace TeaBot.Modules
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
         public async Task GuildRemoveTag(string tag)
         {
-            await RemoveTagFromBlacklist(R34BlacklistType.Guild, tag);
-        }
-
-        #region Utility
-
-        private readonly int userBlacklistLimit = 20;
-        private readonly int guildBlacklistLimit = 20;
-
-        private enum R34BlacklistType
-        {
-            Default,
-            Guild,
-            User
-        }
-
-        private async Task RemoveTagFromBlacklist(R34BlacklistType blacklistType, string tag)
-        {
-            string idName;
-            string blacklistName;
-            ulong id;
-            string successMessage;
-            string tagNotPresentMessage;
-
-            switch (blacklistType)
+            try
             {
-                case R34BlacklistType.User:
-                    idName = "userid";
-                    blacklistName = "user_blacklist";
-                    id = Context.User.Id;
-                    successMessage = $"Successfully removed `{tag}` from your blacklist";
-                    tagNotPresentMessage = $"`{tag}` is not in your blacklist.";
-                    break;
-                case R34BlacklistType.Guild:
-                    idName = "guildid";
-                    blacklistName = "guild_blacklist";
-                    id = Context.Guild.Id;
-                    successMessage = $"Successfully removed `{tag}` from the guild's blacklist";
-                    tagNotPresentMessage = $"`{tag}` is not in the guild's blacklist.";
-                    break;
-                default:
-                    return;
+                await _r34.RemoveTagFromBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id, tag);
+                await ReplyAsync($"Successfully removed the tag from the guild's blacklist. `{tag}`");
             }
-
-            string query = $"DELETE FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}";
-            await using var cmd = _database.GetCommand(query);
-            int rowsAffected = await cmd.ExecuteNonQueryAsync();
-
-            if (rowsAffected >= 1)
+            catch (BlacklistException be)
             {
-                await ReplyAsync(successMessage);
-                return;
-            }
-            else
-            {
-                await ReplyAsync(tagNotPresentMessage);
-                return;
+                await ReplyAsync(be.Message);
             }
         }
-
-        private async Task AddToBlacklist(R34BlacklistType blacklistType, string tag)
-        {
-            int limit;
-            string blacklistName;
-            string idName;
-            ulong id;
-            string tagPresentMessage;
-            string limitExceededMessage;
-            string successMessage;
-
-            switch (blacklistType)
-            {
-                case R34BlacklistType.User:
-                    limit = userBlacklistLimit;
-                    blacklistName = "user_blacklist";
-                    idName = "userid";
-                    id = Context.User.Id;
-                    tagPresentMessage = "The tag is already present in your personal blacklist.";
-                    limitExceededMessage = "You've reached your maximum of tags";
-                    successMessage = $"Successfully added `{tag}` to your personal blacklist.";
-                    break;
-                case R34BlacklistType.Guild:
-                    limit = guildBlacklistLimit;
-                    blacklistName = "guild_blacklist";
-                    idName = "guildid";
-                    id = Context.Guild.Id;
-                    tagPresentMessage = "The tag is already present in the guild's blacklist.";
-                    limitExceededMessage = "The guild has reached its maximum of tags.";
-                    successMessage = $"Successfully added `{tag}` to the guild's blacklist.";
-                    break;
-                default:
-                    return;
-            }
-
-            string conditionsQuery = $"SELECT EXISTS(SELECT * FROM r34.default_blacklist WHERE tag='{tag}'), " +
-                            $"EXISTS (SELECT * FROM r34.{blacklistName} WHERE tag='{tag}' AND {idName}={id}), " +
-                            $"COUNT(*) >= {limit} FROM r34.{blacklistName} WHERE {idName}={id}";
-
-            await using var cmd1 = _database.GetCommand(conditionsQuery);
-            await using var reader = await cmd1.ExecuteReaderAsync();
-
-            await reader.ReadAsync();
-            if (reader.GetBoolean(0))
-            {
-                await ReplyAsync("The tag is already present in the default blacklist.");
-                return;
-            }
-            else if (reader.GetBoolean(1))
-            {
-                await ReplyAsync(tagPresentMessage);
-                return;
-            }
-            else if (reader.GetBoolean(2))
-            {
-                await ReplyAsync(limitExceededMessage);
-                return;
-            }
-            await reader.CloseAsync();
-
-            string query = $"INSERT INTO r34.{blacklistName} ({idName}, tag) VALUES ({id}, '{tag}')";
-            await using var cmd2 = _database.GetCommand(query);
-            await cmd2.ExecuteNonQueryAsync();
-
-            await ReplyAsync(successMessage);
-        }
-
-        private async Task<List<string>> GetBlacklist(R34BlacklistType blacklistType)
-        {
-            string query = blacklistType switch
-            {
-                R34BlacklistType.Default => "SELECT * FROM r34.default_blacklist",
-                R34BlacklistType.User => $"SELECT r34.user_blacklist.tag FROM r34.user_blacklist WHERE userid={Context.User.Id}",
-                R34BlacklistType.Guild => $"SELECT r34.guild_blacklist.tag FROM r34.guild_blacklist WHERE guildid={Context.Guild.Id}",
-                _ => null
-            };
-
-            await using var cmd = _database.GetCommand(query);
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            List<string> blacklist = new List<string>();
-            while (await reader.ReadAsync())
-                blacklist.Add(reader.GetString(0));
-
-            await reader.CloseAsync();
-            return blacklist;
-        }
-
-        private Task<bool> CheckTags(string tags, List<string> blacklist, string errorMessage)
-        {
-            var tagsArr = tags.Split(" ");
-            if (blacklist.Any(tag => tagsArr.Contains(tag)))
-            {
-                Context.Channel.SendMessageAsync(errorMessage);
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        }
-
-        #endregion
-
     }
 }
