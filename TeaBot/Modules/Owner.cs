@@ -28,7 +28,7 @@ namespace TeaBot.Modules
             _database = database;
         }
 
-        private sealed class Globals
+        public sealed class Globals
         {
             public TeaCommandContext Context;
         }
@@ -37,7 +37,7 @@ namespace TeaBot.Modules
         public async Task Eval([Remainder] string toEvaluate)
         {
             // Extract the code from the code block if it is present
-            var code = Regex.Match(toEvaluate, @"(?s)(?<=```[a-zA-Z]*\n).*?(?=```)");
+            var code = Regex.Match(toEvaluate, @"(?s)(?<=```[a-zA-Z]*\n*).*?(?=```)");
 
             // If it isn't, return
             if (!code.Success)
