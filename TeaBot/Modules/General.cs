@@ -172,10 +172,12 @@ namespace TeaBot.Modules
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
         public async Task UrbanDictonary([Remainder] string word)
         {
+            var ud = new UrbanDictionarySearch(word);
+
             string json;
             try 
             {
-                json = await UrbanDictionary.GetDefinitionJSONAsync(word);
+                json = await ud.GetDefinitionsJSONAsync();
             }
             catch (HttpRequestException)
             {
@@ -183,8 +185,8 @@ namespace TeaBot.Modules
                 return;
             }
 
-            var definitions = UrbanDictionary.DeserealiseDefinitions(json);
-            if (definitions is null)
+            var definitions = ud.DeserealiseDefinitions(json);
+            if (definitions.Count() == 0)
             {
                 await ReplyAsync($"No definition exists for `{word}`");
                 return;

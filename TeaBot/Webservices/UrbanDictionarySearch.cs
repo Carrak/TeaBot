@@ -9,14 +9,21 @@ using TeaBot.Utilities;
 
 namespace TeaBot.Webservices
 {
-    public static class UrbanDictionary
+    class UrbanDictionarySearch
     {
-        public static IEnumerable<UrbanDictionaryDefinition> DeserealiseDefinitions(string json)
+        private readonly string _word;
+
+        public UrbanDictionarySearch(string word)
+        {
+            _word = word;
+        }
+
+        public IEnumerable<UrbanDictionaryDefinition> DeserealiseDefinitions(string json)
         {
             JArray jobj = (JArray)JObject.Parse(json)["list"];
 
             if (!jobj.HasValues)
-                return null;
+                return Enumerable.Empty<UrbanDictionaryDefinition>();
 
             IEnumerable<UrbanDictionaryDefinition> definitions = JsonConvert.DeserializeObject<IEnumerable<UrbanDictionaryDefinition>>(jobj.ToString());
             definitions = definitions.Where(x => x.Definition.Length < 2048).Where(x => x.Example.Length < 2048).Take(10);
@@ -42,9 +49,9 @@ namespace TeaBot.Webservices
             }
         }
 
-        public static async Task<string> GetDefinitionJSONAsync(string word)
+        public async Task<string> GetDefinitionsJSONAsync()
         {
-            word = WebUtilities.FormatStringForURL(word);
+            string word = WebUtilities.FormatStringForURL(_word);
             var response = await TeaEssentials.HttpClient.GetAsync($"http://api.urbandictionary.com/v0/define?term={word}");
 
             response.EnsureSuccessStatusCode();
