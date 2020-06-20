@@ -59,9 +59,9 @@ namespace TeaBot.Preconditions
             {
                 if (!timeout.Warned)
                 {
-                    int cooldown = _invokeLimitPeriod.Seconds - (DateTime.Now - t.FirstInvoke).Seconds;
+                    double cooldown = _invokeLimitPeriod.TotalSeconds - (DateTime.UtcNow - t.FirstInvoke).TotalSeconds;
                     timeout.Warned = true;
-                    return Task.FromResult(PreconditionResult.FromError($"Cooldown! **{cooldown}** more seconds!"));
+                    return Task.FromResult(PreconditionResult.FromError($"Cooldown! **{cooldown:0.00}** more seconds!"));
                 }
                 else
                 {
