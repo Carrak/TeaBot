@@ -13,7 +13,7 @@ namespace TeaBot.Webservices
     /// <summary>
     ///     Class for working with rule34.xxx API.
     /// </summary>
-    public class Rule34Search
+    class Rule34Search
     {
         // URL for rule34.xxx API access
         private const string Rule34ApiURL = "https://rule34.xxx/index.php?page=dapi&s=post&q=index";
