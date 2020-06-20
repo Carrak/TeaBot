@@ -118,5 +118,12 @@ namespace TeaBot.Modules
             }
             else await ReplyAsync("Couldn't rename! [The name must be 32 or fewer in length]");
         }
+
+        [Command("uptime")]
+        public async Task Uptime()
+        {
+            var uptime = DateTime.UtcNow - TeaEssentials.BotStarted;
+            await ReplyAsync($"I've been up for **{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s**");
+        }
     }
 }

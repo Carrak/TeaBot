@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Reflection;
 using Discord;
+using System;
+using System.Diagnostics;
 
 namespace TeaBot.Main
 {
@@ -26,5 +28,10 @@ namespace TeaBot.Main
         ///     HttpClient instance that is used across the bot.
         /// </summary>
         public static HttpClient HttpClient { get; private set; } = new HttpClient();
+
+        /// <summary>
+        ///     Represents the time the bot was started at (for measuring uptime).
+        /// </summary>
+        public static DateTime BotStarted;
     }
 }

@@ -74,6 +74,9 @@ namespace TeaBot.Main
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
+            // Start the uptime stopwatch
+            TeaEssentials.BotStarted = DateTime.UtcNow;
+
             // Make sure it doesn't die
             await Task.Delay(-1);
         }
