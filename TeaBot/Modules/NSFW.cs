@@ -13,7 +13,7 @@ namespace TeaBot.Modules
         [Command("nhentai")]
         [Alias("nh")]
         [Summary("Sends the specified doujin")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Nhentai(int doujinID)
         {
             if (doujinID <= 0)
@@ -28,7 +28,7 @@ namespace TeaBot.Modules
         [Command("nhentai")]
         [Alias("nh")]
         [Summary("Sends a random doujin")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Nhentai()
         {
             int randomDoujin = new Random().Next(1, 305878);

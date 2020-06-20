@@ -93,7 +93,7 @@ namespace TeaBot.Modules
         [Command("russianize")]
         [Alias("russian", "rus")]
         [Summary("Replaces various letters in a message with Russian letters instead")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Russianize([Remainder] string text)
         {
             string result = text.ToLower()
@@ -114,7 +114,7 @@ namespace TeaBot.Modules
         [Command("viewemote")]
         [Alias("emoji", "emote", "viewemoji", "view")]
         [Summary("View any emoji. For custom emotes, make sure you use ones from the guild you're using this command in.")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task ViewEmoji(IEmote emote)
         {
             if (emote is Emote e)
@@ -130,7 +130,7 @@ namespace TeaBot.Modules
         [Command("choose")]
         [Summary("Force the bot to make a choice for you!")]
         [Note("Split the options using space or `|`")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Choose([Remainder] string options)
         {
             var optionsArray = options.Contains('|') ? options.Split('|') : options.Split(' ');
@@ -179,7 +179,7 @@ namespace TeaBot.Modules
         [Command("urbandictionary")]
         [Alias("ud", "urban", "define")]
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task UrbanDictonary([Remainder] string word)
         {
             var ud = new UrbanDictionarySearch(word);

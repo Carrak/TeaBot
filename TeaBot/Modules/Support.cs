@@ -30,7 +30,7 @@ namespace TeaBot.Modules
 
         [Command("help")]
         [Summary("Do `tea help help` for description")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task HelpGeneral()
         {
             var embed = new EmbedBuilder();
@@ -69,7 +69,7 @@ namespace TeaBot.Modules
 
         [Command("help")]
         [Summary("Get help on a specific command or module")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task HelpCommandModule([Remainder] string name)
         {
             var result = _commandService.Search(Context, name);
@@ -114,7 +114,7 @@ namespace TeaBot.Modules
 
         [Command("info", true)]
         [Summary("Information about the bot")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Info()
         {
             var embed = await _tea.GetInfoEmbedAsync(await _database.GetPrefixAsync(Context.Guild));
@@ -123,7 +123,7 @@ namespace TeaBot.Modules
 
         [Command("commands", true)]
         [Summary("Replies with all commands that the bot has")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task AllCommands()
         {
             var embed = new EmbedBuilder();
@@ -151,7 +151,7 @@ namespace TeaBot.Modules
 
         [Command("invite", true)]
         [Summary("A message that contains the bot invite link")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task Invite()
         {
             await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");

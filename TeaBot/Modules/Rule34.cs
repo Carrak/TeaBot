@@ -149,7 +149,7 @@ namespace TeaBot.Modules
         [Command("blacklistadd")]
         [Alias("bla", "bladd", "addbl")]
         [Summary("Adds a tag to your personal r34 search blacklist.")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task AddTag(string tag)
         {
             try
@@ -166,7 +166,7 @@ namespace TeaBot.Modules
         [Command("blacklistremove")]
         [Alias("blr", "blremove", "removebl", "blrem")]
         [Summary("Removes a tag from your personal r34 search blacklist.")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task RemoveTag(string tag)
         {
             try
@@ -185,7 +185,7 @@ namespace TeaBot.Modules
         [Summary("Adds a tag to the guild's r34 search blacklist")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task GuildAddTag(string tag)
         {
             try
@@ -204,7 +204,7 @@ namespace TeaBot.Modules
         [Summary("Removes a tag from the guild's r34 search blacklist")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
-        [Ratelimit(5)]
+        [Ratelimit(3)]
         public async Task GuildRemoveTag(string tag)
         {
             try
