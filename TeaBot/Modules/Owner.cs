@@ -37,11 +37,12 @@ namespace TeaBot.Modules
         public async Task Eval([Remainder] string toEvaluate)
         {
             // Extract the code from the code block if it is present
-            var code = Regex.Match(toEvaluate, @"(?s)(?<=```[a-zA-Z]*\n*).*?(?=```)");
-
-            // If it isn't, return
+            var code = Regex.Match(toEvaluate, @"(?s)(?<=```cs\n).*?(?=```)");
+            if (!code.Success)
+                code = Regex.Match(toEvaluate, @"(?s)(?<=```).*?(?=```)");
             if (!code.Success)
             {
+                // If it isn't present, return
                 await ReplyAsync("Wrap the code in a code block.");
                 return;
             }
@@ -53,7 +54,9 @@ namespace TeaBot.Modules
             var message = await ReplyAsync(embed: embed.Build());
 
             // Initialize the globals and script options
-            var globals = new Globals { Context = Context };
+            var globals = new Globals { 
+                Context = Context 
+            };
             var sopts = ScriptOptions.Default
                 .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", "System.Reflection", "System.Threading.Tasks", "System.Threading")
                 .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location)));
