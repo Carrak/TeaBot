@@ -15,7 +15,7 @@ using TeaBot.Webservices.Rule34;
 
 namespace TeaBot.Modules
 {
-    [RequireNsfw(ErrorMessage = "The channel is not flagged as NSFW!")]
+    [NSFW]
     [Summary("Commands for searching on rule34.xxx and managing the search.")]
     public class Rule34 : TeaInteractiveBase
     {

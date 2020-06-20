@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace TeaBot.Modules
 {
-    [RequireNsfw(ErrorMessage = "The channel is not flagged as NSFW!")]
+    [NSFW]
     [Summary("Commands that can only be executed in NSFW channels")]
     public class NSFW : TeaInteractiveBase
     {
@@ -55,22 +55,21 @@ namespace TeaBot.Modules
             // Retrieve the image
             try
             {
+                var allowed = GetAllowedIndexes();
                 if (tag is null)
                 {
-                    var allowed = GetAllowedIndexes();
                     int index = allowed.ElementAt(new Random().Next(0, allowed.Count()));
                     Console.WriteLine((NsfwEndpoint)index);
                     image = await NekosClient.GetNsfwAsync((NsfwEndpoint)index);
                 }
                 else
                 {
-                    int index = GetAllowedIndexes().ElementAt(Array.IndexOf(GetAllowedNames().ToArray(), tag.ToLower()));
+                    int index = allowed.ElementAt(Array.IndexOf(GetAllowedNames().ToArray(), tag.ToLower()));
                     if (index == -1)
                     {
                         await ReplyAsync($"No such tag exists! See `{Context.Prefix}hentaitags` for the full list.");
                         return;
                     }
-                    Console.WriteLine((NsfwEndpoint)index);
                     image = await NekosClient.GetNsfwAsync((NsfwEndpoint)index);
                 }
             }
