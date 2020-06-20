@@ -20,6 +20,7 @@ namespace TeaBot.Modules
     {
         [Command("ping", RunMode = RunMode.Async)]
         [Summary("Pong! (returns the bot's ping)")]
+        [Ratelimit(3)]
         public async Task Ping()
         {
             Stopwatch sw = new Stopwatch();
@@ -31,6 +32,7 @@ namespace TeaBot.Modules
         [Command("say")]
         [Summary("Make the bot say something!")]
         [Note("This command does not work if a message contains a ping")]
+        [Ratelimit(3)]
         public async Task Say([Remainder] string text)
         {
             if (Context.Message.MentionedRoles.Count > 0 || Context.Message.MentionedUsers.Count > 0)
@@ -46,6 +48,7 @@ namespace TeaBot.Modules
 
         [Command("rate", true)]
         [Summary("Rates whatever you throw at it")]
+        [Ratelimit(3)]
         public async Task Rate()
         {
             List<string> quotes = new List<string>() {
@@ -68,16 +71,10 @@ namespace TeaBot.Modules
             await ReplyAsync(quotes.ElementAt(new Random().Next(0, quotes.Count() - 1)));
         }
 
-        [Command("react")]
-        public async Task React()
-        {
-            Emote poppo = Emote.Parse("<:poppo:677567085743964165>");
-            await Context.Message.AddReactionAsync(poppo);
-        }
-
         [Command("wait", RunMode = RunMode.Async)]
         [Alias("timer")]
         [Summary("Sets a timer for the given amount of seconds")]
+        [Ratelimit(120)]
         public async Task Wait(double seconds)
         {
             if (seconds > 300)
@@ -96,6 +93,7 @@ namespace TeaBot.Modules
         [Command("russianize")]
         [Alias("russian", "rus")]
         [Summary("Replaces various letters in a message with Russian letters instead")]
+        [Ratelimit(5)]
         public async Task Russianize([Remainder] string text)
         {
             string result = text.ToLower()
@@ -116,6 +114,7 @@ namespace TeaBot.Modules
         [Command("viewemote")]
         [Alias("emoji", "emote", "viewemoji", "view")]
         [Summary("View any emoji. For custom emotes, make sure you use ones from the guild you're using this command in.")]
+        [Ratelimit(5)]
         public async Task ViewEmoji(IEmote emote)
         {
             if (emote is Emote e)
@@ -131,6 +130,7 @@ namespace TeaBot.Modules
         [Command("choose")]
         [Summary("Force the bot to make a choice for you!")]
         [Note("Split the options using space or `|`")]
+        [Ratelimit(5)]
         public async Task Choose([Remainder] string options)
         {
             var optionsArray = options.Contains('|') ? options.Split('|') : options.Split(' ');
@@ -140,7 +140,7 @@ namespace TeaBot.Modules
         [Command("poll", RunMode = RunMode.Async)]
         [Summary("Host a poll with a given amount of entries (up to 9)")]
         [RequireContext(ContextType.Guild)]
-        [Ratelimit(30, Measure.Seconds)]
+        [Ratelimit(30)]
         public async Task Poll()
         {
             var reply1 = await ReplyAsync("What's gonna be the poll's name? `Reply with just the name`");
@@ -179,6 +179,7 @@ namespace TeaBot.Modules
         [Command("urbandictionary")]
         [Alias("ud", "urban", "define")]
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
+        [Ratelimit(5)]
         public async Task UrbanDictonary([Remainder] string word)
         {
             var ud = new UrbanDictionarySearch(word);

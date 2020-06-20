@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using TeaBot.Commands;
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
@@ -10,6 +11,7 @@ namespace TeaBot.Modules
     {
         [Command("solvequadratic")]
         [Summary("Solves a quadratic equation of the look `ax^2 + bx + c = 0` with given coefficients")]
+        [Ratelimit(5)]
         public async Task SolveQuadratic(double a, double b, double c)
         {
 
@@ -51,6 +53,7 @@ namespace TeaBot.Modules
         [Command("random")]
         [Alias("rand")]
         [Summary("Produces a random number within the range `[min; max]`")]
+        [Ratelimit(5)]
         public async Task Random(int min, int max)
         {
             if (min > max)
@@ -64,6 +67,7 @@ namespace TeaBot.Modules
 
         [Command("prime")]
         [Summary("Determines whether a given number (in range of 64 bits) is prime")]
+        [Ratelimit(5)]
         public async Task Prime(long number)
         {
             number = Math.Abs(number);
@@ -89,6 +93,7 @@ namespace TeaBot.Modules
 
         [Command("equation", RunMode = RunMode.Async)]
         [Summary("Trains your basic math skills")]
+        [Ratelimit(5)]
         public async Task Equation()
         {
             int x1 = new Random().Next(20, 150);

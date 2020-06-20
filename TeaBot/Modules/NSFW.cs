@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using TeaBot.Commands;
-
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
@@ -13,6 +13,7 @@ namespace TeaBot.Modules
         [Command("nhentai")]
         [Alias("nh")]
         [Summary("Sends the specified doujin")]
+        [Ratelimit(5)]
         public async Task Nhentai(int doujinID)
         {
             if (doujinID <= 0)
@@ -27,6 +28,7 @@ namespace TeaBot.Modules
         [Command("nhentai")]
         [Alias("nh")]
         [Summary("Sends a random doujin")]
+        [Ratelimit(5)]
         public async Task Nhentai()
         {
             int randomDoujin = new Random().Next(1, 305878);

@@ -19,7 +19,7 @@ namespace TeaBot.Modules
     {
         [Command("quote")]
         [Exclusive(364771834325106689)]
-        [Ratelimit(2, Measure.Seconds)]
+        [Ratelimit(2)]
         public async Task Quote(IUser user = null)
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;
@@ -47,7 +47,7 @@ namespace TeaBot.Modules
 
         [Command("quotestats", RunMode = RunMode.Async)]
         [Exclusive(364771834325106689)]
-        [Ratelimit(10, Measure.Seconds)]
+        [Ratelimit(10)]
         public async Task QuoteStats()
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;

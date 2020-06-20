@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
+using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
 using TeaBot.Services;
 
@@ -28,6 +29,7 @@ namespace TeaBot.Modules
         [Command("avatar")]
         [Alias("av")]
         [Summary("Get someone's avatar")]
+        [Ratelimit(5)]
         public async Task Avatar(IUser user)
         {
             var embed = new EmbedBuilder();
@@ -51,11 +53,13 @@ namespace TeaBot.Modules
         [Command("avatar")]
         [Alias("av")]
         [Summary("Get your avatar")]
+        [Ratelimit(5)]
         public async Task Avatar() => await Avatar(Context.User);
 
         [Command("userinfo", RunMode = RunMode.Async)]
         [Alias("ui")]
         [Summary("Miscellaneous info about a user")]
+        [Ratelimit(5)]
         public async Task UserInfo(IUser user)
         {
             var embed = new EmbedBuilder();
@@ -126,12 +130,14 @@ namespace TeaBot.Modules
         [Command("userinfo")]
         [Alias("ui")]
         [Summary("Miscellaneous info about your account")]
+        [Ratelimit(5)]
         public async Task UserInfo() => await UserInfo(Context.User);
 
         [Command("guildinfo")]
         [Alias("gi")]
         [Summary("Miscellaneous info about a guild")]
         [RequireContext(ContextType.Guild, ErrorMessage = "")]
+        [Ratelimit(5)]
         public async Task GuildInfo()
         {
             var embed = new EmbedBuilder();
@@ -178,6 +184,7 @@ namespace TeaBot.Modules
         [Command("roles")]
         [Summary("Show all of the roles and amount of users who have a specific role")]
         [RequireContext(ContextType.Guild, ErrorMessage = "")]
+        [Ratelimit(5)]
         public async Task Roles()
         {
             var rolesMessage = new RolesMessage(Interactive, Context, 15);
@@ -188,6 +195,7 @@ namespace TeaBot.Modules
         [Alias("jpt", "joinpos")]
         [Summary("Display all the users of the guild sorted by their join date")]
         [Note("Use `tea joinpostop true` to ignore bots appearing in the list")]
+        [Ratelimit(5)]
         public async Task JoinPosTop(string options = "")
         {
             bool ignoreBots = options == "nobots";
@@ -198,6 +206,7 @@ namespace TeaBot.Modules
         [Command("role")]
         [Summary("Displays all people who have a given role")]
         [Note("If a role contains spaces, cover its name with `\"` from both sides")]
+        [Ratelimit(5)]
         public async Task Role(IRole role)
         {
             var roleMessage = new RoleMessage(Interactive, Context, role, 40);

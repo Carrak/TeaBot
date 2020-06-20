@@ -6,6 +6,7 @@ using Discord.Commands;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
+using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
 using TeaBot.Services;
 
@@ -29,6 +30,7 @@ namespace TeaBot.Modules
 
         [Command("help")]
         [Summary("Do `tea help help` for description")]
+        [Ratelimit(5)]
         public async Task HelpGeneral()
         {
             var embed = new EmbedBuilder();
@@ -58,7 +60,7 @@ namespace TeaBot.Modules
               .WithFooter(footer);
 
             string modules = string.Join("\n",
-                GetModules().Select(module => $"`[{module.Name}]` - {module.Summary ?? "No summary for this module!"}"));
+                GetDisplayableModules().Select(module => $"`[{module.Name}]` - {module.Summary ?? "No summary for this module!"}"));
 
             embed.AddField("Current modules", modules);
 
@@ -67,6 +69,7 @@ namespace TeaBot.Modules
 
         [Command("help")]
         [Summary("Get help on a specific command or module")]
+        [Ratelimit(5)]
         public async Task HelpCommandModule([Remainder] string name)
         {
             var result = _commandService.Search(Context, name);
@@ -111,6 +114,7 @@ namespace TeaBot.Modules
 
         [Command("info", true)]
         [Summary("Information about the bot")]
+        [Ratelimit(5)]
         public async Task Info()
         {
             var embed = await _tea.GetInfoEmbedAsync(await _database.GetPrefixAsync(Context.Guild));
@@ -119,10 +123,11 @@ namespace TeaBot.Modules
 
         [Command("commands", true)]
         [Summary("Replies with all commands that the bot has")]
+        [Ratelimit(5)]
         public async Task AllCommands()
         {
             var embed = new EmbedBuilder();
-            var modules = GetModules();
+            var modules = GetDisplayableModules();
 
             var fields = modules.Select(module => new EmbedFieldBuilder
             {
@@ -146,6 +151,7 @@ namespace TeaBot.Modules
 
         [Command("invite", true)]
         [Summary("A message that contains the bot invite link")]
+        [Ratelimit(5)]
         public async Task Invite()
         {
             await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");
@@ -165,7 +171,7 @@ namespace TeaBot.Modules
         ///     Sorts out modules that are meant to be ignored or that are disabled in the guild.
         /// </summary>
         /// <returns>Collection of modules</returns>
-        private IEnumerable<ModuleInfo> GetModules()
+        private IEnumerable<ModuleInfo> GetDisplayableModules()
         {
             return _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module));
         }

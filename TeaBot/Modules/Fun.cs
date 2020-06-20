@@ -15,7 +15,7 @@ namespace TeaBot.Modules
     {
         [Command("gacha", true)]
         [Summary("This one could grow into something bigger, but this is just a pointless command for now.")]
-        [Ratelimit(2, Measure.Seconds)]
+        [Ratelimit(2)]
         public async Task Gacha()
         {
             Random random = new Random();
@@ -46,6 +46,7 @@ namespace TeaBot.Modules
 
         [Command("uwufy")]
         [Summary("Don't.")]
+        [Ratelimit(5)]
         public async Task Uwufy([Remainder] string text)
         {
             text = text.DeafenMentions(Context.Message);
@@ -79,6 +80,7 @@ namespace TeaBot.Modules
         [Command("waifumeter")]
         [Alias("ratewaifu", "ratewf", "waifurate", "rw")]
         [Summary("Get to know how much of a waifu something or someone is")]
+        [Ratelimit(5)]
         public async Task WaifuMeter([Remainder] string subject)
         {
             subject = subject.DeafenMentions(Context.Message);

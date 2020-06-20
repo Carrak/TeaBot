@@ -29,7 +29,7 @@ namespace TeaBot.Modules
         [Command("r34", RunMode = RunMode.Async)]
         [Summary("Searches an image with given tags on rule34.xxx")]
         [Note("Use space to split multiple tags. If a tag contains a space, use `_`. If you want to exclude a tag from your search without adding it to your blacklist, put a `-` before it. For the full list of tags, visit https://rule34.xxx/index.php?page=tags&s=list.")]
-        [Ratelimit(2, Measure.Seconds)]
+        [Ratelimit(2)]
         public async Task FindR34Post(params string[] tags)
         {
             var defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
@@ -117,6 +117,7 @@ namespace TeaBot.Modules
             "`blr` - remove a tag from your blacklist\n" +
             "`gbla` - add a tag to the server's blacklist\n" +
             "`glbr` - remove a tag from the server's blacklist")]
+        [Ratelimit(10)]
         public async Task BlackList()
         {
             IEnumerable<string> defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
@@ -148,6 +149,7 @@ namespace TeaBot.Modules
         [Command("blacklistadd")]
         [Alias("bla", "bladd", "addbl")]
         [Summary("Adds a tag to your personal r34 search blacklist.")]
+        [Ratelimit(5)]
         public async Task AddTag(string tag)
         {
             try
@@ -164,6 +166,7 @@ namespace TeaBot.Modules
         [Command("blacklistremove")]
         [Alias("blr", "blremove", "removebl", "blrem")]
         [Summary("Removes a tag from your personal r34 search blacklist.")]
+        [Ratelimit(5)]
         public async Task RemoveTag(string tag)
         {
             try
@@ -182,6 +185,7 @@ namespace TeaBot.Modules
         [Summary("Adds a tag to the guild's r34 search blacklist")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
+        [Ratelimit(5)]
         public async Task GuildAddTag(string tag)
         {
             try
@@ -200,6 +204,7 @@ namespace TeaBot.Modules
         [Summary("Removes a tag from the guild's r34 search blacklist")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage tags!")]
+        [Ratelimit(5)]
         public async Task GuildRemoveTag(string tag)
         {
             try

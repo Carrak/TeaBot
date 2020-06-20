@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using TeaBot.Attributes;
 using TeaBot.Commands;
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {
@@ -18,6 +19,7 @@ namespace TeaBot.Modules
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
         [Note("Messages must be less than 2 weeks old.")]
+        [Ratelimit(5)]
         public async Task Purge(int count)
         {
             count = Math.Min(100, count + 1);
@@ -31,7 +33,9 @@ namespace TeaBot.Modules
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
-        [Note("Bots can only retrieve 100 messages per request, so it is not guaranteed for all messages to be purged at once. Only the ones that are within these 100 can be purged. Messages also must be less than 2 weeks old.")]
+        [Note("Bots can only retrieve 100 messages per request, so it is not guaranteed for all messages to be purged at once. " +
+            "Only the ones that are within these 100 can be purged. Messages also must be less than 2 weeks old.")]
+        [Ratelimit(5)]
         public async Task Purge(IUser user, int count)
         {
             count = Math.Min(100, count + 1);
