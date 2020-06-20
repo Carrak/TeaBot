@@ -12,6 +12,7 @@ using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
 using TeaBot.Services;
+using TeaBot.Utilities;
 
 namespace TeaBot.Modules
 {
@@ -86,7 +87,7 @@ namespace TeaBot.Modules
                 .AddField("Current status", user.Status, true)
                 .AddField("Activity", activity, true)
                 .AddField("ID", Context.User.Id)
-                .AddField("Account creation date", DateString(user.CreatedAt.DateTime), true);
+                .AddField("Account creation date", TimeUtilities.DateString(user.CreatedAt.DateTime), true);
 
             if (!Context.IsPrivate)
             {
@@ -107,7 +108,7 @@ namespace TeaBot.Modules
                     long mid = reader.GetInt64(3);
 
                     string messageUrl = $"https://discordapp.com/channels/{gid}/{cid}/{mid}";
-                    lastMessage = $"{DateString(sent, true)}\n[Click here to jump to the message!]({messageUrl})";
+                    lastMessage = $"{TimeUtilities.DateString(sent, true)}\n[Click here to jump to the message!]({messageUrl})";
                 }
                 await reader.CloseAsync();
 
@@ -115,7 +116,7 @@ namespace TeaBot.Modules
 
                 DateTime joined = guildUser.JoinedAt.Value.DateTime;
 
-                embed.AddField($"Joined {Context.Guild}", DateString(joined), true)
+                embed.AddField($"Joined {Context.Guild}", TimeUtilities.DateString(joined), true)
                     .AddField($"Last message in {Context.Guild.Name}", lastMessage)
                     .AddField($"Roles {(roles.Count() > 20 ? "(displaying 20 highest roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", roles.Where((x, index) => index < 20).Select(role => role.Mention)))
                     .AddField("Main permissions", MainPermissionsString(guildUser.GuildPermissions))
@@ -171,12 +172,13 @@ namespace TeaBot.Modules
                 $"Text channels: {guild.Channels.Where(x => x is ITextChannel).Count()}\n" +
                 $"Voice channels: {guild.Channels.Where(x => x is IVoiceChannel).Count()}\n" +
                 $"Roles: {userRolesCount} (+ {guild.Roles.Count - userRolesCount} integrated or Discord managed roles)\n")
-                .AddField("Created", DateString(guild.CreatedAt.DateTime))
+                .AddField("Created", TimeUtilities.DateString(guild.CreatedAt.DateTime))
                 .AddField("Owner", guild.Owner.Mention, true)
                 .AddField("System channel", guild.SystemChannel is null ? "-" : guild.SystemChannel.Mention, true)
                 .AddField("Region", guild.VoiceRegionId, true)
                 .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {activeUsersPercentage:#0.00%}\n" +
-                $"`Note: only includes people who have sent a message {(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? PeriodToString(timeDifference.Days, "day", false) : "Today")})")}`");
+                $"`Note: only includes people who have sent a message " +
+                $"{(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? TimeUtilities.PeriodToString(timeDifference.Days, "day", false) : "Today")})")}`");
 
             await ReplyAsync(embed: embed.Build());
         }
@@ -244,64 +246,7 @@ namespace TeaBot.Modules
             return permissions.Count != 0 ? string.Join(", ", permissions) : "-";
         }
 
-        /// <summary>
-        ///     Creates a string containing full information about a date.
-        /// </summary>
-        /// <param name="date"><see cref="DateTime"/> object to get info on.</param>
-        /// <param name="displayTime">Bool value determining whether the hours, minutes and seconds should be displayed.</param>
-        /// <returns></returns>
-        static string DateString(DateTime date, bool displayTime = false)
-        {
-            if (displayTime)
-                return $"{date:dd.MM.yyyy HH:mm:ss} UTC\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
-            else
-                return $"{date:dd.MM.yyyy}\n{date.ToString("MMMM d, yyyy (ddd)", new CultureInfo("en-US"))}\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
-        }
-
-        /// <summary>
-        ///     Calculates the amount of time between <paramref name="start"></paramref> and <paramref name="end"></paramref> 
-        ///     and creates a string that represents that time in either years/months/days or hours/minutes/seconds
-        /// </summary>
-        /// <returns>String in format "X years X months X days ago" or "X hours X minutes X seconds ago"</returns>
-        static string SpanBetweenDatesString(DateTime start, DateTime end)
-        {
-            if (start > end)
-                return SpanBetweenDatesString(end, start);
-
-            TimeSpan timePassed = end - start;
-
-            if (timePassed.TotalSeconds < 1)
-                return "Right now";
-
-            DateTime span = DateTime.MinValue + timePassed;
-
-            int years = span.Year - 1;
-            int months = span.Month - 1;
-            int days = span.Day - 1;
-
-            if (years == 0 && months == 0 && days == 0)
-                return $"{PeriodToString(span.Hour, "hour")}{PeriodToString(span.Minute, "minute")}{PeriodToString(span.Second, "second")}ago";
-            else
-                return $"{PeriodToString(years, "year")}{PeriodToString(months, "month")}{PeriodToString(days, "day")}ago";
-        }
-
-        /// <summary>
-        ///   Creates a string that transforms a named period of time into a string, e.g. "3 days", "1 month", etc.
-        /// </summary>
-        /// <param name="timePassed">The amount of the given period time.</param>
-        /// <param name="timePeriod">The name of the period, e.g. month, day, etc.</param>
-        /// <param name="insertSpacebar">Bool value determining whether a spacebar should be inserted at the end of the end string.</param>
-        /// <returns>Created string with the number and the period, or an empty string if <paramref name="timePassed"/> is zero.</returns>
-        static string PeriodToString(int timePassed, string timePeriod, bool insertSpacebar = true)
-        {
-            if (timePassed == 0) return "";
-
-            string result = $"{timePassed} {timePeriod}" +
-                $"{(Math.Abs(timePassed) != 1 ? "s" : "")}" +
-                $"{(insertSpacebar ? " " : "")}";
-
-            return result;
-        }
+        
 
         #endregion
     }
