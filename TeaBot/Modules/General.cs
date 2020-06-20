@@ -113,10 +113,19 @@ namespace TeaBot.Modules
             await ReplyAsync(result);
         }
 
-        [Command("emote")]
-        public async Task ReadEmoji(IEmote emote)
+        [Command("viewemote")]
+        [Alias("emoji", "emote", "viewemoji", "view")]
+        [Summary("View any emoji. For custom emotes, make sure you use ones from the guild you're using this command in.")]
+        public async Task ViewEmoji(IEmote emote)
         {
-            await ReplyAsync(emote.ToString());
+            if (emote is Emote e)
+                await ReplyAsync(e.Url);
+            else
+            {
+                var parsedEmoji = TwemojiNet.EmojiParser.GetCodepoints(emote.ToString());
+                string codepoint = string.Join('-', parsedEmoji.Codepoints);
+                await ReplyAsync($"https://twemoji.maxcdn.com/v/latest/72x72/{codepoint}.png");
+            }
         }
 
         [Command("choose")]
