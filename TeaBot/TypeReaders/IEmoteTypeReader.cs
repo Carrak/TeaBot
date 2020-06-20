@@ -10,7 +10,7 @@ namespace TeaBot.TypeReaders
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
-            if (context.Guild.Emotes.FirstOrDefault(x => $":{x.Name}:" == input) is Emote e)
+            if (context.Guild?.Emotes.FirstOrDefault(x => $":{x.Name}:" == input) is Emote e)
                 return Task.FromResult(TypeReaderResult.FromSuccess(e));
             else if (Emote.TryParse(input, out var emote))
                 return Task.FromResult(TypeReaderResult.FromSuccess(emote));
