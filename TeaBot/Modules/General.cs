@@ -149,22 +149,22 @@ namespace TeaBot.Modules
             if (entriesArr.Length < 2 || entriesArr.Length > 9 || entriesArr.Any(x => x == ""))
             {
                 await ReplyAsync("Incorrect input! `(the amount of options must be in range of 2 to 9 or empty entries found)`");
+                return;
             }
-            else
-            {
-                if (!Context.IsPrivate)
-                    _ = Task.Run(async () =>
-                    {
-                        await Context.Message.DeleteAsync();
-                        await reply1.DeleteAsync();
-                        await name.DeleteAsync();
-                        await reply2.DeleteAsync();
-                        await entries.DeleteAsync();
-                    });
 
-                var message = await ReplyAsync($"Poll hosted by {Context.Message.Author.Mention}\n**{name}**\n{string.Join("\n", entriesArr.Select((x, index) => $"**{index + 1}.** {entriesArr[index]}"))}");
-                _ = Task.Run(async () => await message.AddReactionsAsync(unicodeNums.Take(entriesArr.Length).ToArray()));
-            }
+            if (!Context.IsPrivate && Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
+                _ = Task.Run(async () =>
+                {
+                    await Context.Message.DeleteAsync();
+                    await reply1.DeleteAsync();
+                    await name.DeleteAsync();
+                    await reply2.DeleteAsync();
+                    await entries.DeleteAsync();
+                });
+
+            var message = await ReplyAsync($"Poll hosted by {Context.Message.Author.Mention}\n**{name}**\n{string.Join("\n", entriesArr.Select((x, index) => $"**{index + 1}.** {entriesArr[index]}"))}");
+            _ = Task.Run(async () => await message.AddReactionsAsync(unicodeNums.Take(entriesArr.Length).ToArray()));
+
         }
 
         [Command("urbandictionary")]
