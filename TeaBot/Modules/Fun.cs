@@ -24,33 +24,23 @@ namespace TeaBot.Modules
 
             string pull = $"{Context.User.Mention} rolled ";
 
-            switch (roll)
-            {
-                case int _ when roll <= 65000:
+            if  (roll <= 65000)
                     pull += "**COMMON**";
-                    break;
-                case int _ when roll <= 85000:
+            else if (roll <= 85000)
                     pull += "**UNCOMMON**";
-                    break;
-                case int _ when roll <= 95000:
+            else if (roll <= 95000)
                     pull += "**RARE**";
-                    break;
-                case int _ when roll <= 99000:
+            else if(roll <= 99000)
                     pull += "**EPIC**";
-                    break;
-                case int _ when roll <= 99900:
+            else if (roll <= 99900)
                     pull += "**LEGENDARY**";
-                    break;
-                case int _ when roll <= 99990:
+            else if (roll <= 99990)
                     pull += "**IMPOSSIBLE**";
-                    break;
-                case int _ when roll <= 99999:
+            else if (roll <= 99999)
                     pull += "**OMG THIS IS ILLEGAL**";
-                    break;
-                case int _ when roll == 100000:
-                    pull += "**STOP SPAMMING THE GACHA COMMAND THIS IS THE HIGHEST RARITY**";
-                    break;
-            }
+            else if (roll == 100000)
+                    pull += "**AMIYA (JAME I HOPE UR HAPPY)**";
+
             await ReplyAsync(die + " " + pull);
         }
 
