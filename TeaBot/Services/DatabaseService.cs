@@ -6,6 +6,7 @@ using Discord;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
+using System.Data;
 using System;
 
 namespace TeaBot.Services
@@ -76,6 +77,26 @@ namespace TeaBot.Services
             }
 
             await reader.CloseAsync();
+
+            // Register StateChange event
+            Connection.StateChange += ConnectionStateChanged;
+        }
+
+        /// <summary>
+        ///     Reopens connection in case its state was changed to closed.
+        /// </summary>
+        private void ConnectionStateChanged(object sender, StateChangeEventArgs e)
+        {
+            Console.WriteLine($"--- StateChange event received at {DateTime.UtcNow:dd.MM.yyyy HH:mm:ss} ---");
+            Console.WriteLine($"Original state: {e.OriginalState}");
+            Console.WriteLine($"Current state: {e.CurrentState}");
+            if (e.CurrentState != System.Data.ConnectionState.Open)
+            {
+                Console.WriteLine("Closing and reopening connection...");
+                Connection.Close();
+                Connection.Open();
+                Console.WriteLine($"Reopened connection");
+            }
         }
 
         /// <summary>
