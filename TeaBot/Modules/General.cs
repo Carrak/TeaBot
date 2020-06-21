@@ -210,6 +210,7 @@ namespace TeaBot.Modules
         }
 
         [Command("randomfact")]
+        [Alias("fact")]
         [Summary("Get a random fact about anything")]
         [Ratelimit(3)]
         public async Task Fact()
