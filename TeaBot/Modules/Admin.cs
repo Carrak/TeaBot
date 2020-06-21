@@ -38,17 +38,19 @@ namespace TeaBot.Modules
             {
                 await ReplyAsync("Can't set any empty prefix!");
                 return;
-            }
-
-            if (newPrefix.Length > 10)
+            } 
+            else if (newPrefix.Length > 10)
             {
                 await ReplyAsync("The prefix should not be over 10 symbols!");
                 return;
+            } 
+            else if (newPrefix == Context.Prefix)
+            {
+                await ReplyAsync("That is the current prefix!");
+                return;
             }
 
-            string query = $"UPDATE guilds SET prefix={(newPrefix == "tea " ? "NULL" : $"'{newPrefix}'")} WHERE id={Context.Guild.Id}";
-            NpgsqlCommand cmd = _database.GetCommand(query);
-            await cmd.ExecuteNonQueryAsync();
+            await _database.ChangePrefix(Context.Guild.Id, newPrefix);
 
             await ReplyAsync($"Successfully changed prefix to `{newPrefix}`");
         }

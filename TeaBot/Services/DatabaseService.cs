@@ -83,7 +83,7 @@ namespace TeaBot.Services
         }
 
         /// <summary>
-        ///     Reopens connection in case its state was changed to closed.
+        ///     Close and reopen connection in case its state was changed.
         /// </summary>
         private void ConnectionStateChanged(object sender, StateChangeEventArgs e)
         {
@@ -132,6 +132,22 @@ namespace TeaBot.Services
 
             var cmd = GetCommand(query);
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        ///     Changes the prefix for a guild.
+        /// </summary>
+        /// <param name="guildId">The ID of the guild to change the prefix for.</param>
+        /// <param name="newPrefix">The new prefix to set.</param>
+        public async Task ChangePrefix(ulong guildId, string newPrefix)
+        {
+            bool isDefault = newPrefix == TeaEssentials.DefaultPrefix;
+
+            string query = $"UPDATE guilds SET prefix={(isDefault ? "NULL" : $"'{newPrefix}'")} WHERE id={guildId}";
+            await using var cmd = GetCommand(query);
+            await cmd.ExecuteNonQueryAsync();
+
+            Prefixes[guildId] = isDefault ? null : newPrefix;
         }
 
         /// <summary>
