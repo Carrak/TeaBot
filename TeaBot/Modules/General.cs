@@ -7,8 +7,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Nekos.Net;
+using Nekos.Net.Responses;
 using TeaBot.Attributes;
 using TeaBot.Commands;
+using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
 using TeaBot.Webservices;
@@ -204,6 +207,78 @@ namespace TeaBot.Modules
 
             var urbanDictionaryPaged = new UrbanDictionaryPaged(Interactive, Context, definitions);
             await urbanDictionaryPaged.DisplayAsync();
+        }
+
+        [Command("randomfact")]
+        [Summary("Get a random fact about anything")]
+        [Ratelimit(3)]
+        public async Task Fact()
+        {
+            NekosFact fact;
+
+            try
+            {
+                fact = await NekosClient.GetFactAsync();
+            }
+            catch (HttpRequestException)
+            {
+                await ReplyAsync("Something went wrong. Try again?");
+                return;
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle("Random fact")
+                .WithDescription(fact.Fact)
+                .WithColor(TeaEssentials.MainColor)
+                .WithFooter("https://nekos.life/");
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("why")]
+        [Summary("Get a random question.")]
+        [Ratelimit(3)]
+        public async Task Why()
+        {
+            NekosWhy why;
+
+            try
+            {
+                why = await NekosClient.GetWhyAsync();
+            }
+            catch (HttpRequestException)
+            {
+                await ReplyAsync("Something went wrong. Try again?");
+                return;
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithTitle("Why?")
+                .WithDescription(why.Why)
+                .WithColor(TeaEssentials.MainColor)
+                .WithFooter("https://nekos.life/");
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("8ball")]
+        [Summary("Ask the eight ball anything you want!")]
+        [Ratelimit(3)]
+        public async Task EightBall([Remainder] string question)
+        {
+            Nekos8Ball eightBall;
+
+            try
+            {
+                eightBall = await NekosClient.Get8BallAsync();
+            }
+            catch (HttpRequestException)
+            {
+                await ReplyAsync("Something went wrong. Try again?");
+                return;
+            }
+
+            await ReplyAsync($"🎱 | {eightBall.Response}");
         }
     }
 
