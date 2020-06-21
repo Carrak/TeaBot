@@ -59,7 +59,7 @@ namespace TeaBot.Modules
         public async Task Modules()
         {
             var embed = new EmbedBuilder();
-            string disabledModulesString = string.Join(" ", Context.DisabledModules.Select(x => $"`{x.Name}`"));
+            string disabledModulesString = string.Join(" ", Context.DisabledModules.Select(x => $"`{x}`"));
 
             embed.WithAuthor(Context.User)
                 .WithColor(TeaEssentials.MainColor)
@@ -86,56 +86,45 @@ namespace TeaBot.Modules
             {
                 await ReplyAsync($"Such module does not exist! `{moduleName}`");
                 return;
-            }
-
-            if (module.Attributes.Any(attr => attr is EssentialModuleAttribute))
+            } 
+            else if (module.Attributes.Any(attr => attr is EssentialModuleAttribute))
             {
                 await ReplyAsync($"This module is essential! `{moduleName}`");
                 return;
             }
-
-            string conditionQuery = $"SELECT EXISTS (SELECT * FROM disabled_modules WHERE guildid={Context.Guild.Id} AND module_name='{moduleName}')";
-            await using var conditionCmd = _database.GetCommand(conditionQuery);
-            await using var conditionReader = await conditionCmd.ExecuteReaderAsync();
-            await conditionReader.ReadAsync();
-            if (conditionReader.GetBoolean(0))
+            else if (Context.DisabledModules.Contains(moduleName))
             {
-                await ReplyAsync("The module is already disabled.");
+                await ReplyAsync($"The module is already disabled! `{moduleName}`");
                 return;
             }
-            await conditionReader.CloseAsync();
 
-            string query = $"INSERT INTO disabled_modules (guildid, module_name) VALUES ({Context.Guild.Id}, '{moduleName}')";
-            await using var cmd = _database.GetCommand(query);
-            await cmd.ExecuteNonQueryAsync();
+            await _database.DisableModuleAsync(Context.Guild.Id, moduleName);
 
-            await ReplyAsync($"Successfully disabled module `{moduleName}`");
+            await ReplyAsync($"Successfully disabled the module. `{moduleName}`");
         }
 
         [Command("enablemodule")]
         [Summary("Enables a module back in case it was disabled in the guild.")]
         public async Task EnableModule(
-            [Summary("The module to enable black in case it was disabled.")] string moduleName
+            [Summary("The module to enable back in case it was disabled.")] string moduleName
             )
         {
             moduleName = moduleName.ToLower();
+
             if (!_commands.Modules.Any(x => x.Name.ToLower() == moduleName))
             {
                 await ReplyAsync($"Such module does not exist! `{moduleName}`");
                 return;
             }
-
-            string query = $"DELETE FROM disabled_modules WHERE guildid={Context.Guild.Id} AND module_name='{moduleName}'";
-            await using var cmd = _database.GetCommand(query);
-            int rowsAffected = await cmd.ExecuteNonQueryAsync();
-            if (rowsAffected == 0)
+            else if (!Context.DisabledModules.Contains(moduleName))
             {
                 await ReplyAsync($"This module is not disabled. `{moduleName}`");
+                return;
             }
-            else
-            {
-                await ReplyAsync($"Successfully enabled this module back. `{moduleName}`");
-            }
+
+            await _database.EnableModuleAsync(Context.Guild.Id, moduleName);
+
+            await ReplyAsync($"Successfully enabled the module back. `{moduleName}`");
         }
     }
 }

@@ -47,9 +47,10 @@ namespace TeaBot.Main
         {
             if (!(arg is SocketUserMessage message) || message.Author.IsBot) return;
 
-            var guild = (message.Channel as SocketGuildChannel)?.Guild;
-            string prefix = await _database.GetPrefixAsync(guild);
-            var disabledModules = await _database.GetDisabledModules(guild);
+            ulong? guildId = (message.Channel as SocketGuildChannel)?.Guild.Id;
+            string prefix = _database.GetPrefix(guildId);
+            var disabledModules = _database.GetDisabledModules(guildId);
+
             var context = new TeaCommandContext(_client, message, prefix, disabledModules);
 
             await _database.InsertValuesIntoDb(context);

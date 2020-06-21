@@ -66,7 +66,7 @@ namespace TeaBot.Main
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
 
             // Retrieve connection string and init db connection
-            await _database.InitDbConnectionAsync(config["connection"].ToString());
+            await _database.InitAsync(config["connection"].ToString());
             // Retrieve token
             string token = config["token"].ToString();
 
@@ -98,20 +98,5 @@ namespace TeaBot.Main
         {
             await _client.SetGameAsync("Fate || tea info", type: ActivityType.Watching);
         }
-
-        /// <summary>
-        ///     Sends the embed created by <see cref="GetInfoEmbed(string)"/> to the system channel of the joined guild if it is present.
-        /// </summary>
-        private async Task OnJoin(SocketGuild guild)
-        {
-            if (guild.SystemChannel != null)
-            {
-                await _database.InsertValuesIntoDb(guild.Id);
-                string prefix = await _database.GetPrefixAsync(guild);
-                var embed = await _tea.GetInfoEmbedAsync(prefix);
-                await guild.SystemChannel.SendMessageAsync(embed: embed);
-            }
-        }
-
     }
 }

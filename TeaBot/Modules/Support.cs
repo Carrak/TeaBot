@@ -117,7 +117,7 @@ namespace TeaBot.Modules
         [Ratelimit(3)]
         public async Task Info()
         {
-            var embed = await _tea.GetInfoEmbedAsync(await _database.GetPrefixAsync(Context.Guild));
+            var embed = await _tea.GetInfoEmbedAsync(_database.GetPrefix(Context.Guild.Id));
             await ReplyAsync(embed: embed);
         }
 
@@ -173,7 +173,7 @@ namespace TeaBot.Modules
         /// <returns>Collection of modules</returns>
         private IEnumerable<ModuleInfo> GetDisplayableModules()
         {
-            return _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module));
+            return _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module.Name.ToLower()));
         }
     }
 }

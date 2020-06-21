@@ -16,7 +16,7 @@ namespace TeaBot.Preconditions
             if (context.Guild is null)
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
-            return teaContext.DisabledModules.Contains(command.Module) ?
+            return teaContext.DisabledModules.Contains(command.Module.Name.ToLower()) ?
                 Task.FromResult(PreconditionResult.FromError("This command's module is disabled in this guild!")) :
                 Task.FromResult(PreconditionResult.FromSuccess());
         }
