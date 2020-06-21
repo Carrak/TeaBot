@@ -64,19 +64,18 @@ namespace TeaBot.Modules
                 }
                 else
                 {
-                    int index = Array.IndexOf(GetAllowedNames().ToArray(), tag.ToLower());
+                    int index = Array.IndexOf(GetAllowedNames().Select(x => x.ToLower()).ToArray(), tag.ToLower());
                     if (index == -1)
                     {
-                        await ReplyAsync($"No such tag exists! See `{Context.Prefix}hentaitags` for the full list.");
+                        await ReplyAsync($"No such tag exists! See `{Context.Prefix}hentaitags` for the list of tags.");
                         return;
                     }
                     int endpoint = GetAllowedIndexes().ElementAt(index);
                     image = await NekosClient.GetNsfwAsync((NsfwEndpoint)endpoint);
                 }
             }
-            catch (HttpRequestException e)
+            catch (HttpRequestException)
             {
-                Console.WriteLine(e.Message);
                 await ReplyAsync("Something went wrong. Try again?");
                 return;
             }
@@ -113,10 +112,12 @@ namespace TeaBot.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
+        // A couple of utility methods for nekos.life NSFW search because of the tags appear to be broken and should be excluded from everywhere
+
         private static IEnumerable<string> GetAllowedNames()
         {
             var excluded = GetExcludedIndexes();
-            return Enum.GetNames(typeof(NsfwEndpoint)).Where((x, index) => !excluded.Contains(index)).Select(x => x.ToLower());
+            return Enum.GetNames(typeof(NsfwEndpoint)).Where((x, index) => !excluded.Contains(index));
         }
 
         private static IEnumerable<int> GetAllowedIndexes()
