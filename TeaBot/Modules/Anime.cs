@@ -20,7 +20,7 @@ namespace TeaBot.Modules
     public class Anime : TeaInteractiveBase
     {
         [Command("kemo")]
-        [Summary("Search for a random SFW image or gif on nekos.life")]
+        [Summary("Search for a random SFW image or gif of a kemonomimi girl on nekos.life")]
         [Ratelimit(3)]
         public async Task Nekos()
         {
