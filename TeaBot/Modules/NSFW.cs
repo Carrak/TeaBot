@@ -64,13 +64,14 @@ namespace TeaBot.Modules
                 }
                 else
                 {
-                    int index = allowed.ElementAt(Array.IndexOf(GetAllowedNames().ToArray(), tag.ToLower()));
+                    int index = Array.IndexOf(GetAllowedNames().ToArray(), tag.ToLower());
                     if (index == -1)
                     {
                         await ReplyAsync($"No such tag exists! See `{Context.Prefix}hentaitags` for the full list.");
                         return;
                     }
-                    image = await NekosClient.GetNsfwAsync((NsfwEndpoint)index);
+                    int endpoint = GetAllowedIndexes().ElementAt(index);
+                    image = await NekosClient.GetNsfwAsync((NsfwEndpoint)endpoint);
                 }
             }
             catch (HttpRequestException e)
