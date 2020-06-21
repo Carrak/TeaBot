@@ -127,12 +127,13 @@ namespace TeaBot.Modules
         public async Task AllCommands()
         {
             var embed = new EmbedBuilder();
-            var modules = GetDisplayableModules();
+            var modules = GetDisplayableModules().OrderByDescending(x => x.Commands.Sum(cmd => cmd.Name.Length));
 
             var fields = modules.Select(module => new EmbedFieldBuilder
             {
                 Name = module.Name,
-                Value = ModuleCommandsString(module)
+                Value = ModuleCommandsString(module),
+                IsInline = true
             });
 
             var footer = new EmbedFooterBuilder();
