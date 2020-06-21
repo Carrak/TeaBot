@@ -6,6 +6,7 @@ using Discord;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
+using System;
 
 namespace TeaBot.Services
 {
@@ -16,7 +17,14 @@ namespace TeaBot.Services
         /// </summary>
         private NpgsqlConnection Connection { get; set; }
         
+        /// <summary>
+        ///     Prefixes for guilds.
+        /// </summary>
         private Dictionary<ulong, string> Prefixes { get; set; }
+
+        /// <summary>
+        ///     Modules disabled in guilds.
+        /// </summary>
         private Dictionary<ulong, List<string>> GuildDisabledModules { get; set; }
 
         /// <summary>
