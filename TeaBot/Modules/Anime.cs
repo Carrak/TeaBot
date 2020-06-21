@@ -19,7 +19,7 @@ namespace TeaBot.Modules
     [Summary("Commands dedicated to anime or searching anime art. (SFW)")]
     public class Anime : TeaInteractiveBase
     {
-        [Command("neko")]
+        [Command("kemo")]
         [Summary("Search for a random SFW image or gif on nekos.life")]
         [Ratelimit(3)]
         public async Task Nekos()
@@ -48,6 +48,5 @@ namespace TeaBot.Modules
 
             await ReplyAsync(embed: embed.Build());
         }
-        
     }
 }
