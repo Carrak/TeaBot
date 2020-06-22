@@ -45,7 +45,7 @@ namespace TeaBot.Modules
             return;
         }
 
-        [Command("hentai")]
+        [Command("hentai", RunMode = RunMode.Async)]
         [Summary("Search for a random NSFW image or gif on nekos.life")]
         [Ratelimit(3)]
         public async Task Hentai(string tag = null)
@@ -59,7 +59,6 @@ namespace TeaBot.Modules
                 if (tag is null)
                 {
                     int index = allowed.ElementAt(new Random().Next(0, allowed.Count()));
-                    Console.WriteLine((NsfwEndpoint)index);
                     image = await NekosClient.GetNsfwAsync((NsfwEndpoint)index);
                 }
                 else
@@ -84,11 +83,25 @@ namespace TeaBot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(TeaEssentials.MainColor)
                 .WithImageUrl(image.FileUrl)
+                .WithDescription("Type `d` to delete")
                 .WithTitle("Source image")
                 .WithFooter("https://nekos.life/")
                 .WithUrl(image.FileUrl);
 
-            await ReplyAsync(embed: embed.Build());
+            var msg = await ReplyAsync(embed: embed.Build());
+
+            var delete = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10));
+            if (delete != null && delete.Content == "d")
+            {
+                try
+                {
+                    await msg.DeleteAsync();
+                }
+                catch (Discord.Net.HttpException)
+                {
+
+                }
+            }
         }
 
         [Command("hentaitags")]

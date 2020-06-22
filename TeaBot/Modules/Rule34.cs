@@ -95,18 +95,36 @@ namespace TeaBot.Modules
             embed.WithImageUrl(post.FileUrl)
                 .AddField($"Tags{(countToRetrieve == tagsArr.Length ? "" : $" (displaying first {countToRetrieve} tags)")}", postTags)
                 .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC | {count} result{(count == 1 ? "" : "s")} with this tag combination")
+                .WithDescription("Type `d` to delete")
                 .WithUrl(post.FileUrl)
                 .WithColor(TeaEssentials.MainColor);
 
+            IUserMessage msg1 = null;
+            IUserMessage msg2 = null;
+
             if (post.Tags.Contains("webm"))
             {
-                await ReplyAsync(embed: embed.Build());
-                await ReplyAsync(post.FileUrl);
+                msg1 = await ReplyAsync(embed: embed.Build());
+                msg2 = await ReplyAsync(post.FileUrl);
             }
             else
             {
                 embed.WithTitle("Click here if the image is not loading");
-                await ReplyAsync(embed: embed.Build());
+                msg1 = await ReplyAsync(embed: embed.Build());
+            }
+
+            var delete = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10));
+            if (delete != null && delete.Content == "d")
+            {
+                try
+                {
+                    await msg1.DeleteAsync();
+                    if (msg2 != null)
+                        await msg2.DeleteAsync();
+                }
+                catch (Discord.Net.HttpException) { 
+                    
+                }
             }
         }
 
