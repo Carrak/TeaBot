@@ -114,7 +114,7 @@ namespace TeaBot.Modules
             }
 
             var delete = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10));
-            if (delete != null && delete.Content == "d")
+            if (delete != null && delete.Content.ToLower() == "d")
             {
                 try
                 {
