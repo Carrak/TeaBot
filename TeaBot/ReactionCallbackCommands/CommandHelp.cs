@@ -40,6 +40,7 @@ namespace TeaBot.ReactionCallbackCommands
             embed.WithTitle($"{cmd.Name} {string.Join(' ', cmd.Parameters.Select(x => $"[{x.Name}]"))}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary ?? "No description for this command yet!")
+                .AddField("Parameters", cmd.Parameters.Count > 0 ? string.Join("\n", cmd.Parameters.Select(param => $"`{param.Name}`{(param.IsOptional ? " [Optional]" : "")} - {param.Summary ?? "No description for this parameter yet!"}")) : "This command does not have any parameters")
                 .WithColor(TeaEssentials.MainColor);
 
             embed = SetDefaultFooter(embed);
