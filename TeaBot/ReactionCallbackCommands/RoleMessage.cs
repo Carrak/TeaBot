@@ -37,7 +37,7 @@ namespace TeaBot.ReactionCallbackCommands
             var embed = new EmbedBuilder();
 
             embed.WithTitle(_role.Name)
-                .WithColor(TeaEssentials.MainColor)
+                .WithColor(_role.Color)
                 .AddField("Colour", _role.Color)
                 .AddField($"Users - {users.Count()} members", string.Join(" ", CurrentPage(users, _displayPerPage)));
 
