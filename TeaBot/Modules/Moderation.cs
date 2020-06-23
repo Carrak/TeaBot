@@ -20,7 +20,9 @@ namespace TeaBot.Modules
         [RequireContext(ContextType.Guild)]
         [Note("Messages must be less than 2 weeks old.")]
         [Ratelimit(3)]
-        public async Task Purge(int count)
+        public async Task Purge(
+            [Summary("The amount of messages to purge.")] int count
+            )
         {
             count = Math.Min(100, count + 1);
             var channel = Context.Channel as ITextChannel;
@@ -36,7 +38,10 @@ namespace TeaBot.Modules
         [Note("Bots can only retrieve 100 messages per request, so it is not guaranteed for all messages to be purged at once. " +
             "Only the ones that are within these 100 can be purged. Messages also must be less than 2 weeks old.")]
         [Ratelimit(3)]
-        public async Task Purge(IUser user, int count)
+        public async Task Purge(
+            [Summary("The user to exclusively purge the messages from.")] IUser user, 
+            [Summary("The amount of messages to purge.")] int count
+            )
         {
             count = Math.Min(100, count + 1);
             var channel = Context.Channel as ITextChannel;

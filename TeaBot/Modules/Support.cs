@@ -70,7 +70,9 @@ namespace TeaBot.Modules
         [Command("help")]
         [Summary("Get help on a specific command or module")]
         [Ratelimit(3)]
-        public async Task HelpCommandModule([Remainder] string name)
+        public async Task HelpCommandModule(
+            [Summary("The name of the module or the command to get help on.")][Remainder] string name
+            )
         {
             var result = _commandService.Search(Context, name);
 
@@ -157,6 +159,8 @@ namespace TeaBot.Modules
         {
             await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");
         }
+
+        // a couple of utility methods for modules
 
         /// <summary>
         ///     Creates a string out of <paramref name="module"/> commands.

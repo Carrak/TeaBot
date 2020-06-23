@@ -12,7 +12,10 @@ namespace TeaBot.Modules
         [Command("solvequadratic")]
         [Summary("Solves a quadratic equation of the look `ax^2 + bx + c = 0` with given coefficients")]
         [Ratelimit(3)]
-        public async Task SolveQuadratic(double a, double b, double c)
+        public async Task SolveQuadratic(
+            [Summary("The coefficient a.")] double a,
+            [Summary("The coefficient b.")] double b,
+            [Summary("The coefficient c.")] double c)
         {
 
             if (a == 0 || b == 0 || c == 0)
@@ -52,9 +55,12 @@ namespace TeaBot.Modules
 
         [Command("random")]
         [Alias("rand")]
-        [Summary("Produces a random number within the range `[min; max]`")]
+        [Summary("Produces a random number within the range `[min; max]` (inclusive)")]
         [Ratelimit(3)]
-        public async Task Random(int min, int max)
+        public async Task Random(
+            [Summary("The lower bound.")] int min, 
+            [Summary("The upper bound.")] int max
+            )
         {
             if (min > max)
             {
@@ -68,7 +74,9 @@ namespace TeaBot.Modules
         [Command("prime")]
         [Summary("Determines whether a given number (in range of 64 bits) is prime")]
         [Ratelimit(3)]
-        public async Task Prime(long number)
+        public async Task Prime(
+            [Summary("The number to test")] long number
+            )
         {
             number = Math.Abs(number);
 

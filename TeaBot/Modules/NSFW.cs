@@ -23,7 +23,9 @@ namespace TeaBot.Modules
         [Alias("nh")]
         [Summary("Sends the specified doujin")]
         [Ratelimit(3)]
-        public async Task Nhentai(int doujinID)
+        public async Task Nhentai(
+            [Summary("The ID of the doujinshi. Aka the 6 digits (or less).")] int doujinID
+            )
         {
             if (doujinID <= 0)
             {
@@ -46,9 +48,11 @@ namespace TeaBot.Modules
         }
 
         [Command("hentai", RunMode = RunMode.Async)]
-        [Summary("Search for a random NSFW image or gif on nekos.life")]
+        [Summary("Search for a random NSFW image or gif on nekos.life. Use the `hentaitags` command for the list of tags.")]
         [Ratelimit(3)]
-        public async Task Hentai(string tag = null)
+        public async Task Hentai(
+            [Summary("The tag to look for. Leave empty for a random tag.")] string tag = null
+            )
         {
             NekosImage image;
 

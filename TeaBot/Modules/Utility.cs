@@ -31,7 +31,9 @@ namespace TeaBot.Modules
         [Alias("av")]
         [Summary("Get someone's avatar")]
         [Ratelimit(3)]
-        public async Task Avatar(IUser user)
+        public async Task Avatar(
+            [Summary("The user whose avatar you wish to see in full size.")] IUser user
+            )
         {
             var embed = new EmbedBuilder();
             string avatarUrl = user.GetAvatarUrl(size: 2048);
@@ -53,7 +55,7 @@ namespace TeaBot.Modules
 
         [Command("avatar")]
         [Alias("av")]
-        [Summary("Get your avatar")]
+        [Summary("Get your avatar.")]
         [Ratelimit(3)]
         public async Task Avatar() => await Avatar(Context.User);
 
@@ -61,7 +63,9 @@ namespace TeaBot.Modules
         [Alias("ui")]
         [Summary("Miscellaneous info about a user")]
         [Ratelimit(3)]
-        public async Task UserInfo(IUser user)
+        public async Task UserInfo(
+            [Summary("The user who you wish to know more about.")] IUser user
+            )
         {
             var embed = new EmbedBuilder();
 
@@ -224,9 +228,10 @@ namespace TeaBot.Modules
         [Command("joinpostop", true)]
         [Alias("jpt", "joinpos")]
         [Summary("Display all the users of the guild sorted by their join date")]
-        [Note("Use `tea joinpostop true` to ignore bots appearing in the list")]
         [Ratelimit(3)]
-        public async Task JoinPosTop(string options = "")
+        public async Task JoinPosTop(
+            [Summary("The options to use for the top. Currently there's only `nobots` which removes bots from the list.")] string options = ""
+            )
         {
             bool ignoreBots = options == "nobots";
             var joinPosMessage = new JoinPositionMessage(Interactive, Context, 15, ignoreBots);
@@ -234,10 +239,12 @@ namespace TeaBot.Modules
         }
 
         [Command("role")]
-        [Summary("Displays all people who have a given role")]
-        [Note("If a role contains spaces, cover its name with `\"` from both sides")]
+        [Summary("Displays people who have a certain role. Also shows information about the role itself.")]
+        [Note("If a role's name contains spaces, cover its name with `\"` from both sides")]
         [Ratelimit(3)]
-        public async Task Role(IRole role)
+        public async Task Role(
+            [Summary("The role to retrieve information about.")] IRole role
+            )
         {
             var roleMessage = new RoleMessage(Interactive, Context, role, 40);
             await roleMessage.DisplayAsync();

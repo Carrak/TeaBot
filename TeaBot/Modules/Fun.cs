@@ -45,9 +45,11 @@ namespace TeaBot.Modules
         }
 
         [Command("uwufy")]
-        [Summary("Don't.")]
+        [Summary("twansfowms text uwu")]
         [Ratelimit(3)]
-        public async Task Uwufy([Remainder] string text)
+        public async Task Uwufy(
+            [Summary("The text to uwufy.")][Remainder] string text
+            )
         {
             text = text.DeafenMentions(Context.Message);
 
@@ -79,9 +81,11 @@ namespace TeaBot.Modules
 
         [Command("waifumeter")]
         [Alias("ratewaifu", "ratewf", "waifurate", "rw")]
-        [Summary("Get to know how much of a waifu something or someone is")]
+        [Summary("Get to know how much of a waifu something or someone is.")]
         [Ratelimit(3)]
-        public async Task WaifuMeter([Remainder] string subject)
+        public async Task WaifuMeter(
+            [Summary("The subject to rate.")][Remainder] string subject
+            )
         {
             subject = subject.DeafenMentions(Context.Message);
 

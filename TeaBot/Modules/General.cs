@@ -36,7 +36,9 @@ namespace TeaBot.Modules
         [Summary("Make the bot say something!")]
         [Note("This command does not work if a message contains a ping")]
         [Ratelimit(3)]
-        public async Task Say([Remainder] string text)
+        public async Task Say(
+            [Summary("The text to repeat.")][Remainder] string text
+            )
         {
             if (Context.Message.MentionedRoles.Count > 0 || Context.Message.MentionedUsers.Count > 0)
             {
@@ -78,7 +80,9 @@ namespace TeaBot.Modules
         [Alias("timer")]
         [Summary("Sets a timer for the given amount of seconds")]
         [Ratelimit(120)]
-        public async Task Wait(double seconds)
+        public async Task Wait(
+            [Summary("Time to wait for. Cannot be over 300 seconds.")] double seconds
+            )
         {
             if (seconds > 300)
             {
@@ -95,9 +99,11 @@ namespace TeaBot.Modules
 
         [Command("russianize")]
         [Alias("russian", "rus")]
-        [Summary("Replaces various letters in a message with Russian letters instead")]
+        [Summary("тгаnsfoгмs тeхт liке тнis")]
         [Ratelimit(3)]
-        public async Task Russianize([Remainder] string text)
+        public async Task Russianize(
+            [Summary("The text to transform.")][Remainder] string text
+            )
         {
             string result = text.ToLower()
                 .Replace("h", "н")
@@ -118,7 +124,9 @@ namespace TeaBot.Modules
         [Alias("emoji", "emote", "viewemoji", "view")]
         [Summary("View any emoji. For custom emotes, make sure you use ones from the guild you're using this command in.")]
         [Ratelimit(3)]
-        public async Task ViewEmoji(IEmote emote)
+        public async Task ViewEmoji(
+            [Summary("Emote or emoji to view a bigger picture of.")]IEmote emote
+            )
         {
             if (emote is Emote e)
                 await ReplyAsync(e.Url);
@@ -134,7 +142,9 @@ namespace TeaBot.Modules
         [Summary("Force the bot to make a choice for you!")]
         [Note("Split the options using space or `|`")]
         [Ratelimit(3)]
-        public async Task Choose([Remainder] string options)
+        public async Task Choose(
+            [Summary("The options to choose from.")][Remainder] string options
+            )
         {
             var optionsArray = options.Contains('|') ? options.Split('|') : options.Split(' ');
             await ReplyAsync(optionsArray[new Random().Next(0, optionsArray.Length)]);
@@ -183,7 +193,9 @@ namespace TeaBot.Modules
         [Alias("ud", "urban", "define")]
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
         [Ratelimit(3)]
-        public async Task UrbanDictonary([Remainder] string word)
+        public async Task UrbanDictonary(
+            [Summary("The word or word combination to look up the definition for.")][Remainder] string word
+            )
         {
             var ud = new UrbanDictionarySearch(word);
 
@@ -265,7 +277,9 @@ namespace TeaBot.Modules
         [Command("8ball")]
         [Summary("Ask the eight ball anything you want!")]
         [Ratelimit(3)]
-        public async Task EightBall([Remainder] string question)
+        public async Task EightBall(
+            [Summary("The question you want to ask the 8ball.")][Remainder] string question
+            )
         {
             Nekos8Ball eightBall;
 
