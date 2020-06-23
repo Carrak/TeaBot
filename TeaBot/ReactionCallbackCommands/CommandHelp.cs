@@ -37,7 +37,7 @@ namespace TeaBot.ReactionCallbackCommands
             if (cmd.Aliases.Count > 1)
                 embed.AddField("Aliases", string.Join(", ", cmd.Aliases.Where(name => name != cmd.Name)));
 
-            embed.WithTitle($"{cmd.Name} {(cmd.Parameters.Count > 0 ? $"[{string.Join("] [", cmd.Parameters)}]" : "")}")
+            embed.WithTitle($"{cmd.Name} {string.Join(' ', cmd.Parameters.Select(x => $"[{x.Name}]"))}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary ?? "No description for this command yet!")
                 .WithColor(TeaEssentials.MainColor);
