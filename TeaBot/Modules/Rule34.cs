@@ -34,9 +34,9 @@ namespace TeaBot.Modules
             [Summary("The tags to search for.")] params string[] tags
             )
         {
-            var defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
-            var userBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id);
-            var guildBlacklist = Context.IsPrivate ? Enumerable.Empty<string>() : await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id);
+            var defaultBlacklist = await _r34.GetDefaultBlacklist();
+            var userBlacklist = await _r34.GetUserBlackList(Context.User.Id);
+            var guildBlacklist = Context.IsPrivate ? Enumerable.Empty<string>() : await _r34.GetGuildBlacklist(Context.Guild.Id);
 
             Rule34Search search;
             try
@@ -140,8 +140,8 @@ namespace TeaBot.Modules
         [Ratelimit(10)]
         public async Task BlackList()
         {
-            IEnumerable<string> defaultBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Default);
-            IEnumerable<string> userBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id);
+            var defaultBlacklist = await _r34.GetDefaultBlacklist();
+            var userBlacklist = await _r34.GetUserBlackList(Context.User.Id);
 
             var embed = new EmbedBuilder();
 
@@ -154,7 +154,7 @@ namespace TeaBot.Modules
 
             if (!Context.IsPrivate)
             {
-                IEnumerable<string> guildBlacklist = await _r34.GetBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id);
+                IEnumerable<string> guildBlacklist = await _r34.GetGuildBlacklist(Context.Guild.Id);
                 embed.AddField($"Guild blacklist (tags that apply to this guild) - {Rule34BlacklistService.GuildBlacklistLimit - guildBlacklist.Count()} left", FormatBlacklistedTags(guildBlacklist));
             }
 
@@ -176,7 +176,7 @@ namespace TeaBot.Modules
         {
             try
             {
-                await _r34.AddToBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id, tag);
+                await _r34.AddTagToUserBlacklist(Context.User.Id, tag);
                 await ReplyAsync($"Succesfully added the tag to your blacklist. `{tag}`");
             }
             catch (BlacklistException be)
@@ -195,7 +195,7 @@ namespace TeaBot.Modules
         {
             try
             {
-                await _r34.RemoveTagFromBlacklistAsync(Rule34BlacklistService.R34BlacklistType.User, Context.User.Id, tag);
+                await _r34.RemoveTagFromUserBlacklist(Context.User.Id, tag);
                 await ReplyAsync($"Successfully removed the tag from your blacklist. `{tag}`");
             }
             catch (BlacklistException be)
@@ -216,7 +216,7 @@ namespace TeaBot.Modules
         {
             try
             {
-                await _r34.AddToBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id, tag);
+                await _r34.AddTagToGuildBlacklist(Context.Guild.Id, tag);
                 await ReplyAsync($"Successfully added the tag to the guild's blacklist. `{tag}`");
             }
             catch (BlacklistException be)
@@ -237,7 +237,7 @@ namespace TeaBot.Modules
         {
             try
             {
-                await _r34.RemoveTagFromBlacklistAsync(Rule34BlacklistService.R34BlacklistType.Guild, Context.Guild.Id, tag);
+                await _r34.RemoveTagFromGuildBlacklist(Context.Guild.Id, tag);
                 await ReplyAsync($"Successfully removed the tag from the guild's blacklist. `{tag}`");
             }
             catch (BlacklistException be)
