@@ -37,7 +37,13 @@ namespace TeaBot.ReactionCallbackCommands
             if (cmd.Aliases.Count > 1)
                 embed.AddField("Aliases", string.Join(", ", cmd.Aliases.Where(name => name != cmd.Name)));
 
-            embed.WithTitle($"{cmd.Name} {string.Join(' ', cmd.Parameters.Select(x => $"[{x.Name}]"))}")
+            string commandName = (!string.IsNullOrEmpty(cmd.Module.Group) ? $"{cmd.Module.Group} " : "") + cmd.Name;
+
+            Console.WriteLine($"Group: {cmd.Module.Group ?? "no group"}");
+            Console.WriteLine($"Name: {cmd.Name}");
+            Console.WriteLine($"Total name: {commandName}");
+
+            embed.WithTitle($"{commandName} {string.Join(' ', cmd.Parameters.Select(x => $"[{x.Name}]"))}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary ?? "No description for this command yet!")
                 .AddField("Parameters", cmd.Parameters.Count > 0 ? string.Join("\n", cmd.Parameters.Select(param => $"`{param.Name}`{(param.IsOptional ? " [Optional]" : "")} - {param.Summary ?? "No description for this parameter yet!"}")) : "This command does not have any parameters")

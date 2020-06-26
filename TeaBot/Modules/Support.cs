@@ -71,10 +71,10 @@ namespace TeaBot.Modules
         [Summary("Get help on a specific command or module")]
         [Ratelimit(3)]
         public async Task HelpCommandModule(
-            [Summary("The name of the module or the command to get help on.")][Remainder] string name
+            [Summary("The name of the module or the command to get help on.")] [Remainder] string name
             )
         {
-            var result = _commandService.Search(Context, name);
+            var result = _commandService.Search(name);
 
             if (result.IsSuccess &&
                 (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) &&
@@ -169,7 +169,7 @@ namespace TeaBot.Modules
         /// <returns>String containing all commands of a module presented in a readable way.</returns>
         private string ModuleCommandsString(ModuleInfo module)
         {
-            return string.Join(" ", module.Commands.Select(command => $"`{command.Name}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`").Distinct());
+            return string.Join(" ", module.Commands.Select(command => $"`{(!string.IsNullOrEmpty(command.Module.Group) ? $"{command.Module.Group} " : "") + command.Name}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`").Distinct());
         }
 
         /// <summary>
