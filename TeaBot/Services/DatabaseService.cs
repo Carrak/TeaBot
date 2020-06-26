@@ -153,39 +153,6 @@ namespace TeaBot.Services
         }
 
         /// <summary>
-        ///     Adds a guild with a default prefix.
-        /// </summary>
-        /// <param name="guildId">The ID of the guild to insert</param>
-        public async Task AddGuild(ulong guildId)
-        {
-            string query = $"INSERT INTO guilds (id) VALUES (@gid)";
-            await using var cmd = GetCommand(query);
-
-            cmd.Parameters.AddWithValue("gid", (long)guildId);
-
-            await cmd.ExecuteNonQueryAsync();
-
-            Prefixes.Add(guildId, null);
-        }
-
-        /// <summary>
-        ///     Removes a guild as well as its prefix.
-        /// </summary>
-        /// <param name="guildId">The ID of the guild to delete.</param>
-        /// <returns></returns>
-        public async Task RemoveGuild(ulong guildId)
-        {
-            string query = $"DELETE FROM guilds WHERE guilds.id=@gid";
-            await using var cmd = GetCommand(query);
-
-            cmd.Parameters.AddWithValue("gid", (long)guildId);
-
-            await cmd.ExecuteNonQueryAsync();
-
-            Prefixes.Remove(guildId);
-        }
-
-        /// <summary>
         ///     Disable a module for a guild.
         /// </summary>
         /// <param name="guildId">The ID of the guild to disable the module for.</param>
@@ -240,13 +207,26 @@ namespace TeaBot.Services
         /// </summary>
         /// <param name="guildId">The guild ID to retrieve the prefix for.</param>
         /// <returns>Prefix used in the provided guild.</returns>
-        public string GetPrefix(ulong? guildId)
+        public async Task<string> GetPrefixAsync(ulong? guildId)
         {
             if (guildId is null)
                 return TeaEssentials.DefaultPrefix;
 
-            string prefix = Prefixes[guildId.Value];
-            return prefix ?? TeaEssentials.DefaultPrefix;
+            if (Prefixes.TryGetValue(guildId.Value, out var prefix))
+            {
+                return prefix ?? TeaEssentials.DefaultPrefix;
+            }
+            else
+            {
+                string query = $"INSERT INTO guilds (id) VALUES (@gid)";
+                await using var cmd = GetCommand(query);
+                cmd.Parameters.AddWithValue("gid", (long)guildId);
+                await cmd.ExecuteNonQueryAsync();
+
+                Prefixes.Add(guildId.Value, null);
+
+                return TeaEssentials.DefaultPrefix;
+            }
         }
 
         /// <summary>

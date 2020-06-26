@@ -57,7 +57,6 @@ namespace TeaBot.Main
             // Register events
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
-            _client.LeftGuild += OnLeave;
             _client.Ready += OnStart;
 
             // Retrieve the token and the pgsql db connection string
@@ -82,12 +81,6 @@ namespace TeaBot.Main
             await Task.Delay(-1);
         }
 
-
-        private async Task OnLeave(SocketGuild guild)
-        {
-            await _database.RemoveGuild(guild.Id);
-        }
-
         /// <summary>
         ///     Sends the embed created by <see cref="GetInfoEmbed(string)"/> to the system channel of the joined guild if it is present.
         /// </summary>
@@ -95,8 +88,7 @@ namespace TeaBot.Main
         {
             if (guild.SystemChannel != null)
             {
-                await _database.AddGuild(guild.Id);
-                string prefix = _database.GetPrefix(guild.Id);
+                string prefix = await _database.GetPrefixAsync(guild.Id);
                 var embed = await _tea.GetInfoEmbedAsync(prefix);
                 await guild.SystemChannel.SendMessageAsync(embed: embed);
             }

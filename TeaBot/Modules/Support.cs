@@ -119,7 +119,7 @@ namespace TeaBot.Modules
         [Ratelimit(3)]
         public async Task Info()
         {
-            var embed = await _tea.GetInfoEmbedAsync(_database.GetPrefix(Context.Guild.Id));
+            var embed = await _tea.GetInfoEmbedAsync(Context.Prefix);
             await ReplyAsync(embed: embed);
         }
 
