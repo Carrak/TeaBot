@@ -17,7 +17,7 @@ namespace TeaBot.TypeReaders
             else if (NeoSmart.Unicode.Emoji.IsEmoji(input))
                 return Task.FromResult(TypeReaderResult.FromSuccess(new Emoji(input)));
             else
-                return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Could not parse emote/emoji"));
+                return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Could not parse emote/emoji."));
         }
     }
 }
