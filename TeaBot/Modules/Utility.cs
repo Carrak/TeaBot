@@ -97,9 +97,12 @@ namespace TeaBot.Modules
             {
                 var guildUser = Context.Guild.GetUser(user.Id);
 
-                string query = $"SELECT last_message_timestamp, guildid, channelid, messageid FROM guildusers WHERE userid = {guildUser.Id} AND guildid = {Context.Guild.Id}";
-
+                string query = $"SELECT last_message_timestamp, guildid, channelid, messageid FROM guildusers WHERE userid=@uid AND guildid=@gid";
                 var cmd = _database.GetCommand(query);
+
+                cmd.Parameters.AddWithValue("uid", (long)guildUser.Id);
+                cmd.Parameters.AddWithValue("gid", (long)Context.Guild.Id);
+
                 var reader = await cmd.ExecuteReaderAsync();
                 string lastMessage = "No information";
                 if (reader.HasRows)
@@ -178,10 +181,13 @@ namespace TeaBot.Modules
 
             int botsCount = guild.Users.Where(user => user.IsBot).Count();
 
-            string query = $"SELECT COUNT(last_message_timestamp) FROM guildusers WHERE guildid = {guild.Id} AND" +
+            string query = $"SELECT COUNT(last_message_timestamp) FROM guildusers WHERE guildid=@gid AND" +
                                 "(now()::timestamp - last_message_timestamp) <= interval '2 weeks'";
+            await using var cmd = _database.GetCommand(query);
 
-            var reader = await _database.GetCommand(query).ExecuteReaderAsync();
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
             await reader.ReadAsync();
             long activeMembersCount = reader.GetInt64(0);
             await reader.CloseAsync();

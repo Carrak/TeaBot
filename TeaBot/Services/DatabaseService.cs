@@ -141,13 +141,18 @@ namespace TeaBot.Services
         /// <param name="newPrefix">The new prefix to set.</param>
         public async Task ChangePrefix(ulong guildId, string newPrefix)
         {
-            bool isDefault = newPrefix == TeaEssentials.DefaultPrefix;
+            bool isDefaultPrefix = newPrefix == TeaEssentials.DefaultPrefix;
+            newPrefix = isDefaultPrefix ? null : newPrefix;
 
-            string query = $"UPDATE guilds SET prefix={(isDefault ? "NULL" : $"'{newPrefix}'")} WHERE id={guildId}";
+            string query = $"UPDATE guilds SET prefix=@prefix WHERE id=@gid";
             await using var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+            cmd.Parameters.AddWithValue("prefix", newPrefix);
+
             await cmd.ExecuteNonQueryAsync();
 
-            Prefixes[guildId] = isDefault ? null : newPrefix;
+            Prefixes[guildId] = isDefaultPrefix ? null : newPrefix;
         }
 
         /// <summary>
@@ -156,8 +161,11 @@ namespace TeaBot.Services
         /// <param name="guildId">The ID of the guild to insert</param>
         public async Task AddGuild(ulong guildId)
         {
-            string query = $"INSERT INTO guilds (id) VALUES ({guildId})";
+            string query = $"INSERT INTO guilds (id) VALUES (@gid)";
             await using var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+
             await cmd.ExecuteNonQueryAsync();
 
             Prefixes.Add(guildId, null);
@@ -170,8 +178,11 @@ namespace TeaBot.Services
         /// <returns></returns>
         public async Task RemoveGuild(ulong guildId)
         {
-            string query = $"DELETE FROM guilds WHERE guilds.id={guildId}";
+            string query = $"DELETE FROM guilds WHERE guilds.id=@gid";
             await using var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+
             await cmd.ExecuteNonQueryAsync();
 
             Prefixes.Remove(guildId);
@@ -184,8 +195,12 @@ namespace TeaBot.Services
         /// <param name="moduleName">The name of the module to disable (in lowercase)</param>
         public async Task DisableModuleAsync(ulong guildId, string moduleName)
         {
-            string query = $"INSERT INTO disabled_modules (guildid, module_name) VALUES ({guildId}, '{moduleName}')";
+            string query = $"INSERT INTO disabled_modules (guildid, module_name) VALUES (@gid, @module)";
             await using var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+            cmd.Parameters.AddWithValue("module", moduleName);
+
             await cmd.ExecuteNonQueryAsync();
 
             if (GuildDisabledModules.TryGetValue(guildId, out var disabledModules))
@@ -210,8 +225,12 @@ namespace TeaBot.Services
         /// <param name="moduleName">The name of the module to enable (in lowercase)</param>
         public async Task EnableModuleAsync(ulong guildId, string moduleName)
         {
-            string query = $"DELETE FROM disabled_modules WHERE guildid={guildId} AND module_name='{moduleName}'";
+            string query = $"DELETE FROM disabled_modules WHERE guildid=@gid AND module_name=@module";
             await using var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long) guildId);
+            cmd.Parameters.AddWithValue("module", moduleName);
+
             await cmd.ExecuteNonQueryAsync();
 
             var disabledModules = GuildDisabledModules[guildId];
