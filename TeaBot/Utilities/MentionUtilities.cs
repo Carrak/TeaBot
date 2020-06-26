@@ -4,7 +4,7 @@ namespace TeaBot.Utilities
 {
     public static class MentionUtilities
     {
-        public static string DeafenMentions(this string text, SocketMessage message)
+        public static string DeafenMentionsFromMessage(this string text, SocketMessage message)
         {
             text = text.Replace("@everyone", "everyone").Replace("@here", "here");
             foreach (var role in message.MentionedRoles)

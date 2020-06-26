@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using TeaBot.Commands;
 using TeaBot.Preconditions;
 using TeaBot.Utilities;
@@ -51,7 +52,7 @@ namespace TeaBot.Modules
             [Summary("The text to uwufy.")][Remainder] string text
             )
         {
-            text = text.DeafenMentions(Context.Message);
+            text = text.DeafenMentionsFromMessage(Context.Message);
 
             var split = text.ToLower().Split(" ").Where(x => x != "").ToArray();
             Random random = new Random();
@@ -87,7 +88,7 @@ namespace TeaBot.Modules
             [Summary("The subject to rate.")][Remainder] string subject
             )
         {
-            subject = subject.DeafenMentions(Context.Message);
+            subject = subject.DeafenMentionsFromMessage(Context.Message);
 
             int percentage = 0;
             foreach (char character in subject.ToLower())
