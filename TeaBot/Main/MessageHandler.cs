@@ -48,7 +48,7 @@ namespace TeaBot.Main
             if (!(arg is SocketUserMessage message) || message.Author.IsBot) return;
 
             ulong? guildId = (message.Channel as SocketGuildChannel)?.Guild.Id;
-            string prefix = await _database.GetPrefixAsync(guildId);
+            string prefix = await _database.GetOrAddPrefixAsync(guildId);
             var disabledModules = _database.GetDisabledModules(guildId);
 
             var context = new TeaCommandContext(_client, message, prefix, disabledModules);
@@ -183,7 +183,6 @@ namespace TeaBot.Main
                 }
             }
         }
-
 
         /// <summary>
         ///     Sends the message to the bot owner.

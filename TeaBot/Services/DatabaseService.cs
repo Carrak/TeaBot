@@ -203,11 +203,11 @@ namespace TeaBot.Services
         }
 
         /// <summary>
-        ///     Retrieve the prefix for the given guild.
+        ///     Gets the prefix for the given guild if it is in the Prefix collection. If it isn't, adds and returns the default prefix.
         /// </summary>
         /// <param name="guildId">The guild ID to retrieve the prefix for.</param>
         /// <returns>Prefix used in the provided guild.</returns>
-        public async Task<string> GetPrefixAsync(ulong? guildId)
+        public async Task<string> GetOrAddPrefixAsync(ulong? guildId)
         {
             if (guildId is null)
                 return TeaEssentials.DefaultPrefix;
