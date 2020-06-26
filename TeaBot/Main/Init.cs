@@ -54,9 +54,6 @@ namespace TeaBot.Main
             _database = _services.GetRequiredService<DatabaseService>();
             _tea = _services.GetRequiredService<TeaService>();
 
-            // Init the message handler
-            await _services.GetRequiredService<MessageHandler>().InitAsync();
-
             // Register events
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
@@ -70,6 +67,9 @@ namespace TeaBot.Main
             await _database.InitAsync(config["connection"].ToString());
             // Retrieve token
             string token = config["token"].ToString();
+
+            // Init the message handler
+            await _services.GetRequiredService<MessageHandler>().InitAsync();
 
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
