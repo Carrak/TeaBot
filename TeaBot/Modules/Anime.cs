@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TeaBot.Commands;
-using Nekos;
-using Discord.Commands;
-using System.Threading.Tasks;
-using Nekos.Net;
-using Nekos.Net.Responses;
-using Nekos.Net.Endpoints;
-using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
+using Nekos.Net;
+using Nekos.Net.Endpoints;
+using Nekos.Net.Responses;
+using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
 
@@ -30,8 +26,8 @@ namespace TeaBot.Modules
             try
             {
                 SfwEndpoint[] endpoints = new[] { SfwEndpoint.Neko, SfwEndpoint.Fox_Girl };
-                image = await NekosClient.GetSfwAsync(endpoints[new Random().Next(0 , endpoints.Length)]);
-            } 
+                image = await NekosClient.GetSfwAsync(endpoints[new Random().Next(0, endpoints.Length)]);
+            }
             catch (HttpRequestException)
             {
                 await ReplyAsync("Something went wrong. Try again?");

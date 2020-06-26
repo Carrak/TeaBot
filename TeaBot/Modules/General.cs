@@ -200,7 +200,7 @@ namespace TeaBot.Modules
             var ud = new UrbanDictionarySearch(word);
 
             string json;
-            try 
+            try
             {
                 json = await ud.GetDefinitionsJSONAsync();
             }

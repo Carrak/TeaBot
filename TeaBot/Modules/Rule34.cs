@@ -124,8 +124,9 @@ namespace TeaBot.Modules
                     if (msg2 != null)
                         await msg2.DeleteAsync();
                 }
-                catch (Discord.Net.HttpException) { 
-                    
+                catch (Discord.Net.HttpException)
+                {
+
                 }
             }
         }

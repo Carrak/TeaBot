@@ -58,7 +58,7 @@ namespace TeaBot.Modules
         [Summary("Produces a random number within the range `[min; max]` (inclusive)")]
         [Ratelimit(3)]
         public async Task Random(
-            [Summary("The lower bound.")] int min, 
+            [Summary("The lower bound.")] int min,
             [Summary("The upper bound.")] int max
             )
         {

@@ -1,13 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
 using Npgsql;
 using TeaBot.Main;
-using System.Data;
-using System;
 
 namespace TeaBot.Services
 {
@@ -17,7 +14,7 @@ namespace TeaBot.Services
         ///     The connection to the PostgreSQL database.
         /// </summary>
         private NpgsqlConnection Connection { get; set; }
-        
+
         /// <summary>
         ///     Prefixes for guilds.
         /// </summary>
@@ -65,14 +62,14 @@ namespace TeaBot.Services
                 {
                     modules.Add(moduleName);
                     GuildDisabledModules[guildId] = modules;
-                } 
+                }
                 else
                 {
                     var list = new List<string>
                     {
                         moduleName
                     };
-                    GuildDisabledModules.Add(guildId, list); 
+                    GuildDisabledModules.Add(guildId, list);
                 }
             }
 
@@ -207,7 +204,7 @@ namespace TeaBot.Services
             {
                 disabledModules.Add(moduleName);
                 GuildDisabledModules[guildId] = disabledModules;
-            } 
+            }
             else
             {
                 var list = new List<string>
@@ -228,7 +225,7 @@ namespace TeaBot.Services
             string query = $"DELETE FROM disabled_modules WHERE guildid=@gid AND module_name=@module";
             await using var cmd = GetCommand(query);
 
-            cmd.Parameters.AddWithValue("gid", (long) guildId);
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
             cmd.Parameters.AddWithValue("module", moduleName);
 
             await cmd.ExecuteNonQueryAsync();

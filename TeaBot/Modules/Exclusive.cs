@@ -52,6 +52,7 @@ namespace TeaBot.Modules
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;
             var quotes = await channel.GetMessagesAsync().FlattenAsync();
+
             List<(ulong, int)> topUsers = new List<(ulong, int)>();
             foreach (var quote in quotes)
             {
@@ -64,7 +65,9 @@ namespace TeaBot.Modules
                         topUsers[index] = (mentionedId, topUsers[index].Item2 + 1);
                 }
             }
+
             topUsers = topUsers.OrderByDescending(x => x.Item2).ToList();
+
             var embed = new EmbedBuilder();
 
             embed.WithAuthor(Context.User)

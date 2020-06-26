@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
@@ -38,12 +37,12 @@ namespace TeaBot.Modules
             {
                 await ReplyAsync("Can't set any empty prefix!");
                 return;
-            } 
+            }
             else if (newPrefix.Length > 10)
             {
                 await ReplyAsync("The prefix should not be over 10 symbols!");
                 return;
-            } 
+            }
             else if (newPrefix == Context.Prefix)
             {
                 await ReplyAsync("That is the current prefix!");
@@ -88,7 +87,7 @@ namespace TeaBot.Modules
             {
                 await ReplyAsync($"Such module does not exist! `{moduleName}`");
                 return;
-            } 
+            }
             else if (module.Attributes.Any(attr => attr is EssentialModuleAttribute))
             {
                 await ReplyAsync($"This module is essential! `{moduleName}`");

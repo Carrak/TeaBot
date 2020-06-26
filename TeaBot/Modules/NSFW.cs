@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Discord.Commands;
-using TeaBot.Commands;
-using TeaBot.Preconditions;
-using Nekos;
-using Nekos.Net.Responses;
-using Nekos.Net.Endpoints;
-using System.Net.Http;
-using Discord;
-using TeaBot.Main;
-using Nekos.Net;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using Nekos.Net;
+using Nekos.Net.Endpoints;
+using Nekos.Net.Responses;
+using TeaBot.Commands;
+using TeaBot.Main;
+using TeaBot.Preconditions;
 
 namespace TeaBot.Modules
 {

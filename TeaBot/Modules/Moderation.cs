@@ -31,7 +31,7 @@ namespace TeaBot.Modules
         }
 
         [Command("purge")]
-        [Summary("Delete the last `count` messages from a specific user. There is a hard limit of 100")]
+        [Summary("Delete the last `count` messages from a specific user. There is a hard limit of 100.")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
@@ -39,7 +39,7 @@ namespace TeaBot.Modules
             "Only the ones that are within these 100 can be purged. Messages also must be less than 2 weeks old.")]
         [Ratelimit(3)]
         public async Task Purge(
-            [Summary("The user to exclusively purge the messages from.")] IUser user, 
+            [Summary("The user to exclusively purge the messages from.")] IUser user,
             [Summary("The amount of messages to purge.")] int count
             )
         {

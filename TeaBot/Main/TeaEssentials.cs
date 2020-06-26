@@ -1,9 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using Discord;
-using System;
-using System.Diagnostics;
 
 namespace TeaBot.Main
 {

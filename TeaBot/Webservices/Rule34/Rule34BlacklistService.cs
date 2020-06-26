@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TeaBot.Services;
 using Npgsql;
+using TeaBot.Services;
 
 namespace TeaBot.Webservices.Rule34
 {

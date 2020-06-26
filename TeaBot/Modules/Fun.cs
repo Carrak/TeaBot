@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using TeaBot.Commands;
 using TeaBot.Preconditions;
 using TeaBot.Utilities;
@@ -25,22 +24,22 @@ namespace TeaBot.Modules
 
             string pull = $"{Context.User.Mention} rolled ";
 
-            if  (roll <= 65000)
-                    pull += "**COMMON**";
+            if (roll <= 65000)
+                pull += "**COMMON**";
             else if (roll <= 85000)
-                    pull += "**UNCOMMON**";
+                pull += "**UNCOMMON**";
             else if (roll <= 95000)
-                    pull += "**RARE**";
-            else if(roll <= 99000)
-                    pull += "**EPIC**";
+                pull += "**RARE**";
+            else if (roll <= 99000)
+                pull += "**EPIC**";
             else if (roll <= 99900)
-                    pull += "**LEGENDARY**";
+                pull += "**LEGENDARY**";
             else if (roll <= 99990)
-                    pull += "**IMPOSSIBLE**";
+                pull += "**IMPOSSIBLE**";
             else if (roll <= 99999)
-                    pull += "**OMG THIS IS ILLEGAL**";
+                pull += "**OMG THIS IS ILLEGAL**";
             else if (roll == 100000)
-                    pull += "**AMIYA (JAME I HOPE UR HAPPY)**";
+                pull += "**AMIYA (JAME I HOPE UR HAPPY)**";
 
             await ReplyAsync(die + " " + pull);
         }

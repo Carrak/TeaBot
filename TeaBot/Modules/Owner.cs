@@ -54,8 +54,9 @@ namespace TeaBot.Modules
             var message = await ReplyAsync(embed: embed.Build());
 
             // Initialize the globals and script options
-            var globals = new Globals { 
-                Context = Context 
+            var globals = new Globals
+            {
+                Context = Context
             };
             var sopts = ScriptOptions.Default
                 .WithImports("System", "System.Linq", "Discord", "Discord.Commands", "TeaBot.Main", "TeaBot.Commands", "System.IO", "System.Reflection", "System.Threading.Tasks", "System.Threading")
