@@ -175,6 +175,7 @@ namespace TeaBot.Modules
             [Summary("The tag to add to your blacklist.")] string tag
             )
         {
+            tag = tag.ToLower();
             try
             {
                 await _r34.AddTagToBlacklistAsync(Context.User, tag);
@@ -194,6 +195,7 @@ namespace TeaBot.Modules
             [Summary("The tag to remove from your blacklist.")] string tag
             )
         {
+            tag = tag.ToLower();
             try
             {
                 await _r34.RemoveTagFromBlacklistAsync(Context.User, tag);
@@ -215,6 +217,7 @@ namespace TeaBot.Modules
             [Summary("The tag to add to the guild's blacklist.")] string tag
             )
         {
+            tag = tag.ToLower();
             try
             {
                 await _r34.AddTagToBlacklistAsync(Context.Guild, tag);
@@ -236,6 +239,7 @@ namespace TeaBot.Modules
             [Summary("The tag to remove from the guild's blacklist.")] string tag
             )
         {
+            tag = tag.ToLower();
             try
             {
                 await _r34.RemoveTagFromBlacklistAsync(Context.Guild, tag);
