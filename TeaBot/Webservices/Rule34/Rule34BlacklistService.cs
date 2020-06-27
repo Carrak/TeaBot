@@ -225,10 +225,10 @@ namespace TeaBot.Webservices.Rule34
         }
 
         /// <summary>
-        ///     Creates an entry in <seealso cref="_cache"/> for later use
+        ///     Adds or overwrites an object in cache.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="key">The key of the object.</param>
+        /// <param name="value">The value to set.</param>
         private void AddToCacheOrSet(object key, object value)
         {
             var options = new MemoryCacheEntryOptions()
