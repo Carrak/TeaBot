@@ -125,41 +125,12 @@ namespace TeaBot.Modules
                 embed.AddField($"Joined {Context.Guild}", TimeUtilities.DateString(joined), true)
                     .AddField($"Last message in {Context.Guild.Name}", lastMessage)
                     .AddField($"Roles {(roles.Count() > 20 ? "(displaying 20 highest roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", roles.Where((x, index) => index < 20).Select(role => role.Mention)))
-                    .AddField("Main permissions", MainPermissionsString(guildUser.GuildPermissions))
+                    .AddField("Main permissions", PermissionUtilities.MainGuildPermissionsString(guildUser.GuildPermissions))
                     .AddField("Join position", Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime).ToList().IndexOf(guildUser) + 1, true)
                     .AddField("Guild nickname", guildUser.Nickname ?? "-", true);
             }
 
             await ReplyAsync(embed: embed.Build());
-
-            /// <summary>
-            ///     Creates a string containing the primary permissions of a user.
-            /// </summary>
-            /// <param name="gp">User permissions to create a string from.</param>
-            /// <returns>String containing main permissions of a user.</returns>
-            static string MainPermissionsString(GuildPermissions gp)
-            {
-                List<string> permissions = new List<string>();
-
-                if (gp.Administrator) return "Administrator (all permissions)";
-                if (gp.BanMembers) permissions.Add("Ban members");
-                if (gp.KickMembers) permissions.Add("Kick members");
-                if (gp.ManageChannels) permissions.Add("Manage channels");
-                if (gp.ManageEmojis) permissions.Add("Manage emojis");
-                if (gp.ManageGuild) permissions.Add("Manage guild");
-                if (gp.ManageMessages) permissions.Add("Manage messages");
-                if (gp.ManageNicknames) permissions.Add("Manage nicknames");
-                if (gp.ManageRoles) permissions.Add("Manage roles");
-                if (gp.ManageWebhooks) permissions.Add("Manage webhooks");
-                if (gp.MentionEveryone) permissions.Add("Mention everyone");
-                if (gp.MoveMembers) permissions.Add("Move members");
-                if (gp.DeafenMembers) permissions.Add("Deafen members");
-                if (gp.MuteMembers) permissions.Add("Mute members");
-                if (gp.ViewAuditLog) permissions.Add("View audit log");
-                if (gp.CreateInstantInvite) permissions.Add("Create invites");
-
-                return permissions.Count != 0 ? string.Join(", ", permissions) : "-";
-            }
         }
 
         [Command("userinfo")]
