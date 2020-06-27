@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +12,8 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Services;
 using TeaBot.TypeReaders;
+using System.Globalization;
+using TeaBot.Utilities;
 
 namespace TeaBot.Main
 {
@@ -108,28 +112,41 @@ namespace TeaBot.Main
                     await context.Channel.SendMessageAsync(toSend);
                     break;
                 case CommandError.Exception:
-                    Console.WriteLine(result.ErrorReason);
-                    _ = context.Channel.SendMessageAsync("An exception occured while executing this command! Please contact Carrak#8088 if this keeps happening.");
+                    _ = context.Channel.SendMessageAsync("An exception occured while executing this command!");
 
-                    string directory = TeaEssentials.ProjectDirectory + Path.DirectorySeparatorChar + "Exceptions";
-                    if (!Directory.Exists(directory))
+                    var embed = new EmbedBuilder();
+
+                    // information about the environment of the exception
+                    List<(string, string, ulong?)> descriptors = new List<(string, string, ulong?)>()
                     {
-                        Directory.CreateDirectory(directory);
-                    }
-
-                    string filePath = $@"{directory}{Path.DirectorySeparatorChar}exception_{DateTime.Now:dd-MM-yyyy_HH-mm-ss}.txt";
-
-                    string[] lines = {
-                        $" Command:       {context.Message.Content}",
-                        $" User:          {context.Message.Author}",
-                        $" Place (guild): { (context.IsPrivate ? "Direct messages" : $"{context.Guild}") }",
-                        $" Channel:       { (context.IsPrivate ? "Direct messages" : $"#{context.Channel}") }",
-                        $" Time:          {DateTime.Now:HH:mm:ss dd MMMM, yyyy}",
-                        $" Exception:     {result.ErrorReason}"
+                        ("Place", context.IsPrivate ? "Direct messages" : context.Guild.ToString(), context.Guild?.Id ),
+                        ("Channel", context.IsPrivate ? "Direct messages" : $"<#{context.Channel.Id}>", context.Channel.Id),
+                        ("User", context.Message.Author.Mention, context.Message.Id)
                     };
 
-                    File.WriteAllLines(filePath, lines);
-                    Console.WriteLine($"Exception saved at {filePath}");
+                    // footer with the user
+                    var footer = new EmbedFooterBuilder()
+                    {
+                        Text = context.User.ToString(),
+                        IconUrl = context.User.GetAvatarUrl()
+                    };
+
+                    embed.WithColor(Color.Red)
+                        .WithTitle($"Exception on {DateTime.UtcNow.ToString("dd MMMM, yyyy HH:mm:ss", new CultureInfo("en-US"))}")
+                        .WithDescription(result.ErrorReason)
+                        .WithAuthor(_client.CurrentUser)
+                        .WithFooter(footer)
+                        .AddField("Message content", context.Message.Content)
+                        .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})")
+                        .AddField("Guild permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainGuildPermissionsString(context.Guild.CurrentUser.GuildPermissions))
+                        .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)))
+                        .AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
+                        .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
+                        .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3)), true);
+
+                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
+                        await logChannel.SendMessageAsync(embed: embed.Build());
+
                     break;
                 case var _ when result.ErrorReason == "":
                 case CommandError.UnknownCommand:
