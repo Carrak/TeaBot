@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 
@@ -20,7 +18,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
         public JoinPositionMessage(InteractiveService interactive,
             SocketCommandContext context,
             int displayPerPage,
-            bool ignoreBots) : base(interactive, context,  context.Guild.Users.OrderBy(user => user.JoinedAt.Value.DateTime)
+            bool ignoreBots) : base(interactive, context, context.Guild.Users.OrderBy(user => user.JoinedAt.Value.DateTime)
                .Select((user, index) => (User: user, OriginalIndex: index))
                .Where(tuple => !ignoreBots || !tuple.User.IsBot)
                .Select(tuple => (tuple.User.ToString(), tuple.OriginalIndex)), displayPerPage)

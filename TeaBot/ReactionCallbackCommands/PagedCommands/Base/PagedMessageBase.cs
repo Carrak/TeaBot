@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -14,7 +13,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
     /// </summary>
     /// <typeparam name="T">The type of a single element.</typeparam>
     /// <typeparam name="U">The type returned by <see cref="CurrentPage"/></typeparam>
-    abstract class PagedMessageBase<T, U> : IReactionCallback 
+    abstract class PagedMessageBase<T, U> : IReactionCallback
     {
         public RunMode RunMode { get; }
         public ICriterion<SocketReaction> Criterion { get; }

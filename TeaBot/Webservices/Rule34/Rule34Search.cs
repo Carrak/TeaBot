@@ -89,7 +89,7 @@ namespace TeaBot.Webservices
 
             // Raise an exception if the search is limited
             if (content.Contains("Search error: API limited due to abuse"))
-                throw new R34SearchException("Search limited. Try again.");
+                throw new R34SearchException("Search limited. Try again?");
 
             return WebUtilities.XMLStringToJsonString(content);
         }

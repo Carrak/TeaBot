@@ -6,6 +6,9 @@ using TeaBot.Commands;
 
 namespace TeaBot.Preconditions
 {
+    /// <summary>
+    ///     Precondition for checking whether the command's module is disabled in the guild.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     class CheckDisabledModulesAttribute : PreconditionAttribute
     {

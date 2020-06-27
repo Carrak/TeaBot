@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 {
@@ -27,7 +24,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 
         protected override U CurrentPage()
         {
-            return (U) _collection.Skip(_displayPerPage * page).Take(_displayPerPage);
+            return (U)_collection.Skip(_displayPerPage * page).Take(_displayPerPage);
         }
     }
 

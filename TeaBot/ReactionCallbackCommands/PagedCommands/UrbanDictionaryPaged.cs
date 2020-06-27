@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 using TeaBot.Utilities;

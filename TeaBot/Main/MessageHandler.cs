@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Services;
 using TeaBot.TypeReaders;
-using System.Globalization;
 using TeaBot.Utilities;
 
 namespace TeaBot.Main
@@ -138,7 +136,7 @@ namespace TeaBot.Main
                         .WithFooter(footer)
                         .AddField("Message content", context.Message.Content)
                         .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})");
-                        
+
                     // if the exception occured in a guild, add permissions info
                     if (!context.IsPrivate)
                     {
