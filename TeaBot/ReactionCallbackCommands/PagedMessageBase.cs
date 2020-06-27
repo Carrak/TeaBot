@@ -73,7 +73,7 @@ namespace TeaBot.ReactionCallbackCommands
         /// <returns>An EmbedBuilder with a default footer.</returns>
         protected EmbedBuilder SetDefaultFooter(EmbedBuilder eb)
         {
-            return eb.WithFooter($"Page {page + 1} / {TotalPages}").WithCurrentTimestamp();
+            return eb.WithFooter($"Page {page + 1} / {TotalPages}");
         }
 
         /// <summary>
