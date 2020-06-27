@@ -121,7 +121,7 @@ namespace TeaBot.Main
                     {
                         ("Place", context.IsPrivate ? "Direct messages" : context.Guild.ToString(), context.Guild?.Id ),
                         ("Channel", context.IsPrivate ? "Direct messages" : $"<#{context.Channel.Id}>", context.Channel.Id),
-                        ("User", context.Message.Author.Mention, context.Message.Id)
+                        ("User", context.User.Mention, context.User.Id)
                     };
 
                     // footer with the user
@@ -142,7 +142,7 @@ namespace TeaBot.Main
                         .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)))
                         .AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
-                        .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3)), true);
+                        .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 ?? "-")), true);
 
                     if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
                         await logChannel.SendMessageAsync(embed: embed.Build());
