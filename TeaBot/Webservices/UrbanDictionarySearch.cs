@@ -26,7 +26,7 @@ namespace TeaBot.Webservices
                 return Enumerable.Empty<UrbanDictionaryDefinition>();
 
             IEnumerable<UrbanDictionaryDefinition> definitions = JsonConvert.DeserializeObject<IEnumerable<UrbanDictionaryDefinition>>(jobj.ToString());
-            definitions = definitions.Where(x => x.Definition.Length < 2048).Where(x => x.Example.Length < 2048).Take(10);
+            definitions = definitions.Where(x => x.Definition.Length < 2048 && x.Example.Length < 2048).OrderByDescending(x => x.ThumbsUp);
 
             foreach (var definition in definitions)
             {
