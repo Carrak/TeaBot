@@ -112,7 +112,7 @@ namespace TeaBot.Main
                     await context.Channel.SendMessageAsync(toSend);
                     break;
                 case CommandError.Exception:
-                    _ = context.Channel.SendMessageAsync("An exception occured while executing this command!");
+                    _ = context.Channel.SendMessageAsync("An exception occured while executing this command! Contact Carrak#8088 if this keeps happening.");
 
                     var embed = new EmbedBuilder();
 
@@ -142,7 +142,7 @@ namespace TeaBot.Main
                         .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)))
                         .AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
-                        .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 ?? "-")), true);
+                        .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 is null ? "-" : x.Item3.Value.ToString())), true);
 
                     if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
                         await logChannel.SendMessageAsync(embed: embed.Build());
