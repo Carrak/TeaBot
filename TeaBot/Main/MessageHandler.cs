@@ -119,8 +119,8 @@ namespace TeaBot.Main
                     // information about the environment of the exception
                     List<(string, string, ulong?)> descriptors = new List<(string, string, ulong?)>()
                     {
-                        ("Place", context.IsPrivate ? "Direct messages" : context.Guild.ToString(), context.Guild?.Id ),
-                        ("Channel", context.IsPrivate ? "Direct messages" : $"<#{context.Channel.Id}>", context.Channel.Id),
+                        ("Guild", context.IsPrivate ? "DM" : context.Guild.ToString(), context.Guild?.Id ),
+                        ("Channel", context.IsPrivate ? "DM" : $"<#{context.Channel.Id}>", context.Channel.Id),
                         ("User", context.User.Mention, context.User.Id)
                     };
 
@@ -137,10 +137,16 @@ namespace TeaBot.Main
                         .WithAuthor(_client.CurrentUser)
                         .WithFooter(footer)
                         .AddField("Message content", context.Message.Content)
-                        .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})")
-                        .AddField("Guild permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainGuildPermissionsString(context.Guild.CurrentUser.GuildPermissions))
-                        .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)))
-                        .AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
+                        .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})");
+                        
+                    // if the exception occured in a guild, add permissions info
+                    if (!context.IsPrivate)
+                    {
+                        embed.AddField("Guild permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainGuildPermissionsString(context.Guild.CurrentUser.GuildPermissions))
+                        .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)));
+                    }
+
+                    embed.AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
                         .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 is null ? "-" : x.Item3.Value.ToString())), true);
 
