@@ -6,33 +6,25 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Main;
+using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 using TeaBot.Utilities;
 using TeaBot.Webservices;
 
-namespace TeaBot.ReactionCallbackCommands
+namespace TeaBot.ReactionCallbackCommands.PagedCommands
 {
     /// <summary>
     ///     Class for paging urban dictionary search results
     /// </summary>
-    class UrbanDictionaryPaged : PagedMessageBase
+    class UrbanDictionaryPaged : SingleItemPagedMessage<UrbanDictionaryDefinition>
     {
-        private readonly IEnumerable<UrbanDictionaryDefinition> _definitions;
-
         public UrbanDictionaryPaged(InteractiveService interactive,
             SocketCommandContext context,
-            IEnumerable<UrbanDictionaryDefinition> definitions,
-            RunMode runmode = RunMode.Async,
-            TimeSpan? timeout = null,
-            ICriterion<SocketReaction> criterion = null) : base(interactive, context, runmode, timeout, criterion)
+            IEnumerable<UrbanDictionaryDefinition> definitions) : base(interactive, context, definitions)
         {
-            _definitions = definitions;
-            SetTotalPages(definitions.Count());
         }
 
-        protected override Embed ConstructEmbed()
+        protected override Embed ConstructEmbed(UrbanDictionaryDefinition definition)
         {
-            UrbanDictionaryDefinition definition = _definitions.ElementAt(page);
-
             var embed = new EmbedBuilder();
             embed.WithColor(TeaEssentials.MainColor)
                 .WithAuthor(Context.User)

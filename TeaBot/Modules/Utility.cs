@@ -10,6 +10,7 @@ using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
+using TeaBot.ReactionCallbackCommands.PagedCommands;
 using TeaBot.Services;
 using TeaBot.Utilities;
 
@@ -210,6 +211,7 @@ namespace TeaBot.Modules
             )
         {
             bool ignoreBots = options == "nobots";
+
             var joinPosMessage = new JoinPositionMessage(Interactive, Context, 15, ignoreBots);
             await joinPosMessage.DisplayAsync();
         }

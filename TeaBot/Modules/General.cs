@@ -13,7 +13,7 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
-using TeaBot.ReactionCallbackCommands;
+using TeaBot.ReactionCallbackCommands.PagedCommands;
 using TeaBot.Webservices;
 
 namespace TeaBot.Modules

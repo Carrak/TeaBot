@@ -8,6 +8,7 @@ using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands;
+using TeaBot.ReactionCallbackCommands.PagedCommands;
 using TeaBot.Services;
 
 namespace TeaBot.Modules
@@ -80,7 +81,7 @@ namespace TeaBot.Modules
                 (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) &&
                 commands.Count() > 0)
             {
-                var commandHelp = new CommandHelp(Interactive, Context, commands);
+                var commandHelp = new CommandHelp(Interactive, Context, commands.Select(cm => cm.Command));
                 await commandHelp.DisplayAsync();
             }
             else
