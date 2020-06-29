@@ -13,7 +13,7 @@ namespace TeaBot.Commands
     [CheckDisabledModules]
     public abstract class TeaInteractiveBase : InteractiveBase<TeaCommandContext>
     {
-        public async Task<bool> AwaitMessageWithContent(string content, int limit, TimeSpan? timeout = null, bool cancelOnAnotherCommandExecuted = true)
+        public async Task<bool> AwaitMessageWithContent(string content, int limit, TimeSpan? timeout = null, bool caseInsensitive = true, bool cancelOnAnotherCommandExecuted = true)
         {
             int count = 0;
 
@@ -28,7 +28,7 @@ namespace TeaBot.Commands
                     return Task.CompletedTask;
 
                 count++;
-                if (message.Content == content)
+                if (message.Content.Equals(content, caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
                     eventTrigger.SetResult(true);
                 if (count == limit || (cancelOnAnotherCommandExecuted && message.Content.StartsWith(Context.Prefix, StringComparison.OrdinalIgnoreCase)))
                     eventTrigger.SetResult(false);
