@@ -115,8 +115,7 @@ namespace TeaBot.Modules
                 msg1 = await ReplyAsync(embed: embed.Build());
             }
 
-            var delete = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10));
-            if (delete != null && delete.Content.ToLower() == "d")
+            if (await AwaitMessageWithContent("d", 5, TimeSpan.FromSeconds(10)))
             {
                 try
                 {
