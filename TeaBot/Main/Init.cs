@@ -83,16 +83,11 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Sends the embed created by <see cref="GetInfoEmbed(string)"/> to the system channel of the joined guild if it is present.
+        ///     Changes the bot's status once <see cref="_client"/> fires <see cref="DiscordSocketClient.Ready"/>.
         /// </summary>
-        private async Task OnJoin(SocketGuild guild)
+        private async Task OnStart()
         {
-            if (guild.SystemChannel != null)
-            {
-                string prefix = await _database.GetOrAddPrefixAsync(guild.Id);
-                var embed = await _tea.GetInfoEmbedAsync(prefix);
-                await guild.SystemChannel.SendMessageAsync(embed: embed);
-            }
+            await _client.SetGameAsync("Fate || tea info", type: ActivityType.Watching);
         }
 
         /// <summary>
@@ -106,11 +101,16 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Changes the bot's status once <see cref="_client"/> fires <see cref="DiscordSocketClient.Ready"/>.
+        ///     Sends the embed created by <see cref="GetInfoEmbed(string)"/> to the system channel of the joined guild if it is present.
         /// </summary>
-        private async Task OnStart()
+        private async Task OnJoin(SocketGuild guild)
         {
-            await _client.SetGameAsync("Fate || tea info", type: ActivityType.Watching);
+            if (guild.SystemChannel != null)
+            {
+                string prefix = await _database.GetOrAddPrefixAsync(guild.Id);
+                var embed = await _tea.GetInfoEmbedAsync(prefix);
+                await guild.SystemChannel.SendMessageAsync(embed: embed);
+            }
         }
     }
 }

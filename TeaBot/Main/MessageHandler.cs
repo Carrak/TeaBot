@@ -47,18 +47,26 @@ namespace TeaBot.Main
         /// <param name="arg">The received message.</param>
         private async Task HandleMessagesAsync(SocketMessage arg)
         {
-            if (!(arg is SocketUserMessage message) || message.Author.IsBot) return;
+            // Return if the message is from a bot
+            if (!(arg is SocketUserMessage message) || message.Author.IsBot) 
+                return;
 
-            ulong? guildId = (message.Channel as SocketGuildChannel)?.Guild.Id;
-            string prefix = await _database.GetOrAddPrefixAsync(guildId);
-            var disabledModules = _database.GetDisabledModules(guildId);
+            var channel = message.Channel as SocketGuildChannel;
+            var guild = channel?.Guild;
+
+            // Return if bot can't reply
+            if (guild != null && (!guild.CurrentUser.GuildPermissions.SendMessages || !guild.CurrentUser.GetPermissions(channel).SendMessages))
+                return;
+
+            string prefix = await _database.GetOrAddPrefixAsync(guild?.Id);
+            var disabledModules = _database.GetDisabledModules(guild?.Id);
 
             var context = new TeaCommandContext(_client, message, prefix, disabledModules);
 
             await _database.InsertValuesIntoDb(context);
 
             // Autoresponse for bot mention
-            if (message.Content.Replace("!", "") == _client.CurrentUser.Mention.Replace("!", ""))
+            if (message.Content.Replace("!", "") == _client.CurrentUser.Mention.Replace("!", "") && !context.IsPrivate)
             {
                 await context.Channel.SendMessageAsync($"My prefix is `{prefix}`\nDo `{prefix}prefix [new prefix]` to change it!\nFor more information, refer to `{prefix}help prefix`");
                 return;

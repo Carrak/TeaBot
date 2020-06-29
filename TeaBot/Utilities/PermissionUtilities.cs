@@ -38,7 +38,7 @@ namespace TeaBot.Utilities
         {
             List<string> permissions = new List<string>();
 
-            if (cp.ManageRoles) return "All channel permissions";
+            if (cp.ManageRoles) permissions.Add("Manage roles");
             if (cp.SendMessages) permissions.Add("Send messages");
             if (cp.ReadMessageHistory) permissions.Add("Read message history");
             if (cp.AddReactions) permissions.Add("Add reactions");
