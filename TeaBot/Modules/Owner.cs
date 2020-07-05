@@ -36,27 +36,21 @@ namespace TeaBot.Modules
         [Command("logs")]
         public async Task Logs(int n)
         {
-            try
+            ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -u teabot.service")
             {
-                ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -u teabot.service")
-                {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
 
-                Process proc = new Process
-                {
-                    StartInfo = procStartInfo
-                };
-                proc.Start();
-
-                string result = proc.StandardOutput.ReadToEnd();
-                await ReplyAsync(result);
-            } catch (Exception e)
+            Process proc = new Process
             {
-                await ReplyAsync(e.Message);
-            }
+                StartInfo = procStartInfo
+            };
+            proc.Start();
+
+            string result = proc.StandardOutput.ReadToEnd();
+            await ReplyAsync($"`{result}`");
         }
 
         [Command("eval", RunMode = RunMode.Async)]
