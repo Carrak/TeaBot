@@ -41,7 +41,7 @@ namespace TeaBot.Modules
                 ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -u teabot.service")
                 {
                     RedirectStandardOutput = true,
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
