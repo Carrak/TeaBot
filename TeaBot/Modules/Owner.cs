@@ -36,7 +36,7 @@ namespace TeaBot.Modules
         [Command("logs")]
         public async Task Logs(int n)
         {
-            ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -u teabot.service")
+            ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -o cat -u teabot.service")
             {
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
@@ -50,6 +50,7 @@ namespace TeaBot.Modules
             proc.Start();
 
             string result = proc.StandardOutput.ReadToEnd();
+
             await ReplyAsync($"`{result}`");
         }
 
