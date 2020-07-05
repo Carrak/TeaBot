@@ -40,14 +40,14 @@ namespace TeaBot.Modules
             [Summary("The text to repeat.")][Remainder] string text
             )
         {
-            if (Context.Message.MentionedRoles.Count > 0 || Context.Message.MentionedUsers.Count > 0)
+            text = text.DeafenMentionsFromMessage(Context.Message);
+            try
             {
-                string prefix = Context.Prefix;
-                await ReplyAsync($"No pinging when using `{prefix}say`!");
-                return;
-            }
-            if (!Context.IsPrivate && await Context.Channel.GetMessageAsync(Context.Message.Id) != null)
                 await Context.Message.DeleteAsync();
+            } catch (HttpException)
+            {
+
+            }
             await ReplyAsync(text);
         }
 
