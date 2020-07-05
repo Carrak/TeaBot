@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Net;
 using Nekos.Net;
 using Nekos.Net.Responses;
 using TeaBot.Attributes;
@@ -14,6 +15,7 @@ using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands.PagedCommands;
+using TeaBot.Utilities;
 using TeaBot.Webservices;
 
 namespace TeaBot.Modules
