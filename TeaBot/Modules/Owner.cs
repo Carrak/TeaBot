@@ -33,13 +33,38 @@ namespace TeaBot.Modules
             public TeaCommandContext Context;
         }
 
+        [Command("logs")]
+        public async Task Logs(int n)
+        {
+            try
+            {
+                ProcessStartInfo procStartInfo = new ProcessStartInfo("journalctl", $"-n {n} -u teabot.service")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = true,
+                    CreateNoWindow = true
+                };
+
+                Process proc = new Process
+                {
+                    StartInfo = procStartInfo
+                };
+                proc.Start();
+
+                string result = proc.StandardOutput.ReadToEnd();
+                await ReplyAsync(result);
+            } catch (Exception e)
+            {
+                await ReplyAsync(e.Message);
+            }
+        }
+
         [Command("eval", RunMode = RunMode.Async)]
         public async Task Eval([Remainder] string toEvaluate)
         {
             // Extract the code from the code block if it is present
-            var code = Regex.Match(toEvaluate, @"(?s)(?<=```cs\n).*?(?=```)");
-            if (!code.Success)
-                code = Regex.Match(toEvaluate, @"(?s)(?<=```).*?(?=```)");
+            var code = Regex.Match(toEvaluate, @"(?s)(?<=```cs\n|```).*?(?=```)");
+
             if (!code.Success)
             {
                 // If it isn't present, return
