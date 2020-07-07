@@ -12,6 +12,7 @@ using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.Webservices;
 using TeaBot.Webservices.Rule34;
+using TeaBot.Utilities;
 
 namespace TeaBot.Modules
 {
@@ -81,21 +82,15 @@ namespace TeaBot.Modules
 
             DateTime creation = DateTime.ParseExact(post.Creation, "ddd MMM dd HH:mm:ss +0000 yyyy", new CultureInfo("en-US"));
 
-            var tagsArr = post.Tags.TrimStart().TrimEnd().Split(" ");
+            var postTags = post.Tags.TrimStart().TrimEnd().Split(" ");
 
-            // Ensure the tags fit into the limit of 1024 characters
-            string splitter = ", ";
-            int totalLength = 0;
-            int countToRetrieve;
-            for (countToRetrieve = 0; countToRetrieve < tagsArr.Length && totalLength + (countToRetrieve + 1) * splitter.Length + 2 < 1024; countToRetrieve++)
-            {
-                totalLength += tagsArr[countToRetrieve].Length;
-            }
-            string postTags = $"`{string.Join(splitter, tagsArr.Take(countToRetrieve))}`";
+            // Ensure the tags fit into the limit of 1024 (minus 2 because the tags are surrouned by `) characters
+            string tagSplitter = ", ";
+            var shortenedTags = postTags.Shorten(1022, tagSplitter).ToArray();
 
             var embed = new EmbedBuilder();
             embed.WithImageUrl(post.FileUrl)
-                .AddField($"Tags{(countToRetrieve == tagsArr.Length ? "" : $" (displaying first {countToRetrieve} tags)")}", postTags)
+                .AddField($"Tags{(shortenedTags.Length == postTags.Length ? "" : $" (displaying first {shortenedTags.Length} tags)")}", $"`{string.Join(tagSplitter, shortenedTags)}`")
                 .WithFooter($"Uploaded {creation:dd.MM.yyyy HH:mm:ss} UTC | {count} result{(count == 1 ? "" : "s")} with this tag combination")
                 .WithDescription("Type `d` to delete")
                 .WithUrl(post.FileUrl)

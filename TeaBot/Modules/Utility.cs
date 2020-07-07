@@ -123,9 +123,11 @@ namespace TeaBot.Modules
 
                 DateTime joined = guildUser.JoinedAt.Value.DateTime;
 
+                // Roles (in case there's a need for them to be shortened to fit the embed field limit
+                var shortenedRoles = roles.Shorten(x => x.Mention, 1024, " ");
                 embed.AddField($"Joined {Context.Guild}", TimeUtilities.DateString(joined), true)
                     .AddField($"Last message in {Context.Guild.Name}", lastMessage)
-                    .AddField($"Roles {(roles.Count() > 20 ? "(displaying 20 highest roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", roles.Where((x, index) => index < 20).Select(role => role.Mention)))
+                    .AddField($"Roles{(shortenedRoles.Count() != roles.Count() ? $" (shortened, displaying highest {shortenedRoles.Count()} roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", shortenedRoles))
                     .AddField("Main permissions", PermissionUtilities.MainGuildPermissionsString(guildUser.GuildPermissions))
                     .AddField("Join position", Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime).ToList().IndexOf(guildUser) + 1, true)
                     .AddField("Guild nickname", guildUser.Nickname ?? "-", true);
