@@ -103,6 +103,7 @@ namespace TeaBot.Modules
                 cmd.Parameters.AddWithValue("uid", (long)guildUser.Id);
                 cmd.Parameters.AddWithValue("gid", (long)Context.Guild.Id);
 
+                // Get last message
                 var reader = await cmd.ExecuteReaderAsync();
                 string lastMessage = "No information";
                 if (reader.HasRows)
@@ -119,17 +120,27 @@ namespace TeaBot.Modules
                 }
                 await reader.CloseAsync();
 
+                // Roles of the user
                 IEnumerable<SocketRole> roles = guildUser.Roles.Where(x => !x.IsEveryone).OrderByDescending(x => x.Position);
 
+                // User join date
                 DateTime joined = guildUser.JoinedAt.Value.DateTime;
 
                 // Roles (in case there's a need for them to be shortened to fit the embed field limit
                 var shortenedRoles = roles.Shorten(x => x.Mention, 1024, " ");
+
+                // Determine join position
+                int joinPosition;
+                var orderedUsers = Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime);
+                for (joinPosition = 0; joinPosition < orderedUsers.Count(); joinPosition++)
+                    if (orderedUsers.ElementAt(joinPosition).Id == user.Id)
+                        break;
+
                 embed.AddField($"Joined {Context.Guild}", TimeUtilities.DateString(joined), true)
                     .AddField($"Last message in {Context.Guild.Name}", lastMessage)
                     .AddField($"Roles{(shortenedRoles.Count() != roles.Count() ? $" (shortened, displaying highest {shortenedRoles.Count()} roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", shortenedRoles))
                     .AddField("Main permissions", PermissionUtilities.MainGuildPermissionsString(guildUser.GuildPermissions))
-                    .AddField("Join position", Context.Guild.Users.OrderBy(x => x.JoinedAt.Value.DateTime).ToList().IndexOf(guildUser) + 1, true)
+                    .AddField("Join position", joinPosition + 1, true)
                     .AddField("Guild nickname", guildUser.Nickname ?? "-", true);
             }
 
