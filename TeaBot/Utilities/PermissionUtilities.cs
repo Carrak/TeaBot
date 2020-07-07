@@ -3,6 +3,9 @@ using Discord;
 
 namespace TeaBot.Utilities
 {
+    /// <summary>
+    ///     Utility class for working with guild and channel permissions.
+    /// </summary>
     public static class PermissionUtilities
     {
         /// <summary>

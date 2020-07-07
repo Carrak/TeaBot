@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 
 namespace TeaBot.Utilities
 {
+    /// <summary>
+    ///     Utility class for web-based methods.
+    /// </summary>
     public static class WebUtilities
     {
         /// <summary>
