@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using TeaBot.Preconditions;
-using Discord.Commands;
 
 namespace TeaBot.Commands
 {
@@ -13,27 +12,30 @@ namespace TeaBot.Commands
     [CheckDisabledModules]
     public abstract class TeaInteractiveBase : InteractiveBase<TeaCommandContext>
     {
-        public async Task<bool> AwaitMessageWithContent(string content, int limit, TimeSpan? timeout = null, bool caseInsensitive = true, bool cancelOnAnotherCommandExecuted = true)
+        public async Task<bool> NextMessageWithCondition(Func<SocketMessage, bool> messagePrecondition, int limit, TimeSpan? timeout, string errorMessage = null, bool cancelOnAnotherCommandExecuted = true)
         {
-            int count = 0;
-
             timeout ??= TimeSpan.FromSeconds(10);
-
+            
             var eventTrigger = new TaskCompletionSource<bool>();
             var cancelTrigger = new TaskCompletionSource<bool>();
-
-            Task Handler(SocketMessage message)
+            
+            int count = 0;
+            async Task Handler(SocketMessage message)
             {
-                if (message.Author != Context.User && message.Channel != Context.Channel)
-                    return Task.CompletedTask;
+                if (message.Author.Id != Context.User.Id ||
+                    message.Channel.Id != Context.Channel.Id)
+                    return;
 
-                count++;
-                if (message.Content.Equals(content, caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                if (messagePrecondition(message))
+                {
                     eventTrigger.SetResult(true);
-                if (count == limit || (cancelOnAnotherCommandExecuted && message.Content.StartsWith(Context.Prefix, StringComparison.OrdinalIgnoreCase)))
-                    eventTrigger.SetResult(false);
+                    return;
+                }
+                else if (!string.IsNullOrEmpty(errorMessage))
+                    await Context.Channel.SendMessageAsync(errorMessage);
 
-                return Task.CompletedTask;
+                if (++count == limit || (cancelOnAnotherCommandExecuted && message.Content.StartsWith(Context.Prefix, StringComparison.OrdinalIgnoreCase)))
+                    eventTrigger.SetResult(false);
             }
 
             Context.Client.MessageReceived += Handler;
@@ -41,12 +43,12 @@ namespace TeaBot.Commands
             var trigger = eventTrigger.Task;
             var cancel = cancelTrigger.Task;
             var delay = Task.Delay(timeout.Value);
-            var task = await Task.WhenAny(trigger, delay).ConfigureAwait(false);
+            var task = await Task.WhenAny(trigger, delay);
 
             Context.Client.MessageReceived -= Handler;
 
             if (task == trigger)
-                return await trigger.ConfigureAwait(false);
+                return await trigger;
             else
                 return false;
         }
