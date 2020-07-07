@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -296,6 +298,32 @@ namespace TeaBot.Modules
             }
 
             await ReplyAsync($"🎱 | {eightBall.Response}");
+        }
+
+        [Command("colour")]
+        [Alias("color")]
+        [Summary("Find out what a colour looks like.")]
+        public async Task Colour(
+            [Summary("An RGB colour represented in any of the following ways:\n" +
+            "1. 255,255,255\n" +
+            "2. #FFFFFF\n" +
+            "3. 0xFFFFFF\n" +
+            "4. Raw decimal RGB value (e.g. 16777215, same as #FFFFFF)")] [Remainder] Discord.Color colour
+            )
+        {
+            var bm = new Bitmap(100, 100);
+            var graphics = Graphics.FromImage(bm);
+
+            using (SolidBrush brush = new SolidBrush(System.Drawing.Color.FromArgb(colour.R, colour.G, colour.B)))
+            {
+                graphics.FillRectangle(brush, 0, 0, 100, 100);
+            }
+
+            Stream stream = new MemoryStream();
+            bm.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            await Context.Channel.SendFileAsync(stream, "colour.jpg", $"Here's what {colour} looks like.");
         }
     }
 
