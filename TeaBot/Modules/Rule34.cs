@@ -115,7 +115,7 @@ namespace TeaBot.Modules
                 msg1 = await ReplyAsync(embed: embed.Build());
             }
 
-            if (await AwaitMessageWithContent("d", 5, TimeSpan.FromSeconds(10)))
+            if (await NextMessageWithCondition(message => message.Content.Equals("d", StringComparison.OrdinalIgnoreCase), Context, 5, TimeSpan.FromSeconds(10)) != null)
             {
                 try
                 {
@@ -128,6 +128,7 @@ namespace TeaBot.Modules
 
                 }
             }
+
         }
 
         [Command("blacklist")]
