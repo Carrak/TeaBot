@@ -89,9 +89,10 @@ namespace TeaBot.Main
         private Task HandleCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
         {
             if (commandInfo.IsSpecified)
-                Console.WriteLine($"{DateTime.Now:HH:mm:ss} Executed    {context.User} executed the {commandInfo.Value.Name} command in " +
+                Logger.Log("Executed", $"{context.User} executed the {commandInfo.Value.Name} command in " +
                     $"{(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")} ({result.IsSuccess})" +
                     $"{(result.IsSuccess ? "" : $"\nCommand execution error: {result.ErrorReason}")}");
+
             return Task.CompletedTask;
         }
 

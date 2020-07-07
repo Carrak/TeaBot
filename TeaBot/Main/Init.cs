@@ -63,11 +63,14 @@ namespace TeaBot.Main
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
 
             // Retrieve connection string and init db connection
+            Logger.Log("Database", "Connecting to database");
             await _database.InitAsync(config["connection"].ToString());
+
             // Retrieve token
             string token = config["token"].ToString();
 
             // Init services
+            Logger.Log("Database", "Initializing services");
             await _services.GetRequiredService<Rule34BlacklistService>().InitDefaultBlacklistAsync();
             await _services.GetRequiredService<MessageHandler>().InitAsync();
 
