@@ -51,7 +51,7 @@ namespace TeaBot.Modules
 
             string result = proc.StandardOutput.ReadToEnd();
 
-            await ReplyAsync(string.Join("\n", result.Split("\n").Select(x => x = $"`{x}`")));
+            await ReplyAsync(string.Join("\n", result.Split("\n").Where(x => !string.IsNullOrEmpty(x)).Select(x => x = $"`{x}`")));
         }
 
         [Command("eval", RunMode = RunMode.Async)]
