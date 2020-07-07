@@ -51,15 +51,14 @@ namespace TeaBot.Modules
 
             string result = proc.StandardOutput.ReadToEnd();
 
-            await ReplyAsync($"`{result}`");
+            await ReplyAsync($"`{result.Replace("\n", "`\n`")}`");
         }
 
         [Command("eval", RunMode = RunMode.Async)]
         public async Task Eval([Remainder] string toEvaluate)
         {
             // Extract the code from the code block if it is present
-            var code = Regex.Match(toEvaluate, @"(?s)(?<=```cs\n|```).*?(?=```)");
-
+            var code = Regex.Match(toEvaluate, @"(?s)(?<=```cs\n|```(?!cs)).*?(?=```)");
             if (!code.Success)
             {
                 // If it isn't present, return
