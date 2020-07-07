@@ -37,7 +37,10 @@ namespace TeaBot.Main
         {
             _client.MessageReceived += HandleMessagesAsync;
             _commands.CommandExecuted += HandleCommandExecuted;
+
             _commands.AddTypeReader<IEmote>(new IEmoteTypeReader());
+            _commands.AddTypeReader<Color>(new ColorTypeReader());
+
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
@@ -106,8 +109,8 @@ namespace TeaBot.Main
                 case CommandError.BadArgCount:
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
-
-                    string toSend = $"Usage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
+                    
+                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
