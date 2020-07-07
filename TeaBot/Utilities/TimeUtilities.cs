@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace TeaBot.Utilities
 {
+    /// <summary>
+    ///     Utility class for working with <see cref="DateTime"/> and <see cref="TimeSpan"/>.
+    /// </summary>
     public static class TimeUtilities
     {
         /// <summary>
@@ -35,33 +40,29 @@ namespace TeaBot.Utilities
                 return "Right now";
 
             DateTime span = DateTime.MinValue + timePassed;
-
-            int years = span.Year - 1;
-            int months = span.Month - 1;
-            int days = span.Day - 1;
-
-            if (years == 0 && months == 0 && days == 0)
-                return $"{PeriodToString(span.Hour, "hour")}{PeriodToString(span.Minute, "minute")}{PeriodToString(span.Second, "second")}ago";
-            else
-                return $"{PeriodToString(years, "year")}{PeriodToString(months, "month")}{PeriodToString(days, "day")}ago";
+            
+            List<string> thresholds = new List<string>
+            {
+                Pluralize(span.Year - 1, "year"),
+                Pluralize(span.Month - 1, "month"),
+                Pluralize(span.Day - 1, "day"),
+                Pluralize(span.Hour, "hour"),
+                Pluralize(span.Minute, "minute"),
+                Pluralize(span.Second, "second")
+            };
+            
+            return $"{string.Join(" ", thresholds.Where(x => !string.IsNullOrEmpty(x)).Take(3))} ago";
         }
 
         /// <summary>
-        ///   Creates a string that transforms a named period of time into a string, e.g. "3 days", "1 month", etc.
+        ///   Pluralizes a given word if needed.
         /// </summary>
-        /// <param name="timePassed">The amount of the given period time.</param>
-        /// <param name="timePeriod">The name of the period, e.g. month, day, etc.</param>
-        /// <param name="insertSpacebar">Bool value determining whether a spacebar should be inserted at the end of the end string.</param>
-        /// <returns>Created string with the number and the period, or an empty string if <paramref name="timePassed"/> is zero.</returns>
-        public static string PeriodToString(int timePassed, string timePeriod, bool insertSpacebar = true)
+        /// <param name="quantity">The quantity to use to determine if a plural is needed.</param>
+        /// <param name="word">The word to pluralize</param>
+        /// <returns>String with the word and the quantity, or an empty string if <paramref name="quantity"/> is zero.</returns>
+        public static string Pluralize(int quantity, string word)
         {
-            if (timePassed == 0) return "";
-
-            string result = $"{timePassed} {timePeriod}" +
-                $"{(Math.Abs(timePassed) != 1 ? "s" : "")}" +
-                $"{(insertSpacebar ? " " : "")}";
-
-            return result;
+            return quantity == 0 ? "" : $"{quantity} {word}{(Math.Abs(quantity) != 1 ? "s" : "")}";
         }
     }
 }
