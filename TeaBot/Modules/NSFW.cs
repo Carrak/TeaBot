@@ -93,17 +93,20 @@ namespace TeaBot.Modules
 
             var msg = await ReplyAsync(embed: embed.Build());
 
-            if (await NextMessageWithCondition(message => message.Content.Equals("d", StringComparison.OrdinalIgnoreCase), Context, 5, TimeSpan.FromSeconds(10)) != null)
+            _ = Task.Run(async () =>
             {
-                try
+                if (await NextMessageWithCondition(message => message.Content.Equals("d", StringComparison.OrdinalIgnoreCase), Context, 5, TimeSpan.FromSeconds(10)) != null)
                 {
-                    await msg.DeleteAsync();
-                }
-                catch (Discord.Net.HttpException)
-                {
+                    try
+                    {
+                        await msg.DeleteAsync();
+                    }
+                    catch (Discord.Net.HttpException)
+                    {
 
+                    }
                 }
-            }
+            });
 
         }
 
