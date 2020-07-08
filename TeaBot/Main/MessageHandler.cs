@@ -122,11 +122,14 @@ namespace TeaBot.Main
                     await context.Channel.SendMessageAsync(toSend);
                     break;
                 case CommandError.Exception:
+                    var executeResult = (result as ExecuteResult?).Value;
+
+                    // Send the message, but don't await it
                     _ = context.Channel.SendMessageAsync("An exception occured while executing this command! Contact Carrak#8088 if this keeps happening.");
 
                     var embed = new EmbedBuilder();
 
-                    // information about the environment of the exception
+                    // Environment descriptors
                     List<(string, string, ulong?)> descriptors = new List<(string, string, ulong?)>()
                     {
                         ("Guild", context.IsPrivate ? "DM" : context.Guild.ToString(), context.Guild?.Id ),
@@ -134,7 +137,7 @@ namespace TeaBot.Main
                         ("User", context.User.Mention, context.User.Id)
                     };
 
-                    // footer with the user
+                    // Footer with the user
                     var footer = new EmbedFooterBuilder()
                     {
                         Text = context.User.ToString(),
@@ -143,11 +146,21 @@ namespace TeaBot.Main
 
                     embed.WithColor(Color.Red)
                         .WithTitle($"Exception on {DateTime.UtcNow.ToString("dd MMMM, yyyy HH:mm:ss", new CultureInfo("en-US"))}")
-                        .WithDescription(result.ErrorReason)
                         .WithAuthor(_client.CurrentUser)
                         .WithFooter(footer)
-                        .AddField("Message content", context.Message.Content)
-                        .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})");
+                        .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message);
+
+                    // Add all inner exceptions
+                    var currentException = executeResult.Exception.InnerException;
+                    while (currentException != null)
+                    {
+                        embed.AddField(currentException.GetType().Name, currentException.Message);
+                        currentException = currentException.InnerException;
+                    }
+
+                    // Message info
+                    embed.AddField("Message content", context.Message.Content, true)
+                        .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})", true);
 
                     // if the exception occured in a guild, add permissions info
                     if (!context.IsPrivate)
@@ -156,6 +169,7 @@ namespace TeaBot.Main
                         .AddField("Channel permissions", context.IsPrivate ? "DM" : PermissionUtilities.MainChannelPermissionsString(context.Guild.CurrentUser.GetPermissions(context.Channel as IGuildChannel)));
                     }
 
+                    // Exception environment
                     embed.AddField("Descriptor", string.Join("\n", descriptors.Select(x => x.Item1)), true)
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
                         .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 is null ? "-" : x.Item3.Value.ToString())), true);
@@ -164,10 +178,12 @@ namespace TeaBot.Main
                         await logChannel.SendMessageAsync(embed: embed.Build());
 
                     break;
-                case var _ when result.ErrorReason == "":
                 case CommandError.UnknownCommand:
                     return;
                 default:
+                    if (!string.IsNullOrEmpty(result.ErrorReason))
+                        return;
+                    else
                     await context.Channel.SendMessageAsync($"{result.ErrorReason}");
                     break;
             }
