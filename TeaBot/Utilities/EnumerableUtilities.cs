@@ -10,7 +10,7 @@ namespace TeaBot.Utilities
     public static class EnumerableUtilities
     {
         /// <summary>
-        ///     Shortens an <see cref="IEnumerable{T}"/> such that the sum of the lengths of its elements is below <paramref name="characterLimit"/>.
+        ///     Shortens an <see cref="IEnumerable{T}"/> such that the sum of the lengths of its elements is the the highest possible below <paramref name="characterLimit"/>.
         /// </summary>
         /// <param name="collection">The <see cref="IEnumerable{T}"/> to shorten.</param>
         /// <param name="characterLimit">The limit of characters.</param>
@@ -18,10 +18,15 @@ namespace TeaBot.Utilities
         /// <returns>The shortened collection.</returns>
         public static IEnumerable<string> Shorten(this IEnumerable<string> collection, int characterLimit, string collectionSplitter)
         {
-            int countToTake;
+            // Count of elements in enumerable
+            int count = collection.Count();
+
+            // Total length of elements' lengths
             int totalLength = 0;
 
-            for (countToTake = 0; countToTake < collection.Count() && totalLength + countToTake * collectionSplitter.Length < characterLimit; countToTake++)
+            // Determine the count
+            int countToTake;
+            for (countToTake = 0; countToTake < count && totalLength + (countToTake+1) * collectionSplitter.Length < characterLimit; countToTake++)
                 totalLength += collection.ElementAt(countToTake).Length;
 
             return collection.Take(countToTake);
