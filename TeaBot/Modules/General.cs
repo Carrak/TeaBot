@@ -160,9 +160,20 @@ namespace TeaBot.Modules
         [Ratelimit(30)]
         public async Task Poll()
         {
-            var reply1 = await ReplyAsync("What's gonna be the poll's name? `Reply with just the name`");
+            var reply1 = await ReplyAsync("What's gonna be the poll's name? `Reply with just the name or type 'stop' to cancel.`");
             var name = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-            if (name is null) return;
+            if (name is null || name.Content.Equals("stop", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    await name.DeleteAsync();
+                }
+                catch (HttpException)
+                {
+
+                }
+                return;
+            }
 
             var reply2 = await ReplyAsync("What are the poll's entries? Split them with `|`");
 
