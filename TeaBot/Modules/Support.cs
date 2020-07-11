@@ -18,13 +18,11 @@ namespace TeaBot.Modules
     public class Support : TeaInteractiveBase
     {
         private readonly CommandService _commandService;
-        private readonly DatabaseService _database;
         private readonly TeaService _tea;
 
-        public Support(CommandService commandService, DatabaseService database, TeaService tea)
+        public Support(CommandService commandService, TeaService tea)
         {
             _commandService = commandService;
-            _database = database;
             _tea = tea;
         }
 
