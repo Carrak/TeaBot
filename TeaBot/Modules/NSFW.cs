@@ -95,7 +95,7 @@ namespace TeaBot.Modules
 
             _ = Task.Run(async () =>
             {
-                if (await NextMessageWithCondition(message => message.Content.Equals("d", StringComparison.OrdinalIgnoreCase), Context, TimeSpan.FromSeconds(10)) != null)
+                if (await NextMessageWithConditionAsync(message => message.Content.Equals("d", StringComparison.OrdinalIgnoreCase), Context, TimeSpan.FromSeconds(10)) != null)
                 {
                     try
                     {

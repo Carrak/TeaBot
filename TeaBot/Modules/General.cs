@@ -167,7 +167,7 @@ namespace TeaBot.Modules
             var reply2 = await ReplyAsync("What are the poll's entries? Split them with `|`");
 
             string[] entriesArr = null;
-            var entriesMsg = await NextMessageWithCondition(x => { 
+            var entriesMsg = await NextMessageWithConditionAsync(x => { 
                 entriesArr = Regex.Split(x.Content, @"\s+\|\s+");
                 int count = entriesArr.Count();
                 return count >= 2 && count <= 9;
