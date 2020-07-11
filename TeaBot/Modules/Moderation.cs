@@ -27,6 +27,7 @@ namespace TeaBot.Modules
             count = Math.Min(100, count + 1);
             var channel = Context.Channel as ITextChannel;
             var messages = await channel.GetMessagesAsync(count).FlattenAsync();
+            messages = messages.Where(x => DateTimeOffset.UtcNow - x.CreatedAt < TimeSpan.FromDays(14));
             await channel.DeleteMessagesAsync(messages);
         }
 
@@ -35,19 +36,18 @@ namespace TeaBot.Modules
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
-        [Note("Bots can only retrieve 100 messages per request, so it is not guaranteed for all messages to be purged at once. " +
-            "Only the ones that are within these 100 can be purged. Messages also must be less than 2 weeks old.")]
+        [Note("Messages must be less than 2 weeks old. It is not guaranteed for all of the user's messages to be purged, only the messages that are within the last 100 in the channel.")]
         [Ratelimit(3)]
         public async Task Purge(
-            [Summary("The user to exclusively purge the messages from.")] IUser user,
+            [Summary("The user to exclusively purge messages from.")] IUser user,
             [Summary("The amount of messages to purge.")] int count
             )
         {
-            count = Math.Min(100, count + 1);
             var channel = Context.Channel as ITextChannel;
             var messages = await channel.GetMessagesAsync().FlattenAsync();
             messages = messages.Where(x => x.Author == user);
             messages = messages.Take(Math.Min(messages.Count(), count));
+            messages = messages.Where(x => DateTimeOffset.UtcNow - x.CreatedAt < TimeSpan.FromDays(14));
             await channel.DeleteMessagesAsync(messages);
         }
     }
