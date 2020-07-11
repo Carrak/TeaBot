@@ -146,6 +146,7 @@ namespace TeaBot.Main
 
                     embed.WithColor(Color.Red)
                         .WithTitle($"Exception on {DateTime.UtcNow.ToString("dd MMMM, yyyy HH:mm:ss", new CultureInfo("en-US"))}")
+                        .WithDescription(executeResult.Exception.ToString())
                         .WithAuthor(_client.CurrentUser)
                         .WithFooter(footer)
                         .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message);
