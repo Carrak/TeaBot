@@ -161,36 +161,40 @@ namespace TeaBot.Modules
         public async Task Poll()
         {
             var reply1 = await ReplyAsync("What's gonna be the poll's name? `Reply with just the name`");
-            var name = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+            var name = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
             if (name is null) return;
 
             var reply2 = await ReplyAsync("What are the poll's entries? Split them with `|`");
-            var entries = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-            if (entries is null) return;
+
+            string[] entriesArr = null;
+            var entriesMsg = await NextMessageWithCondition(x => { 
+                entriesArr = Regex.Split(x.Content, @"\s+\|\s+");
+                int count = entriesArr.Count();
+                return count >= 2 && count <= 9;
+            }, Context, TimeSpan.FromSeconds(30), "You've input less than 2 or more than 9 entries. Try again.");
+
+            if (entriesArr is null) return;
+
+            entriesArr = entriesArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
             Emoji[] unicodeNums = new string[] { "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣" }.Select(x => new Emoji(x)).ToArray();
-            //Emoji[] arrows = new string[] { "🔼", "🔽" }.Select(x => new Emoji(x)).ToArray();
 
-            var entriesArr = Regex.Replace(entries.Content, @"\s+\|\s+", "|").Split("|");
-            if (entriesArr.Length < 2 || entriesArr.Length > 9 || entriesArr.Any(x => x == ""))
-            {
-                await ReplyAsync("Incorrect input! `(the amount of options must be in range of 2 to 9 or empty entries found)`");
-                return;
-            }
+            var message = await ReplyAsync($"Poll hosted by {Context.Message.Author.Mention}\n**{name}**\n{string.Join("\n", entriesArr.Select((x, index) => $"**{index + 1}.** {entriesArr[index]}"))}");
+            _ = Task.Run(async () => await message.AddReactionsAsync(unicodeNums.Take(entriesArr.Count()).ToArray()));
 
             if (!Context.IsPrivate && Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
                 _ = Task.Run(async () =>
                 {
-                    await Context.Message.DeleteAsync();
-                    await reply1.DeleteAsync();
-                    await name.DeleteAsync();
-                    await reply2.DeleteAsync();
-                    await entries.DeleteAsync();
+                    var messages = new IMessage[] { reply1, reply2, name, entriesMsg, Context.Message };
+                    try
+                    {
+                       await (Context.Channel as ITextChannel).DeleteMessagesAsync(messages);
+                    }
+                    catch (HttpException)
+                    {
+
+                    }
                 });
-
-            var message = await ReplyAsync($"Poll hosted by {Context.Message.Author.Mention}\n**{name}**\n{string.Join("\n", entriesArr.Select((x, index) => $"**{index + 1}.** {entriesArr[index]}"))}");
-            _ = Task.Run(async () => await message.AddReactionsAsync(unicodeNums.Take(entriesArr.Length).ToArray()));
-
         }
 
         [Command("urbandictionary")]
