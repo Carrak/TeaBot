@@ -181,10 +181,10 @@ namespace TeaBot.Main
                 case CommandError.UnknownCommand:
                     return;
                 default:
-                    if (!string.IsNullOrEmpty(result.ErrorReason))
+                    if (string.IsNullOrEmpty(result.ErrorReason))
                         return;
                     else
-                    await context.Channel.SendMessageAsync($"{result.ErrorReason}");
+                        await context.Channel.SendMessageAsync($"{result.ErrorReason}");
                     break;
             }
         }
