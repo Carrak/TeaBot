@@ -145,7 +145,10 @@ namespace TeaBot.Services
             await using var cmd = GetCommand(query);
 
             cmd.Parameters.AddWithValue("gid", (long)guildId);
-            cmd.Parameters.AddWithValue("prefix", newPrefix);
+            if (newPrefix is null)
+                cmd.Parameters.AddWithValue("prefix", DBNull.Value);
+            else
+                cmd.Parameters.AddWithValue("prefix", newPrefix);
 
             await cmd.ExecuteNonQueryAsync();
 
