@@ -29,7 +29,7 @@ namespace TeaBot.Modules
         }
 
         [Command("help")]
-        [Summary("Do `tea help help` for description")]
+        [Summary("Do `{prefix}help help` for description")]
         [Ratelimit(3)]
         public async Task HelpGeneral()
         {

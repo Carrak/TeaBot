@@ -131,11 +131,11 @@ namespace TeaBot.Modules
 
         [Command("blacklist")]
         [Alias("bl")]
-        [Summary("All tags that will be blocked in the rule34 command. Use these commands to manage your blacklist (with the prefix):\n" +
-            "`bla` - add a tag to your blacklist\n" +
-            "`blr` - remove a tag from your blacklist\n" +
-            "`gbla` - add a tag to the server's blacklist\n" +
-            "`glbr` - remove a tag from the server's blacklist")]
+        [Summary("All tags that will be blocked in the rule34 command. Use these commands to manage your blacklist:\n" +
+            "`{prefix}bla` - add a tag to your blacklist\n" +
+            "`{prefix}blr` - remove a tag from your blacklist\n" +
+            "`{prefix}gbla` - add a tag to the server's blacklist\n" +
+            "`{prefix}glbr` - remove a tag from the server's blacklist")]
         [Ratelimit(10)]
         public async Task BlackList()
         {
