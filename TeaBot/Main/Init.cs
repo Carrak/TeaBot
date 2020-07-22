@@ -34,7 +34,6 @@ namespace TeaBot.Main
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true,
-                ExclusiveBulkDelete = true
             });
             _commands = new CommandService(new CommandServiceConfig()
             {
