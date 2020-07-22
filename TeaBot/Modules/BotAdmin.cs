@@ -99,14 +99,6 @@ namespace TeaBot.Modules
             }
         }
 
-        [Command("guilds")]
-        [Summary("Displays the guilds the bot is in")]
-        public async Task Guilds()
-        {
-            var guilds = Context.Client.Guilds;
-            await ReplyAsync($"**Total guilds: {guilds.Count}**\n{string.Join("\n", guilds)}");
-        }
-
         [Command("rename")]
         [Summary("Changes the bot's guild nickname")]
         public async Task Rename([Remainder] string newName)
@@ -117,13 +109,6 @@ namespace TeaBot.Modules
                 await ReplyAsync("Successfully renamed!");
             }
             else await ReplyAsync("Couldn't rename! [The name must be 32 or fewer in length]");
-        }
-
-        [Command("uptime")]
-        public async Task Uptime()
-        {
-            var uptime = DateTime.UtcNow - TeaEssentials.BotStarted;
-            await ReplyAsync($"I've been up for **{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s**");
         }
     }
 }

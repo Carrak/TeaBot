@@ -9,6 +9,7 @@ using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands.PagedCommands;
 using TeaBot.Services;
+using Discord.WebSocket;
 
 namespace TeaBot.Modules
 {
@@ -25,6 +26,24 @@ namespace TeaBot.Modules
             _commandService = commandService;
             _tea = tea;
         }
+
+        [Command("stats")]
+        [Summary("Information about the bot.")]
+        public async Task Stats()
+        {
+            var embed = new EmbedBuilder();
+
+            var client = Context.Client;
+            var uptime = System.DateTime.UtcNow - TeaEssentials.BotStarted;
+
+            embed.WithAuthor(client.CurrentUser)
+                .WithColor(Color.Blue)
+                .AddField("Guilds", client.Guilds.Count, true)
+                .AddField("Users", client.Guilds.Sum(x => x.Users.Count), true)
+                .AddField("Uptime", $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+
+            await ReplyAsync(embed: embed.Build());
+        } 
 
         [Command("help")]
         [Summary("Do `{prefix}help help` for description")]
