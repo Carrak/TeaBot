@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using TeaBot.Preconditions;
-using Discord.Commands;
 using System.Collections.Generic;
 using Discord.Rest;
 using Discord;
@@ -31,10 +30,12 @@ namespace TeaBot.Commands
             List<RestUserMessage> errorMessages = new List<RestUserMessage>();
 
             int count = 0;
+
+            // Temporary message handler
             async Task Handler(SocketMessage message)
             {
                 // Ensure the message is in the same channel and by the same user
-                if (message.Author != Context.User || message.Channel != Context.Channel)
+                if (message.Author.Id != Context.User.Id || message.Channel.Id != Context.Channel.Id)
                     return;
 
                 // If message matches the condition, set it as the result
@@ -44,6 +45,7 @@ namespace TeaBot.Commands
                     return;
                 }
 
+                // Send error message in case the message doesn't match the condition
                 if (!string.IsNullOrEmpty(errorMessage))
                     errorMessages.Add(await context.Channel.SendMessageAsync(errorMessage));
 
@@ -62,6 +64,7 @@ namespace TeaBot.Commands
 
             if (task == trigger)
             {   
+                // Delete messages
                 try
                 {
                     await (context.Channel as ITextChannel).DeleteMessagesAsync(errorMessages);
@@ -70,6 +73,7 @@ namespace TeaBot.Commands
                 {
 
                 }
+                // Return the message
                 return await trigger;
             }
             else
