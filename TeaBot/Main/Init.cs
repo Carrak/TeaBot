@@ -57,7 +57,7 @@ namespace TeaBot.Main
             // Register events
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
-            _client.Ready += OnStart;
+            _client.Ready += Ready;
 
             // Retrieve the token and the pgsql db connection string
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
@@ -90,7 +90,7 @@ namespace TeaBot.Main
         /// <summary>
         ///     Changes the bot's status once <see cref="_client"/> fires <see cref="DiscordSocketClient.Ready"/>.
         /// </summary>
-        private async Task OnStart()
+        private async Task Ready()
         {
         }
 
