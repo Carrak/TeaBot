@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -144,10 +145,20 @@ namespace TeaBot.Main
                         IconUrl = context.User.GetAvatarUrl()
                     };
 
+                    StackTrace st = new StackTrace(executeResult.Exception, true);
+                    StackFrame frame = st.GetFrame(st.FrameCount - 1);
+
+                    string fileName = frame.GetFileName();
+                    string methodName = frame.GetMethod().Name;
+                    int line = frame.GetFileLineNumber();
+                    int col = frame.GetFileColumnNumber();
+
+                    string stacktrace = $"In {fileName}\nMethod {methodName}\nLine {line}\nColumn {col}";
+
                     embed.WithColor(Color.Red)
                         .WithTitle($"Exception on {DateTime.UtcNow.ToString("dd MMMM, yyyy HH:mm:ss", new CultureInfo("en-US"))}")
-                        .WithDescription(executeResult.Exception.ToString())
                         .WithAuthor(_client.CurrentUser)
+                        .WithDescription(stacktrace)
                         .WithFooter(footer)
                         .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message);
 
