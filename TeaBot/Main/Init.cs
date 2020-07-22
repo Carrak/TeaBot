@@ -81,6 +81,8 @@ namespace TeaBot.Main
             // Start the uptime stopwatch
             TeaEssentials.BotStarted = DateTime.UtcNow;
 
+            await _client.SetGameAsync("Fate || tea info", type: ActivityType.Watching);
+
             // Make sure it doesn't die
             await Task.Delay(-1);
         }
@@ -90,7 +92,6 @@ namespace TeaBot.Main
         /// </summary>
         private async Task OnStart()
         {
-            await _client.SetGameAsync("Fate || tea info", type: ActivityType.Watching);
         }
 
         /// <summary>
