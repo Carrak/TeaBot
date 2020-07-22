@@ -70,9 +70,12 @@ namespace TeaBot.Main
             string token = config["token"].ToString();
 
             // Init services
-            Logger.Log("Database", "Initializing services");
+            Logger.Log("Services", "Initializing Rule34BlacklistService");
             await _services.GetRequiredService<Rule34BlacklistService>().InitDefaultBlacklistAsync();
+            Logger.Log("Services", "Initialized Rule34BlacklistService");
+            Logger.Log("Services", "Initializing MessageHandler");
             await _services.GetRequiredService<MessageHandler>().InitAsync();
+            Logger.Log("Services", "Initialized MessageHandler");
 
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
@@ -92,6 +95,9 @@ namespace TeaBot.Main
         /// </summary>
         private async Task Ready()
         {
+            Logger.Log("Services", "Initializing ReactionRoleService");
+            await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAsync();
+            Logger.Log("Services", "Initialized ReactionRoleService");
         }
 
         /// <summary>
