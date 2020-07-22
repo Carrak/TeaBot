@@ -1,9 +1,10 @@
 ﻿using System;
+using Discord;
 
 namespace TeaBot.Main
 {
     static class Logger
     {
-        public static void Log(string typeOfAction, string message) => Console.WriteLine($"{DateTime.Now:HH:mm:ss} {typeOfAction}    {message}");
+        public static void Log(string source, string message) => Console.WriteLine(new LogMessage(LogSeverity.Info, source, message));
     }
 }
