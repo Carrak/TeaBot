@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using TeaBot.Services;
+using TeaBot.Services.ReactionRole;
 using TeaBot.Webservices.Rule34;
 
 namespace TeaBot.Main
@@ -47,6 +48,7 @@ namespace TeaBot.Main
                 .AddSingleton<DatabaseService>()
                 .AddSingleton<TeaService>()
                 .AddSingleton<Rule34BlacklistService>()
+                .AddSingleton<ReactionRoleService>()
                 .BuildServiceProvider();
 
             // Set services
