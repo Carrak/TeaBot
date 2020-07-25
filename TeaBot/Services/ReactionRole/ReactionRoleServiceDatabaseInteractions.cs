@@ -88,17 +88,23 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task<ReactionRoleMessage> GetReactionRoleMessageAsync(SocketGuild guild, int? index)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn);
 
-            string query = @$"WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
-            SELECT rr.name, rr.color, rr.channelid, rr.messageid, rr.rrid FROM reaction_role_messages.reaction_roles rr, rrtemp 
-            WHERE rr.rrid = rrtemp.rrid
-            AND rrtemp.ROW_NUMBER = @rn;
-            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             SELECT emote, roleid FROM reaction_role_messages.emote_role_pairs er, rrtemp
             WHERE rrtemp.rrid = er.rrid
             AND rrtemp.ROW_NUMBER = @rn
-            ORDER BY index";
+            ORDER BY index; 
+
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT rr.name, rr.color, rr.channelid, rr.messageid, rr.rrid FROM reaction_role_messages.reaction_roles rr, rrtemp 
+            WHERE rr.rrid = rrtemp.rrid
+            AND rrtemp.ROW_NUMBER = @rn;
+            ";
 
             await using var cmd = _database.GetCommand(query);
 
@@ -109,86 +115,32 @@ namespace TeaBot.Services.ReactionRole
 
             await reader.ReadAsync();
 
-            // Basic RR message properties
+            // 1. Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+
+            await reader.NextResultAsync();
+
+            // 2. Retrieve raw emote-role pairs
+            List<RawEmoteRolePair> rawPairs = new List<RawEmoteRolePair>();
+            while (await reader.ReadAsync())
+                rawPairs.Add(new RawEmoteRolePair(reader.GetString(0), (ulong)reader.GetInt64(1)));
+
+            await reader.NextResultAsync();
+            await reader.ReadAsync();
+
+            // 3. Retrieve basic RR message properties
             string name = await reader.IsDBNullAsync(0) ? null : reader.GetString(0);
             Color? color = await reader.IsDBNullAsync(1) ? (Color?)null : new Color((uint)reader.GetInt32(1));
             ulong? channelId = await reader.IsDBNullAsync(2) ? (ulong?)null : (ulong)reader.GetInt64(2);
             ulong? messageId = await reader.IsDBNullAsync(3) ? (ulong?)null : (ulong)reader.GetInt64(3);
             int rrid = reader.GetInt32(4);
 
-            await reader.NextResultAsync();
-
-            // Raw emote-role pairs
-            List<(string, ulong)> rawPairs = new List<(string, ulong)>();
-            while (await reader.ReadAsync())
-                rawPairs.Add((reader.GetString(0), (ulong)reader.GetInt64(1)));
-
             await reader.CloseAsync();
 
-            // Parsed emote-role pairs
-            Dictionary<IEmote, IRole> pairs = new Dictionary<IEmote, IRole>();
-
-            // Location of the RR message
-            ITextChannel channel = null;
-            IUserMessage message = null;
-
-            if (channelId.HasValue)
-            {
-                // Retrieve the channel
-                channel = guild.GetChannel(channelId.Value) as ITextChannel;
-
-                if (channel != null)
-                {
-                    message = null;
-                    if (messageId.HasValue)
-                    {
-                        try
-                        {
-                            // Retrieve the message
-                            message = await channel.GetMessageAsync(messageId.Value) as IUserMessage;
-
-                            // Delete the message from the database in case it isn't found in the channel
-                            if (message == null)
-                                await MessageNotFound(channelId.Value, messageId.Value);
-                        } 
-                        // Discard missing permissions (in case the channel couldn't be accessed and thus the message could not be retrieved)
-                        catch(Discord.Net.HttpException)
-                        {
-
-                        }
-                    }
-                }
-                // Delete the reaction-role's location info from the database if the channel it was in is null
-                else
-                    await ChannelNotFound(channel.Id);
-            }
-
-            // Parse and retrieve emotes and roles
-            foreach (var pair in rawPairs)
-            {
-                // Retrieve the emote
-                IEmote emote;
-                if (Emote.TryParse(pair.Item1, out var e))
-                    emote = e;
-                else if (new Emoji(pair.Item1) is Emoji emoji)
-                    emote = emoji;
-                else
-                    throw new NotImplementedException();
-
-                // Retrieve the role
-                var role = guild.Roles.FirstOrDefault(x => x.Id == pair.Item2);
-
-                // Delete this emote-role pair from the database in case it isn't found
-                if (role is null)
-                {
-                    await RoleNotFound(pair.Item2);
-                    continue;
-                }
-
-                pairs.Add(emote, role);
-            }
-
-            return new ReactionRoleMessage(rrid, pairs, this, guild, channel, color, name, message);
+            return await PrepareReactionRoleMessageAsync(new RawReactionRoleMessage(rrid, name, guild.Id, channelId, messageId, color, rawPairs));
         }
 
         /// <summary>

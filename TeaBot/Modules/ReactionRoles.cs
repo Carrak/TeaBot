@@ -59,7 +59,7 @@ namespace TeaBot.Modules
                 .AddField("Name", rrmsg.Name ?? "-")
                 .AddField("Channel", rrmsg.Channel?.Mention ?? "-")
                 .AddField("Message", rrmsg.Message is null ? "-" : $"[Click here to jump to the message!]({rrmsg.Message.GetJumpUrl()})")
-                .AddField("Emote-role pairs", rrmsg.EmoteRolePairs.Count > 0 ? string.Join("\n", rrmsg.EmoteRolePairs.Select(x => $"{x.Key} - {x.Value.Mention}")) : "-");
+                .AddField("Emote-role pairs", rrmsg.EmoteRolePairs.Count > 0 ? string.Join("\n", rrmsg.EmoteRolePairs.Select(x => $"{x.Key} - {x.Value.Role.Mention}")) : "-");
 
             await ReplyAsync(embed: embed.Build());
         }
@@ -105,13 +105,9 @@ namespace TeaBot.Modules
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
-            int index = 0;
             List<string> rrmsgs = new List<string>();
-            while (await reader.ReadAsync())
-            {
-                index++;
+            for (int index = 1; await reader.ReadAsync(); index++)
                 rrmsgs.Add($"`{index}`. {(await reader.IsDBNullAsync(0) ? "`No name for this reaction role message!`" : reader.GetString(0))}");
-            }
 
             var embed = new EmbedBuilder();
 
@@ -165,7 +161,7 @@ namespace TeaBot.Modules
             {
                 await _rrservice.ChangeChannelAsync(Context.Guild, index, channel.Id);
                 var newRrmsg = await _rrservice.UpdateOrDisplayReactionRoleMessageAsync(Context.Guild, index);
-                await ReplyAsync($"Displayed {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")} in channel <#{newRrmsg.Channel.Id}>.");
+                await ReplyAsync($"Displayed {ReactionRoleService.SpecifyReactionRoleMessage(index)} in channel <#{newRrmsg.Channel.Id}>.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -197,7 +193,7 @@ namespace TeaBot.Modules
 
         [Command("delete")]
         [Alias("remove", "d", "r")]
-        [Summary("Entirely delete a reaction-role message with all of its contents.")]
+        [Summary("Entirely deletes a reaction-role message with all of its contents.")]
         [Ratelimit(4)]
         public async Task Delete(
             [Summary("The index of the reaction-role message. The indexes are available using `{prefix}rr list`. Leave empty for the latest reaction-role message.")] int? index = null
@@ -206,7 +202,7 @@ namespace TeaBot.Modules
             try 
             { 
                 await _rrservice.RemoveReactionRoleMessage(Context.Guild, index);
-                await ReplyAsync($"Successfully removed {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully removed {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -238,7 +234,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.ChangeEmote(Context.Guild, index, existingRole, newEmote);
-                await ReplyAsync($"Successfully changed the emote for role `{existingRole.Name}` to {newEmote} in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully changed the emote for role `{existingRole.Name}` to {newEmote} in {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             } 
             catch (ReactionRoleServiceException rrse)
             {
@@ -259,7 +255,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.ChangeRole(Context.Guild, index, newRole, existingEmote);
-                await ReplyAsync($"Successfully changed the role for emote {existingEmote} to `{newRole.Name}` in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully changed the role for emote {existingEmote} to `{newRole.Name}` in {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -289,7 +285,12 @@ namespace TeaBot.Modules
             )
         {
             var highestRole = Context.Guild.CurrentUser.Roles.OrderByDescending(x => x.Position).First();
-            if (role.Position >= highestRole.Position)
+            if (role.Id == highestRole.Id)
+            {
+                await ReplyAsync($"Cannot add {role.Name} because it is the bot's highest role.");
+                return;
+            }
+            else if (role.Position >= highestRole.Position)
             {
                 await ReplyAsync($"Cannot add `{role.Name}` because it is placed higher than the bot's highest role - `{highestRole.Name}`.");
                 return;
@@ -298,7 +299,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.AddPairAsync(Context.Guild, index, emote, role);
-                await ReplyAsync($"Successfully added the pair to {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully added the pair to {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             } 
             catch (ReactionRoleServiceException rrse)
             {
@@ -318,7 +319,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.RemovePairAsync(Context.Guild, index, emote);
-                await ReplyAsync($"Successfully removed the pair from {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully removed the pair with emote {emote} from {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -338,7 +339,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.RemovePairAsync(Context.Guild, index, role);
-                await ReplyAsync($"Successfully removed the pair in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully removed the pair with role `{role.Name}` from {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -350,7 +351,7 @@ namespace TeaBot.Modules
         [Alias("ch")]
         [Summary("Changes the channel of a reaction-role message.")]
         [Ratelimit(4)]
-        public async Task SetChannel(
+        public async Task ChangeChannel(
             [Summary("The new channel to set. This is where the message will be displayed after using `{prefix}rr display`")] ITextChannel channel,
             [Summary("The index of the reaction-role message. The indexes are available using `{prefix}rr list`. Leave empty for the latest reaction-role message.")] int? index = null
             )
@@ -358,7 +359,7 @@ namespace TeaBot.Modules
             try 
             {
                 await _rrservice.ChangeChannelAsync(Context.Guild, index, channel.Id);
-                await ReplyAsync($"Successfully changed the channel for {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully changed the channel to {channel.Mention} for {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -376,7 +377,7 @@ namespace TeaBot.Modules
         {
             try { 
                 await _rrservice.ChangeNameAsync(Context.Guild, null, name);
-                await ReplyAsync($"Successfully changed the name for the latest reaction-role message.");
+                await ReplyAsync($"Successfully changed the name for the latest reaction-role message.\nNew name: {name}");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -396,7 +397,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.ChangeNameAsync(Context.Guild, index, name);
-                await ReplyAsync($"Successfully changed the name for reaction-role message with index `{index}`.");
+                await ReplyAsync($"Successfully changed the name for reaction-role message with index `{index}`.\nNew name: {name}");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -416,7 +417,7 @@ namespace TeaBot.Modules
             try 
             { 
                 await _rrservice.ChangeColorAsync(Context.Guild, index, color == TeaEssentials.MainColor ? null : (Color?) color);
-                await ReplyAsync($"Successfully changed the color for {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully changed the color to {color} for {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             }
             catch (ReactionRoleServiceException rrse)
             {
@@ -437,7 +438,7 @@ namespace TeaBot.Modules
             try
             {
                 await _rrservice.ChangeOrder(Context.Guild, index, emote1, emote2);
-                await ReplyAsync($"Successfully changed the order in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.");
+                await ReplyAsync($"Successfully swapped the order of {emote1} and {emote2} in {ReactionRoleService.SpecifyReactionRoleMessage(index)}.");
             } 
             catch (ReactionRoleServiceException rrse)
             {
