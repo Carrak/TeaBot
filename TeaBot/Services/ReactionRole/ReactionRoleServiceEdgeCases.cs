@@ -4,7 +4,11 @@ namespace TeaBot.Services.ReactionRole
 {
     partial class ReactionRoleService
     {
-        private async Task GuildNotFound(ulong guildId)
+        /// <summary>
+        ///     Deletes the guild and all of its RR messages from the database.
+        /// </summary>
+        /// <param name="guildId">The ID of the guild.</param>
+        private async Task RemoveGuildEntry(ulong guildId)
         {
             string guildDeletionQuery = "DELETE FROM reaction_role_messages.reaction_roles WHERE guildid=@gid; " +
                         "DELETE FROM reaction_role_messages.emote_role_pairs WHERE rrid IN (SELECT rrid FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)";
@@ -15,7 +19,11 @@ namespace TeaBot.Services.ReactionRole
             await guildDeletionCmd.ExecuteNonQueryAsync();
         }
 
-        private async Task ChannelNotFound(ulong channelId)
+        /// <summary>
+        ///     Deletes the channel and all of the RR messages related to it from the database.
+        /// </summary>
+        /// <param name="channelId">The ID of the channel.</param>
+        private async Task RemoveChannelFromRRMAsync(ulong channelId)
         {
             string updateQuery = "UPDATE reaction_role_messages.reaction_roles SET channelid=NULL, messageid=NULL WHERE channelid=@cid";
             await using var updateCmd = _database.GetCommand(updateQuery);
@@ -25,9 +33,14 @@ namespace TeaBot.Services.ReactionRole
             await updateCmd.ExecuteNonQueryAsync();
         }
 
-        private async Task MessageNotFound(ulong channelId, ulong messageId)
+        /// <summary>
+        ///     Deletes the message from a reaction-role message from the database.
+        /// </summary>
+        /// <param name="channelId">The ID of the channel the message is in.</param>
+        /// <param name="messageId">The ID of the message.</param>
+        private async Task RemoveMessageFromRRMAsync(ulong channelId, ulong messageId)
         {
-            reactionRoleMessages.Remove(messageId);
+            reactionRoleCallbacks.Remove(messageId);
 
             string query = "UPDATE reaction_role_messages.reaction_roles SET messageid=NULL WHERE channelid=@cid AND messageid=@mid";
             await using var cmd = _database.GetCommand(query);
@@ -38,7 +51,11 @@ namespace TeaBot.Services.ReactionRole
             await cmd.ExecuteNonQueryAsync();
         }
 
-        private async Task RoleNotFound(ulong roleId)
+        /// <summary>
+        ///     Deletes the emote-role pair with the given role.
+        /// </summary>
+        /// <param name="roleId">The ID of the role.</param>
+        private async Task RemoveEmoteRolePair(ulong roleId)
         {
             string query = "DELETE FROM reaction_role_messages.emote_role_pairs WHERE roleid=@rid";
             await using var cmd = _database.GetCommand(query);

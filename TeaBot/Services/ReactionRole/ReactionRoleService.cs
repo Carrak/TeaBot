@@ -5,6 +5,8 @@ using Discord.WebSocket;
 using TeaBot.ReactionCallbackCommands;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.Rest;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -12,7 +14,11 @@ namespace TeaBot.Services.ReactionRole
     {
         private readonly DatabaseService _database;
         private readonly DiscordSocketClient _client;
-        private readonly Dictionary<ulong, ReactionRoleMessage> reactionRoleMessages = new Dictionary<ulong, ReactionRoleMessage>();
+
+        /// <summary>
+        ///     Displayed reaction-role messages. The key is the message ID.
+        /// </summary>
+        private readonly Dictionary<ulong, ReactionRoleMessage> reactionRoleCallbacks = new Dictionary<ulong, ReactionRoleMessage>();
 
         public ReactionRoleService(DatabaseService database, DiscordSocketClient client)
         {
@@ -37,15 +43,17 @@ namespace TeaBot.Services.ReactionRole
             if (rrmsg is null || rrmsg.Message is null)
                 throw new ReactionRoleServiceException("Cannot add reaction callback to a null message.");
 
-            if (reactionRoleMessages.Values.FirstOrDefault(x => x.RRID == rrmsg.RRID && x.Channel.Id != rrmsg.Channel.Id) is ReactionRoleMessage rrtemp)
+            if (reactionRoleCallbacks.Values.FirstOrDefault(x => x.RRID == rrmsg.RRID && x.Channel.Id != rrmsg.Channel.Id) is ReactionRoleMessage rrtemp)
                 await rrtemp.TryDeleteMessageAsync();
 
-            reactionRoleMessages[message.Id] = rrmsg;
+            reactionRoleCallbacks[message.Id] = rrmsg;
         }
 
         public void RemoveReactionCallback(IUserMessage message)
         {
-            reactionRoleMessages.Remove(message.Id);
+            reactionRoleCallbacks.Remove(message.Id);
+        }
+
         public async Task<ReactionRoleMessage> PrepareReactionRoleMessageAsync(RawReactionRoleMessage rawRRmsg)
         {
             var guild = _client.GetGuild(rawRRmsg.GuildId);
@@ -114,8 +122,12 @@ namespace TeaBot.Services.ReactionRole
 
             return new ReactionRoleMessage(rawRRmsg.RRID, pairs, this, guild, channel, rawRRmsg.Color, rawRRmsg.Name, message);
         }
+
     }
 
+    /// <summary>
+    ///     Exception class for exceptions related to this service.
+    /// </summary>
     class ReactionRoleServiceException : Exception
     {
         public ReactionRoleServiceException(string message) 
