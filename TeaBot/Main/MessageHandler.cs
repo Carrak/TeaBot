@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -104,7 +105,7 @@ namespace TeaBot.Main
         ///     Determines the behaviour when a command fails to execute.
         /// </summary>
         private async Task HandleErrorsAsync(TeaCommandContext context, IResult result, int argPosition)
-        {
+        { 
             switch (result.Error)
             {
                 case CommandError.BadArgCount:
@@ -126,7 +127,7 @@ namespace TeaBot.Main
                     var executeResult = (result as ExecuteResult?).Value;
 
                     // Send the message, but don't await it
-                    _ = context.Channel.SendMessageAsync("An exception occured while executing this command! Contact Carrak#8088 if this keeps happening.");
+                    _ = Task.Run(async () => await context.Channel.SendMessageAsync("An exception occured while executing this command! Contact Carrak#8088 if this keeps happening."));
 
                     var embed = new EmbedBuilder();
 
@@ -146,19 +147,28 @@ namespace TeaBot.Main
                     };
 
                     StackTrace st = new StackTrace(executeResult.Exception, true);
+
                     StackFrame frame = st.GetFrame(st.FrameCount - 1);
 
-                    string fileName = frame.GetFileName();
-                    string methodName = frame.GetMethod().Name;
-                    int line = frame.GetFileLineNumber();
-                    int col = frame.GetFileColumnNumber();
+                    System.Text.StringBuilder log = new System.Text.StringBuilder();
 
-                    string stacktrace = $"In {fileName}\nMethod {methodName}\nLine {line}\nColumn {col}";
+                    string stackIndent = "";
+                    for (int i = 0; i < st.FrameCount; i++)
+                    {
+                        StackFrame sf = st.GetFrame(i);
+                        int line = sf.GetFileLineNumber();
+
+                        if (line == 0)
+                            continue;
+
+                        log.Append($"{stackIndent}In {sf.GetFileName()}\nAt line {line}");
+                        stackIndent += " ";
+                    }
 
                     embed.WithColor(Color.Red)
                         .WithTitle($"Exception on {DateTime.UtcNow.ToString("dd MMMM, yyyy HH:mm:ss", new CultureInfo("en-US"))}")
                         .WithAuthor(_client.CurrentUser)
-                        .WithDescription(stacktrace)
+                        .WithDescription(log.ToString())
                         .WithFooter(footer)
                         .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message);
 
@@ -186,8 +196,9 @@ namespace TeaBot.Main
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
                         .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 is null ? "-" : x.Item3.Value.ToString())), true);
 
+                    // Send the logs to the channel
                     if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
-                        await logChannel.SendMessageAsync(embed: embed.Build());
+                        await logChannel.SendMessageAsync($"StackTrace:```{ executeResult.Exception.StackTrace}```", embed: embed.Build());
 
                     break;
                 case CommandError.UnknownCommand:
