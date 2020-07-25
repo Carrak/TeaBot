@@ -62,28 +62,4 @@ namespace TeaBot.Services.ReactionRole
             }
         }
     }
-
-    sealed class RawReactionRoleMessage {
-
-        public int RRID { get; }
-
-        public string Name { get; }
-
-        public ulong GuildId { get; }
-        public ulong ChannelId { get; }
-        public ulong MessageId { get; }
-
-        public Color? Color { get; }
-
-        public RawReactionRoleMessage(int rrid, string name, ulong guildid, ulong channelid, ulong messageid, Color? color)
-        {
-            RRID = rrid;
-            Name = name;
-            GuildId = guildid;
-            ChannelId = channelid;
-            MessageId = messageid;
-            Color = color;
-        }
-
-    }
 }

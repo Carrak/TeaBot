@@ -20,13 +20,13 @@ namespace TeaBot.ReactionCallbackCommands
         public Color? Color { get; set; }
 
         // Reaction-role properties
-        public Dictionary<IEmote, IRole> EmoteRolePairs;
+        public Dictionary<IEmote, EmoteRolePair> EmoteRolePairs;
         public readonly int RRID;
         public string Name { get; set; }
 
         public ReactionRoleMessage(
             int rrid,
-            Dictionary<IEmote, IRole> emoterolepairs,
+            Dictionary<IEmote, EmoteRolePair> emoterolepairs,
             ReactionRoleService rrservice,
             IGuild guild,
             ITextChannel channel,
@@ -52,7 +52,7 @@ namespace TeaBot.ReactionCallbackCommands
 
             embed.WithTitle(Name ?? "Select the roles you want to give to yourself.")
                 .WithColor(Color ?? TeaEssentials.MainColor)
-                .WithDescription(string.Join("\n\n", EmoteRolePairs.Select(x => $"{x.Key} - {x.Value.Mention}")))
+                .WithDescription(string.Join("\n\n", EmoteRolePairs.Select(x => $"{x.Key} - {x.Value.Role.Mention}")))
                 .WithFooter("React to give yourself a role from the list.");
 
             return embed.Build();
@@ -98,12 +98,12 @@ namespace TeaBot.ReactionCallbackCommands
 
         public async Task HandleReactionAdded(SocketReaction reaction)
         {
-            if (EmoteRolePairs.TryGetValue(reaction.Emote, out var role))
+            if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
                 var user = await Guild.GetUserAsync(reaction.User.Value.Id);
                 try
                 {
-                    await user.AddRoleAsync(role);
+                    await user.AddRoleAsync(erp.Role);
                 }
                 // Discard missing permissions
                 catch (HttpException)
@@ -115,12 +115,12 @@ namespace TeaBot.ReactionCallbackCommands
 
         public async Task HandleReactionRemoved(SocketReaction reaction)
         {
-            if (EmoteRolePairs.TryGetValue(reaction.Emote, out var role))
+            if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
                 var user = await Guild.GetUserAsync(reaction.User.Value.Id);
                 try
                 {
-                    await user.RemoveRoleAsync(role);
+                    await user.RemoveRoleAsync(erp.Role);
                 }
                 catch (HttpException)
                 {
@@ -130,27 +130,28 @@ namespace TeaBot.ReactionCallbackCommands
         }
     }
 
-    sealed class EmoteRolePair 
+    public sealed class EmoteRolePair
     {
         public IEmote Emote { get; }
         public IRole Role { get; }
 
         public string Description { get; }
-        public IEnumerable<IRole> ExclusiveRoles;
-        public IEnumerable<IRole> DisabledRoles;
+        public IEnumerable<IRole> AllowedRoles;
+        public IEnumerable<IRole> ProhibitedRoles;
 
         public EmoteRolePair(IEmote emote, 
-            IRole role, 
-            string description = null, 
-            IEnumerable<IRole> exclusiveRoles = null, 
-            IEnumerable<IRole> disabledRoles = null)
+            IRole role 
+            //string description = null, 
+            //IEnumerable<IRole> allowedRoles = null, 
+            //IEnumerable<IRole> prohibitedRoles = null
+            )
         {
             Emote = emote;
             Role = role;
 
-            Description = description;
-            ExclusiveRoles = exclusiveRoles ?? new List<IRole>();
-            DisabledRoles = disabledRoles ?? new List<IRole>();
+            //Description = description;
+            //AllowedRoles = allowedRoles ?? new List<IRole>();
+            //ProhibitedRoles = prohibitedRoles ?? new List<IRole>();
         }
 
     }
