@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Net;
 using Discord.WebSocket;
 using TeaBot.ReactionCallbackCommands;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -16,37 +15,13 @@ namespace TeaBot.Services.ReactionRole
         public const string NotExistsError = "No reaction-role message exists at such index. Use `{prefix}rr list` to see available reaction-role messages.";
         public const string NoMessagesError = "No reaction-role messages exist in this guild. Use `{prefix}rr create` to create an empty message.";
 
-        /// <summary>
-        ///     Ensures that a specific message or any messages exist for the given <paramref name="guild"/>.
-        /// </summary>
-        /// <param name="guild">Guild to check.</param>
-        /// <param name="index">The row number of the message. If null, the latest message is used.</param>
-        /// <exception cref="ReactionRoleServiceException">
-        ///     1. No messages are found in the database
-        ///     2. No message at the given index (row number) exists
-        /// </exception>
-        private async Task EnsureRRExists(SocketGuild guild, int? index)
-        {
-            string query =
-            @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
-            SELECT NOT EXISTS (SELECT rrid FROM rr),
-            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn)";
 
-            await using var cmd = _database.GetCommand(query);
+        public static string SpecifyReactionRoleMessage(int? index, bool capitalize = false) => index.HasValue ? 
+            $"{(capitalize ? "R" : "r")}eaction-role message at index `{index.Value}`" : 
+            $"{(capitalize ? "L" : "l")}atest reaction-role message";
 
-            cmd.Parameters.AddWithValue("gid", NpgsqlTypes.NpgsqlDbType.Bigint, (long)guild.Id);
-            cmd.Parameters.AddWithValue("rn", NpgsqlTypes.NpgsqlDbType.Integer, index ?? 1);
-
-            await cmd.PrepareAsync();
-            await using var reader = await cmd.ExecuteReaderAsync();
-
-            await reader.ReadAsync();
-            if (reader.GetBoolean(0))
-                throw new ReactionRoleServiceException(NoMessagesError);
-            else if (reader.GetBoolean(1))
-                throw new ReactionRoleServiceException(NotExistsError);
-            await reader.CloseAsync();
-        }
+        public static string ReactionRoleMessageCommandString(string command, int? index) => $"`{{prefix}}rr {command}{(index.HasValue ? $" {index.Value}" : "")}`";
+        public static string ReactionRoleMessageCommandString(string command) => $"`{{prefix}}rr {command}`";
 
         /// <summary>
         ///     Creates an empty entry for a reaction-role message in the database.
@@ -57,7 +32,7 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task CreateReactionRoleMessage(SocketGuild guild)
         {
-            string countQuery = "SELECT COUNT(*) >= 5 FROM reaction_role_messages.reaction_roles WHERE guildid=@gid";
+            string countQuery = "SELECT COUNT(*) >= 5 FROM reaction_role_messages.reaction_roles WHERE guildid=@gid; ";
             await using var countCmd = _database.GetCommand(countQuery);
 
             countCmd.Parameters.AddWithValue("gid", (long)guild.Id);
@@ -69,7 +44,7 @@ namespace TeaBot.Services.ReactionRole
             await reader.CloseAsync();
 
             string query = "INSERT INTO reaction_role_messages.reaction_roles (rrid, name, guildid, channelid, messageid, color) " +
-                $"VALUES (DEFAULT, NULL, @gid, NULL, NULL, NULL)";
+               $"VALUES (DEFAULT, NULL, @gid, NULL, NULL, NULL)";
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
@@ -161,11 +136,11 @@ namespace TeaBot.Services.ReactionRole
 
             // Check if the message is eligible for displaying
             if (rrmsg.Channel is null)
-                throw new ReactionRoleServiceException("The channel is not present for this reaction-role message. Set the channel before displaying the message using " +
-                    $"`{{prefix}}rr channel [channel]{(index.HasValue ? $" {index.Value}" : "")}` or `{{prefix}}rr display [channel]{(index.HasValue ? $" {index.Value}" : "")}`.");
+                throw new ReactionRoleServiceException("The channel is not present for this reaction-role message.\nSet the channel before displaying the message using " +
+                    $"{ReactionRoleMessageCommandString("channel [channel]", index)} or {ReactionRoleMessageCommandString("display [channel]", index)}.");
             else if (rrmsg.EmoteRolePairs.Count == 0)
-                throw new ReactionRoleServiceException($"This reaction-role message does not have any emote-role pairs. Add them before displaying the message using " +
-                    $"`{{prefix}}rr addpair [emote] [role]`");
+                throw new ReactionRoleServiceException($"This reaction-role message does not have any emote-role pairs.\nAdd them before displaying the message using " +
+                    $"{ReactionRoleMessageCommandString("addpair [emote] [role]", index)}");
 
             // Store the previous message
             var message = rrmsg.Message;
@@ -200,17 +175,23 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task RemoveReactionRoleMessage(SocketGuild guild, int? index)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn);
 
-            var rrmsg1 = await GetReactionRoleMessageAsync(guild, index);
-            if (rrmsg1 != null && reactionRoleMessages.Values.FirstOrDefault(x => rrmsg1.RRID == x.RRID) is ReactionRoleMessage rrmsg2)
-                await rrmsg1.TryDeleteMessageAsync();
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT rr.messageid FROM reaction_role_messages.reaction_roles rr, rrtemp
+            WHERE rr.rrid = rrtemp.rrid
+            AND rrtemp.ROW_NUMBER = @rn;
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             DELETE FROM reaction_role_messages.emote_role_pairs er USING rr 
             WHERE er.rrid = rr.rrid
             AND rr.ROW_NUMBER = @rn;
-            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             DELETE FROM reaction_role_messages.reaction_roles rr USING rrtemp
             WHERE rr.rrid = rrtemp.rrid
             AND rrtemp.ROW_NUMBER = @rn";
@@ -220,7 +201,23 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("rn", index ?? 1);
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
 
-            await cmd.ExecuteNonQueryAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+
+            await reader.NextResultAsync();
+            await reader.ReadAsync();
+
+            // If message ID is present, delete the message
+            if (reader.HasRows && !await reader.IsDBNullAsync(0))
+                if (reactionRoleCallbacks.TryGetValue((ulong)reader.GetInt64(0), out var rrmsg))
+                    await rrmsg.TryDeleteMessageAsync();
         }
 
         /// <summary>
@@ -242,7 +239,10 @@ namespace TeaBot.Services.ReactionRole
             if (emote is Emote e && !guild.Emotes.Contains(e))
                 throw new ReactionRoleServiceException("Cannot add a pair with an emote that is not from this guild!");
 
-            string conditionQuery = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            string order = index.HasValue ? "ASC" : "DESC";
+            string conditionQuery = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+
             SELECT NOT EXISTS (SELECT rrid FROM rr),
 
             NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn),
@@ -250,7 +250,12 @@ namespace TeaBot.Services.ReactionRole
             EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
             WHERE er.rrid = rr.rrid
             AND rr.ROW_NUMBER = @rn
-            AND (emote=@emote OR roleid=@rid)),
+            AND roleid=@rid),
+
+            EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND rr.ROW_NUMBER = @rn
+            AND emote=@emote),
 
             COUNT(er.emote) >= 20 
             FROM reaction_role_messages.emote_role_pairs er, rr 
@@ -272,13 +277,19 @@ namespace TeaBot.Services.ReactionRole
                 throw new ReactionRoleServiceException(NoMessagesError);
             else if (reader.GetBoolean(1))
                 throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2) && reader.GetBoolean(3))
+                throw new ReactionRoleServiceException($"Such pair already exists. You can remove existing pairs using {ReactionRoleMessageCommandString("removepair [emote]", index)}");
             else if (reader.GetBoolean(2))
-                throw new ReactionRoleServiceException("A pair with this emote or role already exists. You can remove existing pairs using `{prefix}rr removepair`.");
+                throw new ReactionRoleServiceException($"A pair with this role already exists. You can remove existing pairs using {ReactionRoleMessageCommandString("removepair[emote]", index)}");
             else if (reader.GetBoolean(3))
-                throw new ReactionRoleServiceException("This message has reached the maximum of emote-role pairs. Create a new reaction-role message using `{prefix}rr create` or remove existing pairs using `{prefix}rr removepair`.");
+                throw new ReactionRoleServiceException($"A pair with this emote already exists. You can remove existing pairs using {ReactionRoleMessageCommandString("removepair[emote]", index)}");
+            else if (reader.GetBoolean(4))
+                throw new ReactionRoleServiceException($"This message has reached the maximum of emote-role pairs (20).\n" +
+                    $"Create a new reaction-role message using {ReactionRoleMessageCommandString("create")} " +
+                    $"or remove existing pairs using {ReactionRoleMessageCommandString("removepair [emote]", index)}.");
             await reader.CloseAsync();
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             INSERT INTO reaction_role_messages.emote_role_pairs (rrid, emote, roleid) VALUES ((SELECT rrid FROM rr WHERE ROW_NUMBER=@rn), @emote, @rid)";
 
             await using var cmd = _database.GetCommand(query);
@@ -305,23 +316,41 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task RemovePairAsync(SocketGuild guild, int? index, IEmote emote)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn),
+
+            NOT EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND emote=@emote);
+
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
             DELETE FROM reaction_role_messages.emote_role_pairs er USING rr
             WHERE er.rrid = rr.rrid 
             AND rr.ROW_NUMBER = @rn
-            AND emote = @emote";
+            AND emote = @emote
+            ";
+
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
             cmd.Parameters.AddWithValue("rn", index ?? 1);
             cmd.Parameters.AddWithValue("emote", emote.ToString());
 
-            // If no rows are updated, throw an exception notifying that a pair with such emote does not exist
-            if (await cmd.ExecuteNonQueryAsync() == 0)
-                throw new ReactionRoleServiceException($"{emote} is not present in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}" +
-                    $"Use `{{prefix}}rr info {(index.HasValue ? $"{index.Value} " : "")}` to view emote-role pairs of this RR message.");
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2))
+                throw new ReactionRoleServiceException($"{emote} is not present in {SpecifyReactionRoleMessage(index)}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
         }
 
         /// <summary>
@@ -337,23 +366,42 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task RemovePairAsync(SocketGuild guild, int? index, IRole role)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
 
-            string query = @"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid DESC) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn),
+
+            NOT EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND rr.ROW_NUMBER=@rn
+            AND roleid=@rid);
+
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
             DELETE FROM reaction_role_messages.emote_role_pairs er USING rr
             WHERE er.rrid = rr.rrid 
             AND rr.ROW_NUMBER = @rn
-            AND emote = @emote";
+            AND roleid=@rid
+            ";
+
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
             cmd.Parameters.AddWithValue("rn", index ?? 1);
             cmd.Parameters.AddWithValue("rid", (long)role.Id);
 
-            // If no rows are updated, throw an exception notifying that a pair with such role does not exist
-            if (await cmd.ExecuteNonQueryAsync() == 0)
-                throw new ReactionRoleServiceException($"`{role.Name}` is not present in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}\n" +
-                    $"Use `{{prefix}}rr info {(index.HasValue ? $"{index.Value} " : "")}` to view emote-role pairs of this RR message.");
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2))
+                throw new ReactionRoleServiceException($"`{role.Name}` is not present in {SpecifyReactionRoleMessage(index)}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
         }
 
         /// <summary>
@@ -369,10 +417,47 @@ namespace TeaBot.Services.ReactionRole
         ///     3. Emote-role pair with such role does not exist
         /// </exception>
         public async Task ChangeEmote(SocketGuild guild, int? index, IRole role, IEmote emote) 
-        { 
-            await EnsureRRExists(guild, index);
+        {
+            string order = index.HasValue ? "ASC" : "DESC";
+            string conditionQuery = $@"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn),
+
+            EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND emote=@emote)
+
+            NOT EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND roleid=@rid)
+            ";
+            await using var conditionCmd = _database.GetCommand(conditionQuery);
+
+            conditionCmd.Parameters.AddWithValue("gid", (long)guild.Id);
+            conditionCmd.Parameters.AddWithValue("rn", index ?? 1);
+            conditionCmd.Parameters.AddWithValue("rid", (long)role.Id);
+            conditionCmd.Parameters.AddWithValue("emote", emote.ToString());
+
+            await using var reader = await conditionCmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2))
+                throw new ReactionRoleServiceException("A pair with such emote already exists. Consider using a different emote or change the emote for the existing pair.");
+            else if (reader.GetBoolean(3))
+                throw new ReactionRoleServiceException($"No such role exists in {SpecifyReactionRoleMessage(index)}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
+
+            await reader.CloseAsync();
+
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
             UPDATE reaction_role_messages.emote_role_pairs AS er SET emote=@emote
             FROM rr
             WHERE er.rrid = rr.rrid
@@ -387,9 +472,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("emote", emote.ToString());
             cmd.Parameters.AddWithValue("rid", (long)role.Id);
 
-            if (await cmd.ExecuteNonQueryAsync() == 0)
-                throw new ReactionRoleServiceException($"No such emote or role exists in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.\n" +
-                    $"Use `{{prefix}}rr info {(index.HasValue ? $"{index.Value} " : "")}` to view emote-role pairs of this RR message.");
+            await cmd.ExecuteNonQueryAsync();
         }
 
         /// <summary>
@@ -406,9 +489,46 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task ChangeRole(SocketGuild guild, int? index, IRole role, IEmote emote)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string conditionQuery = $@"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn),
+
+            EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND roleid=@rid)
+
+            NOT EXISTS (SELECT * FROM reaction_role_messages.emote_role_pairs er, rr
+            WHERE er.rrid = rr.rrid
+            AND emote=@emote)
+            ";
+            await using var conditionCmd = _database.GetCommand(conditionQuery);
+
+            conditionCmd.Parameters.AddWithValue("gid", (long)guild.Id);
+            conditionCmd.Parameters.AddWithValue("rn", index ?? 1);
+            conditionCmd.Parameters.AddWithValue("rid", (long)role.Id);
+            conditionCmd.Parameters.AddWithValue("emote", emote.ToString());
+
+            await using var reader = await conditionCmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2))
+                throw new ReactionRoleServiceException("A pair with such role already exists. Consider using a different emote or change the emote for the existing pair.");
+            else if (reader.GetBoolean(3))
+                throw new ReactionRoleServiceException($"No such emote exists in {SpecifyReactionRoleMessage(index)}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
+
+            await reader.CloseAsync();
+
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
             UPDATE reaction_role_messages.emote_role_pairs AS er SET roleid=@rid
             FROM rr
             WHERE er.rrid = rr.rrid
@@ -423,9 +543,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("emote", emote.ToString());
             cmd.Parameters.AddWithValue("rid", (long)role.Id);
 
-            if (await cmd.ExecuteNonQueryAsync() == 0)
-                throw new ReactionRoleServiceException($"No such emote or role exists in {(index.HasValue ? $"reaction-role message with index `{index.Value}`" : "the latest reaction-role message")}.\n" +
-                    $"Use `{{prefix}}rr info {(index.HasValue ? $"{index.Value} " : "")}` to view emote-role pairs of this RR message.");
+            await cmd.ExecuteNonQueryAsync();
         }
 
         /// <summary>
@@ -442,9 +560,23 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task ChangeOrder(SocketGuild guild, int? index, IEmote emote1, IEmote emote2)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rrtemp),
+            NOT EXISTS (SELECT rrid FROM rrtemp WHERE ROW_NUMBER=@rn),
 
-            string query = @$"WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
+            NOT EXISTS(SELECT * FROM reaction_role_messages.emote_role_pairs rr, rrtemp
+            WHERE rr.rrid = rrtemp.rrid
+            AND rrtemp.ROW_NUMBER=@rn
+            AND emote=@emotea),
+
+            NOT EXISTS(SELECT * FROM reaction_role_messages.emote_role_pairs rr, rrtemp
+            WHERE rr.rrid = rrtemp.rrid
+            AND rrtemp.ROW_NUMBER=@rn
+            AND emote=@emoteb);
+
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid) 
             UPDATE reaction_role_messages.emote_role_pairs AS er SET index=ertemp.index
             FROM reaction_role_messages.emote_role_pairs AS ertemp, rr
             WHERE rr.rrid = er.rrid AND rr.rrid = ertemp.rrid
@@ -460,9 +592,26 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("emotea", emote1.ToString());
             cmd.Parameters.AddWithValue("emoteb", emote2.ToString());
 
-            if (await cmd.ExecuteNonQueryAsync() == 0)
-                throw new ReactionRoleServiceException($"{(index.HasValue ? $"Reaction-role message with index `{index.Value}`" : "The latest reaction-role message")} message does not contain one emote or both emotes.\n" +
-                    $"Use `{{prefix}}rr info {(index.HasValue ? $"{index.Value} " : "")}` to view emote-role pairs of this RR message.");
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
+            else if (reader.GetBoolean(2) && reader.GetBoolean(3))
+                throw new ReactionRoleServiceException($"{SpecifyReactionRoleMessage(index, true)} " +
+                    $"does not contain any of the given emotes.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
+            else if (reader.GetBoolean(2))
+                throw new ReactionRoleServiceException($"{SpecifyReactionRoleMessage(index, true)}" +
+                    $"does not contain {emote1}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
+            else if (reader.GetBoolean(3))
+                throw new ReactionRoleServiceException($"{SpecifyReactionRoleMessage(index, true)}" +
+                    $"does not contain {emote2}.\n" +
+                    $"Use {ReactionRoleMessageCommandString("info", index)} to view emote-role pairs of this RR message.");
         }
 
         /// <summary>
@@ -477,9 +626,13 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task ChangeNameAsync(SocketGuild guild, int? index, string newName) 
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn);
 
-            string query = @$"WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             UPDATE reaction_role_messages.reaction_roles AS rr SET name=@name
             FROM rrtemp
             WHERE rrtemp.ROW_NUMBER = @rn
@@ -492,7 +645,14 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("rn", index ?? 1);
             cmd.Parameters.AddWithValue("name", newName);
 
-            await cmd.ExecuteNonQueryAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
         }
 
         /// <summary>
@@ -507,9 +667,13 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task ChangeColorAsync(SocketGuild guild, int? index, Color? newColor)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn);
 
-            string query = @$"WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             UPDATE reaction_role_messages.reaction_roles AS rr SET color=@color
             FROM rrtemp
             WHERE rrtemp.ROW_NUMBER = @rn
@@ -526,7 +690,14 @@ namespace TeaBot.Services.ReactionRole
             else
                 cmd.Parameters.AddWithValue("color", DBNull.Value);
 
-            await cmd.ExecuteNonQueryAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
         }
 
         /// <summary>
@@ -541,9 +712,13 @@ namespace TeaBot.Services.ReactionRole
         /// </exception>
         public async Task ChangeChannelAsync(SocketGuild guild, int? index, ulong channelId)
         {
-            await EnsureRRExists(guild, index);
+            string order = index.HasValue ? "ASC" : "DESC";
+            string query = @$"
+            WITH rr (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            SELECT NOT EXISTS (SELECT rrid FROM rr),
+            NOT EXISTS (SELECT rrid FROM rr WHERE ROW_NUMBER=@rn);
 
-            string query = @$"WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {(index.HasValue ? "ASC" : "DESC")}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
+            WITH rrtemp (rrid) AS (SELECT *, ROW_NUMBER() OVER (ORDER BY rrid {order}) FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)
             UPDATE reaction_role_messages.reaction_roles AS rr SET channelid=@cid, messageid=NULL
             FROM rrtemp
             WHERE rrtemp.ROW_NUMBER = @rn
@@ -556,7 +731,14 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("rn", index ?? 1);
             cmd.Parameters.AddWithValue("cid", (long)channelId);
 
-            await cmd.ExecuteNonQueryAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            // Check if the message or any messages exist
+            if (reader.GetBoolean(0))
+                throw new ReactionRoleServiceException(NoMessagesError);
+            else if (reader.GetBoolean(1))
+                throw new ReactionRoleServiceException(NotExistsError);
         }
     }
 }
