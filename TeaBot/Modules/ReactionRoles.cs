@@ -223,7 +223,7 @@ namespace TeaBot.Modules
             [Summary("The new emote to set.")] IEmote newEmote,
             [Summary("The index of the reaction-role message. The indexes are available using `{prefix}rr list`. Leave empty for the latest reaction-role message.")] int? index = null
             ) 
-            => await ChangeEmote(existingRole, newEmote, index);
+            => await ChangeEmote(newEmote, existingRole, index);
 
         [Command("changeemote")]
         [Alias("ce")]
