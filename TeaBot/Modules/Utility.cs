@@ -183,7 +183,7 @@ namespace TeaBot.Modules
 
             TimeSpan timeDifference = DateTime.UtcNow - guild.GetUser(Context.Client.CurrentUser.Id).JoinedAt.Value.DateTime;
 
-            embed.WithTitle($"{guild} Info")
+            embed.WithTitle($"{guild}")
                 .WithColor(TeaEssentials.MainColor)
                 .WithCurrentTimestamp()
                 .WithThumbnailUrl(guild.IconUrl)
