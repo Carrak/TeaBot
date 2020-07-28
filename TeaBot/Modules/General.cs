@@ -63,7 +63,7 @@ namespace TeaBot.Modules
             List<string> quotes = new List<string>() {
                 "delet this",
                 "i give this a ten...out of a hundred",
-                "your parents would be disappointed if they цsaw this...luckily i'm not your parents, 10/10",
+                "your parents would be disappointed if they saw this...luckily i'm not your parents, 10/10",
                 "I have no idea what to say, I laughed, I cried and still couldn’t stop reading . I experienced every emotion reading this.",
                 "9/11",
                 "My taste buds are still singing from our last visit! Try out the huge selection of incredible appetizers. Everything was simply decadent. After my meal, I was knocked into a food coma. Easily earned their 5 stars!",
