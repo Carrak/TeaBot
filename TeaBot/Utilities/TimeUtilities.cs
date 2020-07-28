@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TeaBot.Utilities;
 
 namespace TeaBot.Utilities
 {
@@ -40,29 +41,23 @@ namespace TeaBot.Utilities
                 return "Right now";
 
             DateTime span = DateTime.MinValue + timePassed;
-            
-            List<string> thresholds = new List<string>
-            {
-                Pluralize(span.Year - 1, "year"),
-                Pluralize(span.Month - 1, "month"),
-                Pluralize(span.Day - 1, "day"),
-                Pluralize(span.Hour, "hour"),
-                Pluralize(span.Minute, "minute"),
-                Pluralize(span.Second, "second")
-            };
-            
-            return $"{string.Join(" ", thresholds.Where(x => !string.IsNullOrEmpty(x)).Take(3))} ago";
-        }
 
-        /// <summary>
-        ///   Pluralizes a given word if needed.
-        /// </summary>
-        /// <param name="quantity">The quantity to use to determine if a plural is needed.</param>
-        /// <param name="word">The word to pluralize</param>
-        /// <returns>String with the word and the quantity, or an empty string if <paramref name="quantity"/> is zero.</returns>
-        public static string Pluralize(int quantity, string word)
-        {
-            return quantity == 0 ? "" : $"{quantity} {word}{(Math.Abs(quantity) != 1 ? "s" : "")}";
+            List<string> thresholds = new List<string>();
+
+            if (span.Year != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Year - 1, "year"));
+            if (span.Month != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Month - 1, "month"));
+            if (span.Day != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Day - 1, "day"));
+            if (span.Hour != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Hour, "hour"));
+            if (span.Minute != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Minute, "minute"));
+            if (span.Second != 0)
+                thresholds.Add(GeneralUtilities.Pluralize(span.Second, "second"));
+            
+            return $"{string.Join(" ", thresholds.Take(3))} ago";
         }
     }
 }

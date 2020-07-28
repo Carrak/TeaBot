@@ -200,7 +200,7 @@ namespace TeaBot.Modules
                 .AddField("Region", guild.VoiceRegionId, true)
                 .AddField("Member activity", $"{activeMembersCount} active members out of {totalUserCount} // {activeUsersPercentage:#0.00%}\n" +
                 $"`Note: only includes people who have sent a message " +
-                $"{(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? TimeUtilities.Pluralize(timeDifference.Days, "day") : "Today")})")}`");
+                $"{(timeDifference > TimeSpan.FromDays(14) ? "in the last two weeks" : $"since the bot's join date ({(timeDifference.TotalDays >= 1 ? GeneralUtilities.Pluralize(timeDifference.Days, "day") : "Today")})")}`");
 
             await ReplyAsync(embed: embed.Build());
         }
