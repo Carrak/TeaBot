@@ -7,6 +7,7 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
+using TeaBot.Preconditions;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands
 {
@@ -39,7 +40,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
                 .AddField("Description", cmd.Summary?.Replace("{prefix}", _prefix) ?? "No description for this command yet!")
                 .AddField("Parameters", cmd.Parameters.Count > 0 ? 
                 string.Join("\n", cmd.Parameters.Select(param => $"`{param.Name}`{(param.IsOptional ? " [Optional]" : "")} - {param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) : 
-                $"This command does not have any parameters. *Means it should be used like* `{_prefix}{commandName}` *without any additional details, just that. yes.*")
+                $"This command does not have any parameters. Its usage would be `{_prefix}{commandName}` without any additional parameters.")
+                .AddField("Cooldown", (cmd.Preconditions.FirstOrDefault(x => x is RatelimitAttribute) as RatelimitAttribute)?.InvokeLimitPeriod.TotalSeconds.ToString() + " seconds" ?? "-")
                 .WithFooter($"{page + 1} / {TotalPages}")
                 .WithColor(TeaEssentials.MainColor);
 

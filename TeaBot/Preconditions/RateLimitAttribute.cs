@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
 
@@ -21,9 +22,10 @@ namespace TeaBot.Preconditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class RatelimitAttribute : PreconditionAttribute
     {
+        public readonly TimeSpan InvokeLimitPeriod;
+
         private readonly uint _invokeLimit;
-        private readonly TimeSpan _invokeLimitPeriod;
-        private readonly ConcurrentDictionary<ulong, CommandTimeout> _invokeTracker = new ConcurrentDictionary<ulong, CommandTimeout>();
+        private readonly Dictionary<ulong, CommandTimeout> _invokeTracker = new Dictionary<ulong, CommandTimeout>();
 
         /// <param name="times">
         ///     The number of times a user may use the command within a certain period.
@@ -34,7 +36,7 @@ namespace TeaBot.Preconditions
         public RatelimitAttribute(double seconds, uint times = 1)
         {
             _invokeLimit = times;
-            _invokeLimitPeriod = TimeSpan.FromSeconds(seconds);
+            InvokeLimitPeriod = TimeSpan.FromSeconds(seconds);
         }
 
         /// <inheritdoc/>
@@ -44,7 +46,7 @@ namespace TeaBot.Preconditions
             ulong key = context.User.Id;
 
             CommandTimeout timeout = _invokeTracker.TryGetValue(key, out CommandTimeout t)
-                && now - t.FirstInvoke < _invokeLimitPeriod
+                && now - t.FirstInvoke < InvokeLimitPeriod
                     ? t : new CommandTimeout(now);
 
             timeout.TimesInvoked++;
@@ -58,7 +60,7 @@ namespace TeaBot.Preconditions
             {
                 if (!timeout.Warned)
                 {
-                    double cooldown = _invokeLimitPeriod.TotalSeconds - (DateTime.UtcNow - t.FirstInvoke).TotalSeconds;
+                    double cooldown = InvokeLimitPeriod.TotalSeconds - (DateTime.UtcNow - t.FirstInvoke).TotalSeconds;
                     timeout.Warned = true;
                     return Task.FromResult(PreconditionResult.FromError($"Cooldown! **{cooldown:0.00}** more seconds!"));
                 }
@@ -68,7 +70,6 @@ namespace TeaBot.Preconditions
                 }
             }
         }
-
 
         private sealed class CommandTimeout
         {
