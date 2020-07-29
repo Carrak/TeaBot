@@ -119,7 +119,7 @@ namespace TeaBot.Modules
                 string moduleCommands = ModuleCommandsString(module);
 
                 embed.WithTitle($"{module.Name} commands")
-                    .WithDescription(module.Summary)
+                    .WithDescription($"{module.Summary}\n\n`*` notation means there's more than one command with a given name")
                     .WithColor(TeaEssentials.MainColor)
                     .WithCurrentTimestamp()
                     .WithFooter(footer)
