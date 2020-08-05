@@ -44,11 +44,11 @@ namespace TeaBot.Utilities
 
             List<string> thresholds = new List<string>();
 
-            if (span.Year != 0)
+            if (span.Year - 1 != 0)
                 thresholds.Add(GeneralUtilities.Pluralize(span.Year - 1, "year"));
-            if (span.Month != 0)
+            if (span.Month - 1 != 0)
                 thresholds.Add(GeneralUtilities.Pluralize(span.Month - 1, "month"));
-            if (span.Day != 0)
+            if (span.Day - 1 != 0)
                 thresholds.Add(GeneralUtilities.Pluralize(span.Day - 1, "day"));
             if (span.Hour != 0)
                 thresholds.Add(GeneralUtilities.Pluralize(span.Hour, "hour"));
