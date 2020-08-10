@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Net;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
@@ -95,7 +96,7 @@ namespace TeaBot.Main
         {
             if (commandInfo.IsSpecified)
                 Logger.Log("Executed", $"{context.User} executed the {commandInfo.Value.Name} command in " +
-                    $"{(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")} ({result.IsSuccess})" +
+                    $"{(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")} ({result.IsSuccess})\n" +
                     $"{(result.IsSuccess ? "" : $"\nCommand execution error: {result.ErrorReason}")}");
 
             return Task.CompletedTask;
@@ -112,14 +113,14 @@ namespace TeaBot.Main
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
                     
-                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" [{string.Join("] [", command.Parameters)}]" : "")}`";
+                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" {string.Join(" ", command.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}" : "")}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
                         toSend += $"\nNote: {notes.Content}";
                     }
 
-                    toSend += $"\nFor more information refer to `{context.Prefix}help {command.Name}`";
+                    toSend += $"\nFor more information refer to `{context.Prefix}help {(!string.IsNullOrEmpty(command.Module.Group) ? $"{command.Module.Group} " : "")}{command.Name}`";
 
                     await context.Channel.SendMessageAsync(toSend);
                     break;
@@ -146,13 +147,13 @@ namespace TeaBot.Main
                         IconUrl = context.User.GetAvatarUrl()
                     };
 
+                    // Exception stack trace
                     StackTrace st = new StackTrace(executeResult.Exception, true);
 
-                    StackFrame frame = st.GetFrame(st.FrameCount - 1);
-
+                    // The log with all non-empty frames
                     System.Text.StringBuilder log = new System.Text.StringBuilder();
 
-                    string stackIndent = "";
+                    // Get frames where the lines is specified
                     for (int i = 0; i < st.FrameCount; i++)
                     {
                         StackFrame sf = st.GetFrame(i);
@@ -161,8 +162,7 @@ namespace TeaBot.Main
                         if (line == 0)
                             continue;
 
-                        log.Append($"{stackIndent}In {sf.GetFileName()}\nAt line {line}");
-                        stackIndent += " ";
+                        log.Append($"In {sf.GetFileName()}\nAt line {line}\n");
                     }
 
                     embed.WithColor(Color.Red)
@@ -196,9 +196,18 @@ namespace TeaBot.Main
                         .AddField("Content", string.Join("\n", descriptors.Select(x => x.Item2)), true)
                         .AddField("ID", string.Join("\n", descriptors.Select(x => x.Item3 is null ? "-" : x.Item3.Value.ToString())), true);
 
+                    List<string> splitStacktrace = new List<string>();
+                    for (int index = 0; index < executeResult.Exception.StackTrace.Length; index += 1994)
+                        splitStacktrace.Add(executeResult.Exception.StackTrace.Substring(index, Math.Min(1994, executeResult.Exception.StackTrace.Length - index)));
+
                     // Send the logs to the channel
-                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
-                        await logChannel.SendMessageAsync($"StackTrace:```{ executeResult.Exception.StackTrace}```", embed: embed.Build());
+                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel) {
+                        foreach (string stacktrace in splitStacktrace)
+                            try { await logChannel.SendMessageAsync($"```{stacktrace}```"); }
+                            catch (HttpException) { }
+                        await logChannel.SendMessageAsync(embed: embed.Build());
+                    }
+
 
                     break;
                 case CommandError.UnknownCommand:
