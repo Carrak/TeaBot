@@ -86,7 +86,7 @@ namespace TeaBot.Services.ReactionRole
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
-            cmd.Parameters.AddWithValue("gid", (long) guild.Id);
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 

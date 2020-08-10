@@ -31,7 +31,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
 
             List<string> emoteRolePairs = new List<string>();
 
-            foreach(var pair in EmoteRolePairs.Values)
+            foreach (var pair in EmoteRolePairs.Values)
             {
                 string toAdd = "";
 

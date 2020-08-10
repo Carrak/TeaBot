@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using TeaBot.Utilities;
 
 namespace TeaBot.Utilities
 {
@@ -56,7 +55,7 @@ namespace TeaBot.Utilities
                 thresholds.Add(GeneralUtilities.Pluralize(span.Minute, "minute"));
             if (span.Second != 0)
                 thresholds.Add(GeneralUtilities.Pluralize(span.Second, "second"));
-            
+
             return $"{string.Join(" ", thresholds.Take(3))} ago";
         }
     }

@@ -58,12 +58,12 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         /// </summary>
         public Dictionary<IEmote, EmoteRolePair> EmoteRolePairs { get; }
 
-        public ReactionRoleMessage(ReactionRoleService rrservice, 
-            int rrid, 
-            int? limit, 
-            IGuild guild, 
-            ITextChannel channel, 
-            IUserMessage message, 
+        public ReactionRoleMessage(ReactionRoleService rrservice,
+            int rrid,
+            int? limit,
+            IGuild guild,
+            ITextChannel channel,
+            IUserMessage message,
             Dictionary<IEmote, EmoteRolePair> pairs,
             IEnumerable<IRole> allowedRoles,
             IEnumerable<IRole> prohibitedRoles)
@@ -88,7 +88,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         /// <param name="rrservice">Reaction-role service for error-handling.</param>
         /// <param name="rawRRmsg">Unprocessed reaction-role message.</param>
         /// <returns>An instance of <see cref="ReactionRoleMessage"/>, or null if the guild is not present.</returns>
-        public static async Task<ReactionRoleMessage> CreateAsync(ReactionRoleService rrservice, 
+        public static async Task<ReactionRoleMessage> CreateAsync(ReactionRoleService rrservice,
             RawReactionRoleMessage rawRRmsg)
         {
             // The guild the message is in
@@ -156,7 +156,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
 
             // Get prohibited roles
             var prohibitedRoles = new List<IRole>();
-            foreach(ulong roleid in rawRRmsg.GlobalProhibitedRoleIds)
+            foreach (ulong roleid in rawRRmsg.GlobalProhibitedRoleIds)
             {
                 var role = guild.GetRole(roleid);
                 if (role is null)

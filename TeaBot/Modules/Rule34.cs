@@ -10,9 +10,9 @@ using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
+using TeaBot.Utilities;
 using TeaBot.Webservices;
 using TeaBot.Webservices.Rule34;
-using TeaBot.Utilities;
 
 namespace TeaBot.Modules
 {

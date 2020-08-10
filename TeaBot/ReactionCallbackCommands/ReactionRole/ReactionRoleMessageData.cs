@@ -23,7 +23,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
     ///     Extra data for <see cref="FullEmoteRolePair"/>.
     /// </summary>
     public class EmoteRolePairData
-    { 
+    {
         public string Description { get; }
 
         public EmoteRolePairData(string description) => Description = description;

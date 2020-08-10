@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -54,7 +53,7 @@ namespace TeaBot.Main
         private async Task HandleMessagesAsync(SocketMessage arg)
         {
             // Return if the message is from a bot
-            if (!(arg is SocketUserMessage message) || message.Author.IsBot) 
+            if (!(arg is SocketUserMessage message) || message.Author.IsBot)
                 return;
 
             var channel = message.Channel as SocketGuildChannel;
@@ -106,13 +105,13 @@ namespace TeaBot.Main
         ///     Determines the behaviour when a command fails to execute.
         /// </summary>
         private async Task HandleErrorsAsync(TeaCommandContext context, IResult result, int argPosition)
-        { 
+        {
             switch (result.Error)
             {
                 case CommandError.BadArgCount:
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
-                    
+
                     string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" {string.Join(" ", command.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}" : "")}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
@@ -201,7 +200,8 @@ namespace TeaBot.Main
                         splitStacktrace.Add(executeResult.Exception.StackTrace.Substring(index, Math.Min(1994, executeResult.Exception.StackTrace.Length - index)));
 
                     // Send the logs to the channel
-                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel) {
+                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
+                    {
                         foreach (string stacktrace in splitStacktrace)
                             try { await logChannel.SendMessageAsync($"```{stacktrace}```"); }
                             catch (HttpException) { }

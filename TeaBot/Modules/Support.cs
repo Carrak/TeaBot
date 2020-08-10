@@ -9,7 +9,6 @@ using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands.PagedCommands;
 using TeaBot.Services;
-using Discord.WebSocket;
 
 namespace TeaBot.Modules
 {
@@ -43,7 +42,7 @@ namespace TeaBot.Modules
                 .AddField("Uptime", $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
 
             await ReplyAsync(embed: embed.Build());
-        } 
+        }
 
         [Command("help")]
         [Summary("Do `{prefix}help help` for description")]

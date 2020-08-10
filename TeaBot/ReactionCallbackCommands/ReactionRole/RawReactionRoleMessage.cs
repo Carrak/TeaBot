@@ -21,11 +21,11 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public IEnumerable<ulong> GlobalAllowedRoleIds { get; }
         public IEnumerable<ulong> GlobalProhibitedRoleIds { get; }
 
-        public RawReactionRoleMessage(int rrid, 
-            int? limit, 
-            ulong guildId, 
-            ulong? channelId, 
-            ulong? messageId, 
+        public RawReactionRoleMessage(int rrid,
+            int? limit,
+            ulong guildId,
+            ulong? channelId,
+            ulong? messageId,
             bool isCustom,
             IEnumerable<RawEmoteRolePair> emoteRolePairs,
             IEnumerable<ulong> allowedRoles,

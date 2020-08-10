@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Discord.Addons.Interactive;
-using Discord.Commands;
 using TeaBot.Commands;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base

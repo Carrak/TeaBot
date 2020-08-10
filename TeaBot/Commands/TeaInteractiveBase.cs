@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
+using Discord.Net;
+using Discord.Rest;
 using Discord.WebSocket;
 using TeaBot.Preconditions;
-using System.Collections.Generic;
-using Discord.Rest;
-using Discord;
-using Discord.Net;
 
 namespace TeaBot.Commands
 {
@@ -22,7 +22,7 @@ namespace TeaBot.Commands
         /// <param name="func">The condition of the message.</param>
         /// <param name="timeout">The time to await the message for.</param>
         /// <returns></returns>
-        public async Task<SocketMessage> NextMessageWithConditionAsync(Func<SocketMessage, bool> func, TeaCommandContext context, TimeSpan? timeout = null, int cancelLimit = 3,  string errorMessage = null)
+        public async Task<SocketMessage> NextMessageWithConditionAsync(Func<SocketMessage, bool> func, TeaCommandContext context, TimeSpan? timeout = null, int cancelLimit = 3, string errorMessage = null)
         {
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             List<RestUserMessage> errorMessages = new List<RestUserMessage>();
@@ -61,7 +61,7 @@ namespace TeaBot.Commands
             Context.Client.MessageReceived -= Handler;
 
             if (task == trigger)
-            {   
+            {
                 // Delete messages
                 try
                 {

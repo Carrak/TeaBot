@@ -48,7 +48,8 @@ namespace TeaBot.Modules
             try
             {
                 await Context.Message.DeleteAsync();
-            } catch (HttpException)
+            }
+            catch (HttpException)
             {
 
             }
@@ -178,7 +179,8 @@ namespace TeaBot.Modules
             var reply2 = await ReplyAsync("What are the poll's entries? Split them with `|`");
 
             string[] entriesArr = null;
-            var entriesMsg = await NextMessageWithConditionAsync(x => { 
+            var entriesMsg = await NextMessageWithConditionAsync(x =>
+            {
                 entriesArr = Regex.Split(x.Content, @"\s+\|\s+");
                 int count = entriesArr.Count();
                 return count >= 2 && count <= 9;
@@ -199,7 +201,7 @@ namespace TeaBot.Modules
                     var messages = new IMessage[] { reply1, reply2, name, entriesMsg, Context.Message };
                     try
                     {
-                       await (Context.Channel as ITextChannel).DeleteMessagesAsync(messages);
+                        await (Context.Channel as ITextChannel).DeleteMessagesAsync(messages);
                     }
                     catch (HttpException)
                     {

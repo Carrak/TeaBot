@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using TeaBot.Commands;
-using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Discord;
 using Discord.Addons.Interactive;
-using TeaBot.ReactionCallbackCommands.ReactionRole;
-using System.Linq;
+using TeaBot.Commands;
 using TeaBot.Main;
+using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
 using TeaBot.Services.ReactionRole;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands
@@ -21,7 +20,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
         public ReactionRoleMessageInfoPaged(InteractiveService interactive,
             TeaCommandContext context,
             ReactionRoleMessage rrmsg,
-            int? index) 
+            int? index)
             : base(interactive, context, GetFields(rrmsg), 4)
         {
             _rrmsg = rrmsg;

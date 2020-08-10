@@ -1,21 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.Net;
-using TeaBot.Commands;
-using TeaBot.Main;
-using TeaBot.Services;
-using TeaBot.Services.ReactionRole;
-using TeaBot.Attributes;
-using TeaBot.Preconditions;
-using TeaBot.ReactionCallbackCommands.ReactionRole;
-using System;
 using Discord.WebSocket;
 using Npgsql;
+using TeaBot.Attributes;
+using TeaBot.Commands;
+using TeaBot.Main;
+using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands.PagedCommands;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
+using TeaBot.Services;
+using TeaBot.Services.ReactionRole;
 
 namespace TeaBot.Modules
 {
@@ -166,7 +166,7 @@ namespace TeaBot.Modules
                         {
                             if (await channel.GetMessageAsync(messageid.Value) is IUserMessage message)
                                 descriptors.Add($"[Message]({message.GetJumpUrl()})");
-                        } 
+                        }
                         catch (HttpException)
                         {
                             descriptors.Add("Couldn't access the message.\nCheck permissions and display this reaction-role message again.");
@@ -812,7 +812,7 @@ namespace TeaBot.Modules
         public async Task ChangeEmoteRolePairDescription(
             [Summary("The emote of an existing pair.")] IEmote emote,
             [Summary("The description to attach to the emote-role pair.\n" +
-            "Use `{prefix}rr description delete` or `{prefix}rr description remove` to remove the description.")] string description, 
+            "Use `{prefix}rr description delete` or `{prefix}rr description remove` to remove the description.")] string description,
             [Summary(OptionalIndexSummary)] int? index = null)
         {
             if (description.Length > 100)
@@ -993,8 +993,8 @@ namespace TeaBot.Modules
         [Summary("Removes a role from the list of prohibited roles of an emote-role pair.")]
         [Ratelimit(4)]
         public async Task RemoveProhibitedRole(
-            [Summary("The emote of an emote-role pair.")] IEmote emote, 
-            [Summary("The role to remove from the list of prohibited roles.")] IRole role, 
+            [Summary("The emote of an emote-role pair.")] IEmote emote,
+            [Summary("The role to remove from the list of prohibited roles.")] IRole role,
             [Summary(OptionalIndexSummary)] int? index = null
             )
         {
@@ -1018,7 +1018,7 @@ namespace TeaBot.Modules
         [Summary("Removes a role from the list of global allowed roles of a reaction-role message.")]
         [Ratelimit(4)]
         public async Task RemoveGlobalAllowedRole(
-            [Summary("The role to remove from the list of global allowed roles.")] IRole role, 
+            [Summary("The role to remove from the list of global allowed roles.")] IRole role,
             [Summary(OptionalIndexSummary)] int? index = null
             )
         {
@@ -1042,7 +1042,7 @@ namespace TeaBot.Modules
         [Summary("Removes a role from the list of global prohibited roles of a reaction-role message.")]
         [Ratelimit(4)]
         public async Task RemoveGlobalProhibitedRole(
-            [Summary("The role to remove from the list of global prohibited roles.")] IRole role, 
+            [Summary("The role to remove from the list of global prohibited roles.")] IRole role,
             [Summary(OptionalIndexSummary)] int? index = null
             )
         {

@@ -6,8 +6,8 @@ using Discord.Commands;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
-using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 using TeaBot.Preconditions;
+using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands
 {
@@ -38,8 +38,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
             embed.WithTitle($"{_prefix}{commandName} {string.Join(' ', cmd.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary?.Replace("{prefix}", _prefix) ?? "No description for this command yet!")
-                .AddField("Parameters", cmd.Parameters.Count > 0 ? 
-                string.Join("\n\n", cmd.Parameters.Select((param,index) => $"**{index+1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) : 
+                .AddField("Parameters", cmd.Parameters.Count > 0 ?
+                string.Join("\n\n", cmd.Parameters.Select((param, index) => $"**{index + 1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) :
                 $"This command does not have any parameters. Its usage would be `{_prefix}{commandName}` without any additional parameters.")
                 .AddField("Cooldown", (cmd.Preconditions.FirstOrDefault(x => x is RatelimitAttribute) as RatelimitAttribute)?.InvokeLimitPeriod.TotalSeconds.ToString() + " seconds" ?? "-")
                 .WithFooter($"{page + 1} / {TotalPages}")

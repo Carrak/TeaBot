@@ -1,8 +1,8 @@
 ﻿using System;
-using Discord.WebSocket;
-using Discord;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Net;
+using Discord.WebSocket;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -151,7 +151,8 @@ namespace TeaBot.Services.ReactionRole
                 {
                     if (await channel.GetMessageAsync((ulong)reader.GetInt64(2)) is IUserMessage message)
                         await RemoveReactionCallbackAsync(message);
-                } catch (HttpException) { }
+                }
+                catch (HttpException) { }
             }
 
             return iscustom;

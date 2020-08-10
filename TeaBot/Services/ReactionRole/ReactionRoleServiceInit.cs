@@ -66,11 +66,11 @@ namespace TeaBot.Services.ReactionRole
                 int emoteRoleRRID = reader.GetInt32(0);
                 string emote = reader.GetString(1);
                 ulong roleid = (ulong)reader.GetInt64(2);
-                int pairid = reader.GetInt32(3);               
+                int pairid = reader.GetInt32(3);
 
                 emoteRoles.Add(emoteRoleRRID, new RawEmoteRolePair(pairid, emote, roleid, emoteRolePairsAllowedRoles.GetValueOrDefault(pairid), emoteRolePairsProhibitedRoles.GetValueOrDefault(pairid)));
             }
-            
+
             await reader.NextResultAsync();
 
             // Key: RRID

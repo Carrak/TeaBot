@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Discord;
-using Discord.WebSocket;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using TeaBot.ReactionCallbackCommands.ReactionRole;
 
 namespace TeaBot.Services.ReactionRole
@@ -54,7 +54,8 @@ namespace TeaBot.Services.ReactionRole
         ///     1. <paramref name="rrmsg"/> is null
         ///     2. The message of the reaction-role message is null
         /// </exception>
-        public async Task AddReactionCallbackAsync(IUserMessage message, ReactionRoleMessage rrmsg) {
+        public async Task AddReactionCallbackAsync(IUserMessage message, ReactionRoleMessage rrmsg)
+        {
             if (rrmsg is null || rrmsg.Message is null)
                 throw new ArgumentException("Cannot add reaction callback to a null message.");
 

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using System.Globalization;
 
 namespace TeaBot.TypeReaders
 {
@@ -19,7 +19,7 @@ namespace TeaBot.TypeReaders
             // Example: 255,255,255 (yields #FFFFFF)
             if (input.Split(',') is string[] arr && arr.Length == 3 &&
                 byte.TryParse(arr[0], out var r) && byte.TryParse(arr[1], out var g) && byte.TryParse(arr[2], out var b))
-                    return Task.FromResult(TypeReaderResult.FromSuccess(new Color(r, g, b)));
+                return Task.FromResult(TypeReaderResult.FromSuccess(new Color(r, g, b)));
 
             // Hexadecimal RGB representation with the prefixes # or 0x
             // Example: #FFFFFF or 0xFFFFFF

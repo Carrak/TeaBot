@@ -26,7 +26,7 @@ namespace TeaBot.Utilities
 
             // Determine the count
             int countToTake;
-            for (countToTake = 0; countToTake < count && totalLength + (countToTake+1) * collectionSplitter.Length < characterLimit; countToTake++)
+            for (countToTake = 0; countToTake < count && totalLength + (countToTake + 1) * collectionSplitter.Length < characterLimit; countToTake++)
                 totalLength += collection.ElementAt(countToTake).Length;
 
             return collection.Take(countToTake);

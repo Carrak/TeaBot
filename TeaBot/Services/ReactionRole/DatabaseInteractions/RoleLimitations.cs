@@ -1,7 +1,7 @@
-﻿using Discord.WebSocket;
-using Discord;
+﻿using System;
 using System.Threading.Tasks;
-using System;
+using Discord;
+using Discord.WebSocket;
 
 namespace TeaBot.Services.ReactionRole
 {
