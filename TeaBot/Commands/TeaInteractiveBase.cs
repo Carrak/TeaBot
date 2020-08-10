@@ -16,15 +16,13 @@ namespace TeaBot.Commands
     [CheckDisabledModules]
     public abstract class TeaInteractiveBase : InteractiveBase<TeaCommandContext>
     {
-        private readonly int cancelLimit = 3;
-
         /// <summary>
         ///     Await a message that matches a condition.
         /// </summary>
         /// <param name="func">The condition of the message.</param>
         /// <param name="timeout">The time to await the message for.</param>
         /// <returns></returns>
-        public async Task<SocketMessage> NextMessageWithConditionAsync(Func<SocketMessage, bool> func, TeaCommandContext context, TimeSpan? timeout = null, string errorMessage = null)
+        public async Task<SocketMessage> NextMessageWithConditionAsync(Func<SocketMessage, bool> func, TeaCommandContext context, TimeSpan? timeout = null, int cancelLimit = 3,  string errorMessage = null)
         {
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             List<RestUserMessage> errorMessages = new List<RestUserMessage>();
