@@ -66,6 +66,7 @@ namespace TeaBot.Modules
               $"Use `{prefix}help [command]` to get information about a command and its arguments/parameters. If you can't figure out how to use a command or what it needs, this is exactly what you're looking for.\n" +
               $"You can also use `{prefix}help [module]` to get the description and commands of a module\n" +
               $"For the full list of all commands the bot has, use `{prefix}commands`")
+              /*
               .AddField("Command parameters", $"A command parameter is what a command requires to work. For example, the `{prefix}avatar` command needs the user to be specified. User is a parameter here.\n" +
               $"For command parameters such as users, channels and roles you can use their IDs, mentions or names (for users it's both their nickname on the server and username). Make sure to surround names that contain spaces with `\"`, else it won't work.\n" +
               $"Examples:\n" +
@@ -74,10 +75,11 @@ namespace TeaBot.Modules
               $"{prefix}avatar {Context.User.Id}\n" +
               $"{prefix}avatar {Context.User.Mention}\n" +
               $"All of these serve the same purpose and do the same thing.")
+              */
               .WithFooter(footer);
 
             string modules = string.Join("\n",
-                GetDisplayableModules().Select(module => $"`[{module.Name}]` - {module.Summary ?? "No summary for this module!"}"));
+                GetDisplayableModules().Select(module => $"`[{module.Name}]` - {module?.Summary.Split("\n")[0] ?? "No summary for this module!"}"));
 
             embed.AddField("Current modules", modules);
 
