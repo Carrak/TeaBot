@@ -2,7 +2,7 @@
 using System.Linq;
 using Discord;
 using Discord.Addons.Interactive;
-using Discord.Commands;
+using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 
@@ -16,7 +16,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
         private readonly bool _ignoreBots;
 
         public JoinPositionMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             int displayPerPage,
             bool ignoreBots) : base(interactive, context, context.Guild.Users.OrderBy(user => user.JoinedAt.Value.DateTime)
                .Select((user, index) => (User: user, OriginalIndex: index))

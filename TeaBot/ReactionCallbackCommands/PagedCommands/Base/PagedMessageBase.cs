@@ -5,6 +5,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using TeaBot.Commands;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 {
@@ -18,8 +19,10 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         public RunMode RunMode { get; }
         public ICriterion<SocketReaction> Criterion { get; }
         public TimeSpan? Timeout { get; }
-        public SocketCommandContext Context { get; }
+        public TeaCommandContext Context { get; }
         public InteractiveService Interactive { get; }
+
+        SocketCommandContext IReactionCallback.Context => Context as SocketCommandContext;
 
         /// <summary>
         ///     The message with the paged embed.
@@ -45,7 +48,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         public int TotalPages { get; private set; }
 
         protected PagedMessageBase(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<T> collection,
             int totalPages,
             RunMode runmode = RunMode.Async,

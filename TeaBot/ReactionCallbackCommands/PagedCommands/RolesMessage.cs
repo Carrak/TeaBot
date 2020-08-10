@@ -2,8 +2,8 @@
 using System.Linq;
 using Discord;
 using Discord.Addons.Interactive;
-using Discord.Commands;
 using Discord.WebSocket;
+using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 
@@ -15,7 +15,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
     class RolesMessage : FragmentedPagedMessage<SocketRole>
     {
         public RolesMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             int displayPerPage) : base(interactive, context, context.Guild.Roles.Where(role => !role.IsEveryone)
                 .OrderByDescending(role => role.Position), displayPerPage)
         {

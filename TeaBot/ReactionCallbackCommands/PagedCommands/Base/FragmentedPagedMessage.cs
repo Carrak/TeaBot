@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using TeaBot.Commands;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 {
@@ -15,7 +16,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         private readonly int _displayPerPage;
 
         protected FragmentedPagedMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<T> collection,
             int displayPerPage) : base(interactive, context, collection, (int)Math.Ceiling(collection.Count() / (float)displayPerPage))
         {
@@ -32,7 +33,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
     abstract class FragmentedPagedMessage<T> : FragmentedPagedMessage<T, IEnumerable<T>>
     {
         protected FragmentedPagedMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<T> collection,
             int displayPerPage) : base(interactive, context, collection, displayPerPage)
         {

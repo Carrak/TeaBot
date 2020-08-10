@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.Addons.Interactive;
-using Discord.Commands;
 using Discord.WebSocket;
+using TeaBot.Commands;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 
 namespace TeaBot.ReactionCallbackCommands
@@ -17,7 +17,7 @@ namespace TeaBot.ReactionCallbackCommands
         private readonly IRole _role;
 
         public RoleMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IRole role,
             int displayPerPage) : base(interactive, context, context.Guild.Users.Where(user => user.Roles.Contains(role as SocketRole)), displayPerPage)
         {

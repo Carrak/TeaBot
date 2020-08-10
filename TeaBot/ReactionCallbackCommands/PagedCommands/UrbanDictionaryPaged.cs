@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Discord;
 using Discord.Addons.Interactive;
-using Discord.Commands;
+using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
 using TeaBot.Utilities;
@@ -15,7 +15,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
     class UrbanDictionaryPaged : SingleItemPagedMessage<UrbanDictionaryDefinition>
     {
         public UrbanDictionaryPaged(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<UrbanDictionaryDefinition> definitions) : base(interactive, context, definitions)
         {
         }

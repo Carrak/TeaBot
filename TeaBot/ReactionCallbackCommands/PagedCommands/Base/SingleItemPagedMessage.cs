@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Discord.Addons.Interactive;
-using Discord.Commands;
+using TeaBot.Commands;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 {
@@ -12,7 +12,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
     abstract class SingleItemPagedMessage<T, U> : PagedMessageBase<T, U> where U : T
     {
         protected SingleItemPagedMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<T> collection) : base(interactive, context, collection, collection.Count())
         {
         }
@@ -27,7 +27,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
     abstract class SingleItemPagedMessage<T> : SingleItemPagedMessage<T, T>
     {
         protected SingleItemPagedMessage(InteractiveService interactive,
-            SocketCommandContext context,
+            TeaCommandContext context,
             IEnumerable<T> collection) : base(interactive, context, collection)
         {
         }
