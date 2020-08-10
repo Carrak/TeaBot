@@ -1,57 +1,68 @@
 ﻿using System.Collections.Generic;
-using Discord;
 
 namespace TeaBot.ReactionCallbackCommands.ReactionRole
 {
+    /// <summary>
+    ///     A raw representation of <see cref="ReactionRoleMessage"/> that contains info from the database.
+    /// </summary>
     public sealed class RawReactionRoleMessage
     {
         public int RRID { get; }
-        public string Name { get; }
 
         public ulong GuildId { get; }
         public ulong? ChannelId { get; }
         public ulong? MessageId { get; }
 
-        public Color? Color { get; }
+        public int? Limit { get; }
+        public bool IsCustom { get; }
 
-        public IEnumerable<RawEmoteRolePair> EmoteRolePairs;
+        public IEnumerable<RawEmoteRolePair> EmoteRolePairs { get; }
 
-        public RawReactionRoleMessage(int rrid, string name, ulong guildid, ulong? channelid, ulong? messageid, Color? color, IEnumerable<RawEmoteRolePair> emoteRolePairs)
+        public IEnumerable<ulong> GlobalAllowedRoleIds { get; }
+        public IEnumerable<ulong> GlobalProhibitedRoleIds { get; }
+
+        public RawReactionRoleMessage(int rrid, 
+            int? limit, 
+            ulong guildId, 
+            ulong? channelId, 
+            ulong? messageId, 
+            bool isCustom,
+            IEnumerable<RawEmoteRolePair> emoteRolePairs,
+            IEnumerable<ulong> allowedRoles,
+            IEnumerable<ulong> prohibitedRoles)
         {
             RRID = rrid;
-            Name = name;
-            GuildId = guildid;
-            ChannelId = channelid;
-            MessageId = messageid;
-            Color = color;
-
-            EmoteRolePairs = emoteRolePairs ?? new List<RawEmoteRolePair>();
+            Limit = limit;
+            GuildId = guildId;
+            ChannelId = channelId;
+            MessageId = messageId;
+            IsCustom = isCustom;
+            EmoteRolePairs = emoteRolePairs;
+            GlobalAllowedRoleIds = allowedRoles ?? new List<ulong>();
+            GlobalProhibitedRoleIds = prohibitedRoles ?? new List<ulong>();
         }
-
     }
 
+    /// <summary>
+    ///     A raw representation of <see cref="EmoteRolePair"/> that contains info from the database.
+    /// </summary>
     public sealed class RawEmoteRolePair
     {
+        public int PairId { get; }
+
         public string Emote { get; }
         public ulong RoleId { get; }
 
-        public string Description { get; }
-        public IEnumerable<ulong> AllowedRoleIds;
-        public IEnumerable<ulong> ProhibitedRoleIds;
+        public IEnumerable<ulong> AllowedRoleIds { get; }
+        public IEnumerable<ulong> ProhibitedRoleIds { get; }
 
-        public RawEmoteRolePair(string emote,
-            ulong roleid
-            //string description = null,
-            //IEnumerable<ulong> allowedRoles = null,
-            //IEnumerable<ulong> prohibitedRoles = null
-            )
+        public RawEmoteRolePair(int pairId, string emote, ulong roleId, IEnumerable<ulong> allowedRoleIds, IEnumerable<ulong> prohibitedRoleIds)
         {
+            PairId = pairId;
             Emote = emote;
-            RoleId = roleid;
-
-            //Description = description;
-            //AllowedRoleIds = allowedRoles ?? new List<ulong>();
-            //ProhibitedRoleIds = prohibitedRoles ?? new List<ulong>();
+            RoleId = roleId;
+            AllowedRoleIds = allowedRoleIds ?? new List<ulong>();
+            ProhibitedRoleIds = prohibitedRoleIds ?? new List<ulong>();
         }
     }
 }

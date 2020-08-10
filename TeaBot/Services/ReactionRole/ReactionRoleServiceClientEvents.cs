@@ -7,16 +7,16 @@ namespace TeaBot.Services.ReactionRole
 {
     partial class ReactionRoleService
     {
-        private async Task LeftGuild(SocketGuild guild) => await RemoveGuildEntry(guild.Id);
+        private async Task LeftGuild(SocketGuild guild) => await RemoveGuildFromDbAsync(guild.Id);
 
-        private async Task ChannelDeleted(SocketChannel channel) => await RemoveChannelFromRRMAsync(channel.Id);
+        private async Task ChannelDeleted(SocketChannel channel) => await RemoveChannelFromDbAsync(channel.Id);
 
-        private async Task RoleDeleted(SocketRole role) => await RemoveEmoteRolePair(role.Id);
+        private async Task RoleDeleted(SocketRole role) => await RemoveRoleFromDbAsync(role.Id);
 
         private async Task MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
         {
             if (reactionRoleCallbacks.Values.Any(x => x.Channel.Id == channel.Id && x.Message.Id == message.Id))
-                await RemoveMessageFromRRMAsync(channel.Id, message.Id);
+                await RemoveMessageFromDbAsync(channel.Id, message.Id);
         }
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
