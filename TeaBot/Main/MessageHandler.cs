@@ -200,7 +200,7 @@ namespace TeaBot.Main
                         splitStacktrace.Add(executeResult.Exception.StackTrace.Substring(index, Math.Min(1994, executeResult.Exception.StackTrace.Length - index)));
 
                     // Send the logs to the channel
-                    if (_client.GetChannel(726427607788421132) is ITextChannel logChannel)
+                    if (_client.GetChannel(TeaEssentials.LogChannelId) is ITextChannel logChannel)
                     {
                         foreach (string stacktrace in splitStacktrace)
                             try { await logChannel.SendMessageAsync($"```{stacktrace}```"); }
