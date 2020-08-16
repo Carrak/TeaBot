@@ -181,7 +181,7 @@ namespace TeaBot.Modules
             string[] entriesArr = null;
             var entriesMsg = await NextMessageWithConditionAsync(x =>
             {
-                entriesArr = Regex.Split(x.Content, @"\s+\|\s+");
+                entriesArr = Regex.Split(x.Content.DeafenMentionsFromMessage(x), @"\s+\|\s+");
                 int count = entriesArr.Count();
                 return count >= 2 && count <= 9;
             }, Context, TimeSpan.FromSeconds(30), errorMessage: "You've input less than 2 or more than 9 entries. Try again.");
