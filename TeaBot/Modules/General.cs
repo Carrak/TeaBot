@@ -167,12 +167,11 @@ namespace TeaBot.Modules
             {
                 try
                 {
+                    await reply1.DeleteAsync();
                     await name.DeleteAsync();
                 }
                 catch (HttpException)
-                {
-
-                }
+                { }
                 return;
             }
 
