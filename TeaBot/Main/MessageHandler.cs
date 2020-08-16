@@ -112,7 +112,7 @@ namespace TeaBot.Main
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
 
-                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Count > 0 ? $" {string.Join(" ", command.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}" : "")}`";
+                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Any() ? $" {string.Join(" ", command.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}" : "")}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
@@ -152,7 +152,7 @@ namespace TeaBot.Main
                     // The log with all non-empty frames
                     System.Text.StringBuilder log = new System.Text.StringBuilder();
 
-                    // Get frames where the lines is specified
+                    // Get frames where the line is specified
                     for (int i = 0; i < st.FrameCount; i++)
                     {
                         StackFrame sf = st.GetFrame(i);

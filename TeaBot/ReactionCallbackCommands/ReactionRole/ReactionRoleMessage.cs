@@ -239,8 +239,8 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 if (user.RoleIds.Count(x => EmoteRolePairs.Values.Any(erp => erp.Role.Id == x)) >= Limit ||
                     user.RoleIds.Any(x => globalProhibitedRoleIds.Contains(x)) ||
                     user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
-                    (globalAllowedRoleIds.Count() > 0 && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
-                    (erp.AllowedRoles.Count() > 0 && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
+                    (globalAllowedRoleIds.Any() && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
+                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
                     return;
 
                 // Try to assign the role to the user
@@ -275,7 +275,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 // 2. If there are any allowed roles => if the user does not have any allowed roles
                 // If either of the conditions is true, cancel all interactions
                 if (user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
-                    (erp.AllowedRoles.Count() > 0 && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
+                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
                     return;
 
                 // Try removing the role from the user

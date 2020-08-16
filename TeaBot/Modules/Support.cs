@@ -96,7 +96,7 @@ namespace TeaBot.Modules
 
             if (result.IsSuccess &&
                 (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) &&
-                commands.Count() > 0)
+                commands.Any())
             {
                 var commandHelp = new CommandHelp(Interactive, Context, commands.Select(cm => cm.Command));
                 await commandHelp.DisplayAsync();

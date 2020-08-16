@@ -99,8 +99,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
                     Name = $"Emote-role pair {index + 1}",
                     Value = $"{x.Emote} - {x.Role.Mention}\n" +
                             $"Description: {x.Data?.Description ?? emptyPlaceholder}\n" +
-                            $"Allowed roles: {(x.AllowedRoles.Count() > 0 ? string.Join(", ", x.AllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
-                            $"Prohibited roles: {(x.ProhibitedRoles.Count() > 0 ? string.Join(", ", x.ProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}"
+                            $"Allowed roles: {(x.AllowedRoles.Any() ? string.Join(", ", x.AllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
+                            $"Prohibited roles: {(x.ProhibitedRoles.Any() ? string.Join(", ", x.ProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}"
                 });
                 return fullEmoteRolePairsFields;
             }
@@ -110,8 +110,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
                 {
                     Name = $"Emote-role pair {index + 1}",
                     Value = $"{x.Emote} - {x.Role.Mention}\n" +
-                            $"Allowed roles: {(x.AllowedRoles.Count() > 0 ? string.Join(", ", x.AllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
-                            $"Prohibited roles: {(x.ProhibitedRoles.Count() > 0 ? string.Join(", ", x.ProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}"
+                            $"Allowed roles: {(x.AllowedRoles.Any() ? string.Join(", ", x.AllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
+                            $"Prohibited roles: {(x.ProhibitedRoles.Any() ? string.Join(", ", x.ProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}"
                 });
                 return emoteRolePairsFields;
             }

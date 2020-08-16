@@ -41,11 +41,10 @@ namespace TeaBot.Modules
                 .WithAuthor(quote.Author)
                 .WithFooter(quote.CreatedAt.DateTime.ToString("dd.MM.yyyy HH:mm:ss"));
 
-            if (quote.Attachments.Count() > 0)
+            if (quote.Attachments.Any())
                 embed.WithImageUrl(quote.Attachments.First().Url);
-            else if (quote.Embeds.Count() > 0)
+            else if (quote.Embeds.Any())
                 embed.WithImageUrl(quote.Embeds.First().Url);
-
 
             await ReplyAsync(embed: embed.Build());
         }
