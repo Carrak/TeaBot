@@ -202,10 +202,13 @@ namespace TeaBot.Main
                     // Send the logs to the channel
                     if (_client.GetChannel(TeaEssentials.LogChannelId) is ITextChannel logChannel)
                     {
-                        foreach (string stacktrace in splitStacktrace)
-                            try { await logChannel.SendMessageAsync($"```{stacktrace}```"); }
-                            catch (HttpException) { }
-                        await logChannel.SendMessageAsync(embed: embed.Build());
+                        try 
+                        { 
+                            foreach (string stacktrace in splitStacktrace)
+                                await logChannel.SendMessageAsync($"```{stacktrace}```");
+                            await logChannel.SendMessageAsync(embed: embed.Build());
+                        }
+                        catch (HttpException) { }
                     }
 
 
