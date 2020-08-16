@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -36,17 +37,7 @@ namespace TeaBot.Webservices
 
             return definitions;
 
-            static string ParseAndPlaceReferenceHyperlinks(string toFormat)
-            {
-                var mc = Regex.Matches(toFormat, @"\[.*?\]");
-                foreach (var match in mc)
-                {
-                    string reference = match.ToString();
-                    string refWord = reference[1..^1];
-                    toFormat = toFormat.Replace(reference, $"{reference}(https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(refWord)})");
-                }
-                return toFormat;
-            }
+            static string ParseAndPlaceReferenceHyperlinks(string toFormat) => Regex.Replace(toFormat, @"\[(.*?)\]", delegate (Match m) { return $"{m}(https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(m.Groups[1].ToString())})"; });
         }
 
         public async Task<string> GetDefinitionsJSONAsync()
