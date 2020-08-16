@@ -25,7 +25,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
             var embed = new EmbedBuilder();
             embed.WithColor(TeaEssentials.MainColor)
                 .WithAuthor(Context.User)
-                .WithTitle($"Definition of {definition.Word}")
+                .WithTitle($"{definition.Word}")
                 .WithUrl($"https://www.urbandictionary.com/define.php?term={WebUtilities.FormatStringForURL(definition.Word)}")
                 .WithDescription(definition.Definition)
                 .AddField("Example", string.IsNullOrEmpty(definition.Example) ? "-" : definition.Example)
