@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -104,11 +108,71 @@ namespace TeaBot.Main
         /// <summary>
         ///     Logs client information.
         /// </summary>
-        /// <param name="arg">The message to log</param>
-        private Task Log(LogMessage arg)
+        /// <param name="logMessage">The message to log</param>
+        private async Task Log(LogMessage logMessage)
         {
-            Console.WriteLine(arg);
-            return Task.CompletedTask;
+            Console.WriteLine(logMessage);
+
+            // Don't continue if there's no exception
+            if (!(logMessage.Exception is Exception exception))
+                return;
+
+            var embed = new EmbedBuilder();
+
+            embed.WithAuthor(_client.CurrentUser)
+                .WithTitle("Unhandled exception")
+                .WithColor(Color.Red)
+                .AddField(exception.GetType().Name, exception.Message);
+
+            // Exception stack trace
+            StackTrace st = new StackTrace(exception, true);
+
+            // The log with all non-empty frames
+            System.Text.StringBuilder log = new System.Text.StringBuilder();
+
+            // Get frames where the line is specified
+            for (int i = 0; i < st.FrameCount; i++)
+            {
+                StackFrame sf = st.GetFrame(i);
+                int line = sf.GetFileLineNumber();
+
+                if (line == 0)
+                    continue;
+
+                log.Append($"In {sf.GetFileName()}\nAt line {line}\n");
+            }
+
+            // Add the frames
+            embed.WithDescription(log.ToString());
+
+            // Add all inner exceptions
+            var currentException = exception.InnerException;
+            while (currentException != null)
+            {
+                embed.AddField(currentException.GetType().Name, currentException.Message);
+                currentException = currentException.InnerException;
+            }
+
+            // Split the stacktrace so it can be fit into multiple messages
+            List<string> splitStacktrace = new List<string>();
+            for (int index = 0; index < exception.StackTrace.Length; index += 1994)
+                splitStacktrace.Add(exception.StackTrace.Substring(index, Math.Min(1994, exception.StackTrace.Length - index)));
+
+            // Send the logs to the channel
+            if (_client.GetChannel(TeaEssentials.LogChannelId) is ITextChannel logChannel)
+            {
+                try
+                {
+                   // Send the stacktrace
+                   foreach (string stacktrace in splitStacktrace)
+                        await logChannel.SendMessageAsync($"```{stacktrace}```");
+                   // Send the exception info
+                   await logChannel.SendMessageAsync(embed: embed.Build());
+                }
+                // Discard missing permissions
+                catch (HttpException) { }
+            }
+
         }
 
         /// <summary>
