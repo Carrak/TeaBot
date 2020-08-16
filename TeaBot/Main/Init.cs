@@ -18,9 +18,9 @@ namespace TeaBot.Main
         static void Main() => new Init().RunBotAsync().GetAwaiter().GetResult();
 
         // Discord.NET essentials.
-        private DiscordSocketClient _client;
-        private CommandService _commands;
-        private IServiceProvider _services;
+        private static DiscordSocketClient _client;
+        private static CommandService _commands;
+        private static IServiceProvider _services;
 
         // Services
         private DatabaseService _database;

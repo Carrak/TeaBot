@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -23,9 +24,13 @@ namespace TeaBot.Modules
         public async Task Quote(IUser user = null)
         {
             var channel = Context.Client.GetChannel(639860672666271806) as ISocketMessageChannel;
+
             var quotes = await channel.GetMessagesAsync().FlattenAsync();
+            quotes = quotes.Where(x => x.MentionedUserIds.Any());
+
             if (user != null)
                 quotes = quotes.Where(quote => quote.MentionedUserIds.Contains(user.Id));
+
             int randomIndex = new Random().Next(0, quotes.Count());
             var quote = quotes.ElementAt(randomIndex);
 
