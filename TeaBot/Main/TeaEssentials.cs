@@ -24,6 +24,11 @@ namespace TeaBot.Main
         public static Color MainColor { get; } = Color.Green;
 
         /// <summary>
+        ///     The ID of a channel for exception logging.
+        /// </summary>
+        public static ulong LogChannelId = 726427607788421132;
+
+        /// <summary>
         ///     HttpClient instance that is used across the bot.
         /// </summary>
         public static HttpClient HttpClient { get; private set; } = new HttpClient();
