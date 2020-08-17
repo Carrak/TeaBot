@@ -114,8 +114,10 @@ namespace TeaBot.Main
             Console.WriteLine(logMessage);
 
             // Don't continue if there's no exception
-            if (!(logMessage.Exception is Exception exception))
+            if (logMessage.Exception == null || logMessage.Exception.GetType() == typeof(Exception))
                 return;
+
+            var exception = logMessage.Exception;
 
             var embed = new EmbedBuilder();
 
