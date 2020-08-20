@@ -100,9 +100,13 @@ namespace TeaBot.Main
         /// </summary>
         private async Task Ready()
         {
+            TeaEssentials.Ready = false;
+
             Logger.Log("Services", "Initializing ReactionRoleService");
             await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAsync();
             Logger.Log("Services", "Initialized ReactionRoleService");
+
+            TeaEssentials.Ready = true;
         }
 
         /// <summary>

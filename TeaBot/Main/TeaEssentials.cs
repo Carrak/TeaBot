@@ -34,6 +34,11 @@ namespace TeaBot.Main
         public static HttpClient HttpClient { get; private set; } = new HttpClient();
 
         /// <summary>
+        ///     A bool value determining whether the bot is ready for accepting messages.
+        /// </summary>
+        public static bool Ready = false;
+
+        /// <summary>
         ///     Represents the time the bot was started at (for measuring uptime).
         /// </summary>
         public static DateTime BotStarted;
