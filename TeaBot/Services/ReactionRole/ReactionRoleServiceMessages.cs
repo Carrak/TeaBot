@@ -32,9 +32,9 @@ namespace TeaBot.Services.ReactionRole
                 case "RR013":
                     return $"{SpecifyReactionRoleMessage(index, true)} is custom.\nConsider creating a non-custom message using {ReactionRoleMessageCommandString(prefix, "create")}";
                 case "RR014":
-                    return $"{SpecifyReactionRoleMessage(index, true)} is custom.\nTo display a custom message, use {ReactionRoleMessageCommandString(prefix, "displaycustom [message link]", index)} instead. That will also set the channel.";
+                    return $"{SpecifyReactionRoleMessage(index, true)} is not custom.\nTo display a custom message, use {ReactionRoleMessageCommandString(prefix, "displaycustom [message link]", index)} instead. That will also set the channel.";
                 case "RR015":
-                    return $"{SpecifyReactionRoleMessage(index, true)} is not custom.\nConsider using {ReactionRoleMessageCommandString(prefix, "display [channel]", index)} instead.";
+                    return $"{SpecifyReactionRoleMessage(index, true)} is custom.\nConsider using {ReactionRoleMessageCommandString(prefix, "display [channel]", index)} instead.";
 
                 // 1.3 Count
                 // 1.3.1 Reaction-role messages and emote-role pairs
