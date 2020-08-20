@@ -59,9 +59,10 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="roleId">The ID of the role.</param>
         public async Task RemoveRoleFromDbAsync(ulong roleId)
         {
-            foreach (var rrmsg in reactionRoleCallbacks.Values)
+            foreach (var rrmsg in reactionRoleCallbacks.Values.Where(x => x.EmoteRolePairs.Values.Any(y => y.Role.Id == roleId)))
             {
-                if (rrmsg.EmoteRolePairs.Remove(rrmsg.EmoteRolePairs.FirstOrDefault(x => x.Value.Role.Id == roleId).Key) && rrmsg is FullReactionRoleMessage frrmsg)
+                var key = rrmsg.EmoteRolePairs.FirstOrDefault(x => x.Value.Role.Id == roleId).Key;
+                if (rrmsg.EmoteRolePairs.Remove(key) && rrmsg is FullReactionRoleMessage frrmsg)
                     await frrmsg.DisplayAsync();
             }
 
