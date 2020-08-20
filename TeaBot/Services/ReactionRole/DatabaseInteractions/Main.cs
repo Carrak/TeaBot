@@ -142,11 +142,12 @@ namespace TeaBot.Services.ReactionRole
             int rrid = reader.GetInt32(2);
             bool isCustom = reader.GetBoolean(4);
 
-            // The initial reaction-role message object
-            var rrmsg = await ReactionRoleMessage.CreateAsync(this, new RawReactionRoleMessage(rrid, limit, guild.Id, channelId, messageId, isCustom, pairs.Values, globalAllowedRoleIds, globalProhibitedRoleIds));
-
+            // If the message is custom, return
             if (isCustom)
-                return rrmsg;
+            {
+                await reader.CloseAsync();
+                return await ReactionRoleMessage.CreateAsync(this, new RawReactionRoleMessage(rrid, limit, guild.Id, channelId, messageId, isCustom, pairs.Values, globalAllowedRoleIds, globalProhibitedRoleIds)); ;
+            }
 
             await reader.NextResultAsync();
             await reader.ReadAsync();
@@ -169,9 +170,6 @@ namespace TeaBot.Services.ReactionRole
             // List of full emote-role pairs
             List<FullEmoteRolePair> ferps = new List<FullEmoteRolePair>();
 
-            // Dictionary of emote-role pairs of the existing messages
-            var pairsDict = rrmsg.EmoteRolePairs.Values.ToDictionary(x => x.PairId);
-
             // Dictionary for emote-role pairs data (to create full emote role pairs)
             Dictionary<int, EmoteRolePairData> erpd = new Dictionary<int, EmoteRolePairData>();
             // 8. Full emote-role pairs
@@ -181,6 +179,14 @@ namespace TeaBot.Services.ReactionRole
                 string emoteRolePairDescription = await reader.IsDBNullAsync(1) ? null : reader.GetString(1);
                 erpd.Add(pairid, new EmoteRolePairData(emoteRolePairDescription));
             }
+
+            await reader.CloseAsync();
+
+            // Create a base for the full reaction-role message
+            var rrmsg = await ReactionRoleMessage.CreateAsync(this, new RawReactionRoleMessage(rrid, limit, guild.Id, channelId, messageId, isCustom, pairs.Values, globalAllowedRoleIds, globalProhibitedRoleIds));
+
+            // Dictionary of emote-role pairs of the existing messages
+            var pairsDict = rrmsg.EmoteRolePairs.Values.ToDictionary(x => x.PairId);
 
             // Create full-emote role pairs
             foreach (var erp in pairsDict.Values)
