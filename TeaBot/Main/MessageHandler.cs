@@ -172,13 +172,13 @@ namespace TeaBot.Main
                         .WithAuthor(_client.CurrentUser)
                         .WithDescription(log.ToString())
                         .WithFooter(footer)
-                        .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message);
+                        .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message.Take(1024));
 
                     // Add all inner exceptions
                     var currentException = executeResult.Exception.InnerException;
                     while (currentException != null)
                     {
-                        embed.AddField(currentException.GetType().Name, currentException.Message);
+                        embed.AddField(currentException.GetType().Name, currentException.Message.Take(1024));
                         currentException = currentException.InnerException;
                     }
 
