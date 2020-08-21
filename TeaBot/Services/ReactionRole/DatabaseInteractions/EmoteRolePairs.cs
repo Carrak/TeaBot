@@ -16,8 +16,8 @@ namespace TeaBot.Services.ReactionRole
         public async Task AddPairAsync(SocketGuild guild, int? index, IEmote emote, IRole role)
         {
             string query = @$"
-            INSERT INTO reaction_role_messages.emote_role_pairs (rrid, emote, roleid) 
-            VALUES (reaction_role_messages.get_rrid(@gid, @rn), @emote, @rid)
+            INSERT INTO reaction_role_messages.emote_role_pairs (pairid, rrid, emote, roleid) 
+            VALUES (DEFAULT, reaction_role_messages.get_rrid(@gid, @rn), @emote, @rid)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -62,7 +62,7 @@ namespace TeaBot.Services.ReactionRole
         {
             string query = @$"
             DELETE FROM reaction_role_messages.emote_role_pairs erp 
-            WHERE erp.pairid = reaction_role_messages.get_pairid(reaction_role_messages.get.rrid(@gid, @rn), @rid));
+            WHERE erp.pairid = reaction_role_messages.get_pairid(reaction_role_messages.get_rrid(@gid, @rn), @rid));
             ";
 
             await using var cmd = _database.GetCommand(query);
