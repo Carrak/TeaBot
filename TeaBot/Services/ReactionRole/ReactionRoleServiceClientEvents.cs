@@ -21,7 +21,7 @@ namespace TeaBot.Services.ReactionRole
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!reaction.User.Value.IsBot && reactionRoleCallbacks.TryGetValue(message.Id, out var rr))
+            if (reaction.User.IsSpecified && !reaction.User.Value.IsBot && reactionRoleCallbacks.TryGetValue(message.Id, out var rr))
                 await rr.HandleReactionRemoved(reaction);
         }
 
