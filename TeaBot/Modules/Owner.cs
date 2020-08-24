@@ -208,5 +208,32 @@ namespace TeaBot.Modules
             int rowsAffected = await cmd.ExecuteNonQueryAsync();
             await ReplyAsync($"Success! {rowsAffected} rows affected.");
         }
+
+        [Command("sqljson")]
+        public async Task SqlJSON([Remainder] string query)
+        {
+            await using var cmd = _database.GetCommand(query);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                JObject jobj = JObject.Parse(reader.GetString(0));
+                Console.Write(jobj.ToString());
+                await ReplyAsync($"```json\n{jobj}```");
+            }
+        }
+
+        [Command("sqljsona")]
+        public async Task SqlJSONA([Remainder] string query)
+        {
+            await using var cmd = _database.GetCommand(query);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                JArray jobj = JArray.Parse(reader.GetString(0));
+                await ReplyAsync($"```json\n{jobj}```");
+            }
+        }
     }
 }
