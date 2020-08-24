@@ -29,7 +29,7 @@ namespace TeaBot.Modules
         public Owner(DatabaseService database, Rule34BlacklistService blacklists)
         {
             _database = database;
-            _blacklists = blacklists
+            _blacklists = blacklists;
         }
 
         public sealed class Globals
