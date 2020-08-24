@@ -14,6 +14,8 @@ using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Services;
+using Newtonsoft.Json.Linq;
+using TeaBot.Webservices.Rule34;
 
 namespace TeaBot.Modules
 {
@@ -22,15 +24,24 @@ namespace TeaBot.Modules
     public class Owner : TeaInteractiveBase
     {
         private readonly DatabaseService _database;
+        private readonly Rule34BlacklistService _blacklists;
 
-        public Owner(DatabaseService database)
+        public Owner(DatabaseService database, Rule34BlacklistService blacklists)
         {
             _database = database;
+            _blacklists = blacklists
         }
 
         public sealed class Globals
         {
             public TeaCommandContext Context;
+        }
+
+        [Command("reloaddefault")]
+        public async Task ReloadDefault()
+        {
+            await _blacklists.InitDefaultBlacklistAsync();
+            await ReplyAsync($"Reloaded default blacklist.");
         }
 
         [Command("logs")]
