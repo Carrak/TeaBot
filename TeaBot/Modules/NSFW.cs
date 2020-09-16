@@ -61,6 +61,8 @@ namespace TeaBot.Modules
                 var allowed = GetAllowedIndexes();
                 if (tag is null)
                 {
+                    var excluded = GetExcludedIndexesForRandom();
+                    allowed = allowed.Where(x => !excluded.Contains(x));
                     int index = allowed.ElementAt(new Random().Next(0, allowed.Count()));
                     image = await NekosClient.GetNsfwAsync((NsfwEndpoint)index);
                 }
@@ -143,6 +145,11 @@ namespace TeaBot.Modules
         {
             HashSet<int> excluded = GetExcludedIndexes();
             return Enumerable.Range(0, Enum.GetNames(typeof(NsfwEndpoint)).Length).Where(x => !excluded.Contains(x));
+        }
+
+        private static HashSet<int> GetExcludedIndexesForRandom()
+        {
+            return new HashSet<int>() { 13, 23, 24 };
         }
 
         private static HashSet<int> GetExcludedIndexes()
