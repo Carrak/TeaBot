@@ -8,6 +8,7 @@ using TeaBot.Commands;
 using TeaBot.Main;
 using TeaBot.Preconditions;
 using TeaBot.ReactionCallbackCommands.PagedCommands.Base;
+using TeaBot.Services;
 
 namespace TeaBot.ReactionCallbackCommands.PagedCommands
 {
@@ -36,14 +37,14 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
             if (cmd.Aliases.Count > 1)
                 embed.AddField("Aliases", string.Join(", ", cmd.Aliases.Where(name => name != cmd.Name)));
 
-            string commandName = (!string.IsNullOrEmpty(cmd.Module.Group) ? $"{cmd.Module.Group} " : "") + cmd.Name;
-
-            embed.WithTitle($"{_prefix}{commandName} {string.Join(' ', cmd.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}")
+            embed.WithTitle($"{_prefix}{_tea.GetCommandHeader(cmd)}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary?.Replace("{prefix}", _prefix) ?? "No description for this command yet!")
-                .AddField("Parameters", cmd.Parameters.Count > 0 ?
-                string.Join("\n\n", cmd.Parameters.Select((param, index) => $"**{index + 1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) :
-                $"This command does not have any parameters. Its usage would be `{_prefix}{commandName}` without any additional parameters.")
+                .AddField("Parameters", 
+                cmd.Parameters.Count > 0 ?
+                string.Join("\n\n", cmd.Parameters.Where(x => !x.Type.IsEnum).Select((param, index) => 
+                $"**{index + 1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) :
+                $"This command does not have any parameters. Its usage would be `{_prefix}{_tea.GetFullCommandName(cmd)}` without any additional parameters.")
                 .AddField("Cooldown", (cmd.Preconditions.FirstOrDefault(x => x is RatelimitAttribute) as RatelimitAttribute)?.InvokeLimitPeriod.TotalSeconds.ToString() + " seconds" ?? "-")
                 .WithFooter($"{page + 1} / {TotalPages}")
                 .WithColor(TeaEssentials.MainColor);
