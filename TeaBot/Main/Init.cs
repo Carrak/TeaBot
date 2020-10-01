@@ -92,7 +92,7 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Changes the bot's status once <see cref="_client"/> fires <see cref="DiscordSocketClient.Ready"/>.
+        ///     Determines the behavior when the Ready event is fired.
         /// </summary>
         private async Task Ready()
         {
