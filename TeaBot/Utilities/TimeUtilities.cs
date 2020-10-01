@@ -19,26 +19,26 @@ namespace TeaBot.Utilities
         public static string DateString(DateTime date, bool displayTime = false)
         {
             if (displayTime)
-                return $"{date:dd.MM.yyyy HH:mm:ss} UTC\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
+                return $"{date:dd.MM.yyyy HH:mm:ss} UTC\n{SpanBetweenDates(date, DateTime.UtcNow)}";
             else
-                return $"{date:dd.MM.yyyy}\n{date.ToString("MMMM d, yyyy (ddd)", new CultureInfo("en-US"))}\n{SpanBetweenDatesString(date, DateTime.UtcNow)}";
+                return $"{date:dd.MM.yyyy}\n{date.ToString("MMMM d, yyyy (ddd)", new CultureInfo("en-US"))}\n{SpanBetweenDates(date, DateTime.UtcNow)}";
         }
 
         /// <summary>
         ///     Calculates the amount of time between <paramref name="start"></paramref> and <paramref name="end"></paramref> 
-        ///     and creates a string that represents that time in either years/months/days or hours/minutes/seconds
+        ///     and creates a string that represents that time in the last three non-zero time thresholds (years, months, etc)
         /// </summary>
-        /// <returns>String in format "X years X months X days ago" or "X hours X minutes X seconds ago"</returns>
-        public static string SpanBetweenDatesString(DateTime start, DateTime end)
+        /// <returns>String in format "X years X months X days ago" etc.</returns>
+        public static string SpanBetweenDates(DateTime start, DateTime end)
         {
             if (start > end)
-                return SpanBetweenDatesString(end, start);
+                return SpanBetweenDates(end, start);
 
             TimeSpan timePassed = end - start;
 
             if (timePassed.TotalSeconds < 1)
                 return "Right now";
-
+            
             DateTime span = DateTime.MinValue + timePassed;
 
             List<string> thresholds = new List<string>();
