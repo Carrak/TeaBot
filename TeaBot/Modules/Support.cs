@@ -175,14 +175,21 @@ namespace TeaBot.Modules
         [Ratelimit(3)]
         public async Task Invite() => await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");
 
-        // a couple of utility methods for modules
+        private IEnumerable<string> FormatModuleCommands(ModuleInfo module, bool includeSubmodules = false)
+        {
+            if (includeSubmodules)
+            {
+                List<string> commands = new List<string>();
+                var modules = _support.GetModuleTree(module);
+                foreach (var currModule in modules)
+                    foreach (var command in currModule.Commands)
+                        commands.Add(_support.FormatCommandForHelp(currModule, command));
 
-        /// <summary>
-        ///     Creates a string out of <paramref name="module"/> commands.
-        /// </summary>
-        /// <param name="module">The module to use commands from.</param>
-        /// <returns>String containing all commands of a module presented in a readable way.</returns>
-        private string ModuleCommandsString(ModuleInfo module) => string.Join("\n", module.Commands.Select(command => $"`{(!string.IsNullOrEmpty(command.Module.Group) ? $"{command.Module.Group} " : "") + command.Name}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`").Distinct());
+                return commands.Distinct();
+            }
+            else
+                return module.Commands.Select(command => _support.FormatCommandForHelp(module, command)).Distinct();
+        }
 
         /// <summary>
         ///     Sorts out modules that are meant to be ignored or that are disabled in the guild.
