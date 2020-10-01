@@ -18,16 +18,21 @@ namespace TeaBot.Utilities
         /// <returns>The shortened collection.</returns>
         public static IEnumerable<string> Shorten(this IEnumerable<string> collection, int characterLimit, string collectionSplitter)
         {
-            // Count of elements in enumerable
-            int count = collection.Count();
-
             // Total length of elements' lengths
             int totalLength = 0;
 
             // Determine the count
-            int countToTake;
-            for (countToTake = 0; countToTake < count && totalLength + (countToTake + 1) * collectionSplitter.Length < characterLimit; countToTake++)
-                totalLength += collection.ElementAt(countToTake).Length;
+            int countToTake = 0;
+
+            foreach (string element in collection)
+            {
+                totalLength += element.Length;
+
+                if (totalLength + countToTake * collectionSplitter.Length >= characterLimit)
+                    break;
+
+                countToTake++;
+            }
 
             return collection.Take(countToTake);
         }
