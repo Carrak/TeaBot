@@ -113,22 +113,20 @@ namespace TeaBot.Modules
 
                 var embed = new EmbedBuilder();
 
-                var footer = new EmbedFooterBuilder();
-                footer.WithIconUrl(Context.Message.Author.GetAvatarUrl())
-                        .WithText(Context.Message.Author.ToString());
-
-                string moduleCommands = ModuleCommandsString(module);
+                bool essential = module.Attributes.Any(x => x is EssentialModuleAttribute);
 
                 embed.WithTitle($"{module.Name} commands")
-                    .WithDescription($"{module.Summary}\n\n`*` notation means there's more than one command with a given name")
+                    .WithDescription(
+                    $"{module.Summary}\n\n" +
+                    $"This module **{(essential ? "is" : "is not")}** essential. It {(essential ? "cannot" : "can")} be disabled.\n" +
+                    $"`*` notation means there's more than one command with a given name\n")
                     .WithColor(TeaEssentials.MainColor)
-                    .WithCurrentTimestamp()
-                    .WithFooter(footer)
-                    .AddField("Commands", moduleCommands)
-                    .AddField("Essential module (cannot be disabled)", module.Attributes.Any(attribute => attribute is EssentialModuleAttribute));
+                    .AddField(module.Name, string.Join("\n", FormatModuleCommands(module)));
+
+                foreach (var submodule in module.Submodules)
+                    embed.AddField(submodule.Name, string.Join("\n", FormatModuleCommands(submodule)));
 
                 await ReplyAsync(embed: embed.Build());
-
             }
         }
 
@@ -147,12 +145,18 @@ namespace TeaBot.Modules
         public async Task AllCommands()
         {
             var embed = new EmbedBuilder();
-            var modules = GetDisplayableModules().OrderByDescending(x => x.Commands.Sum(cmd => cmd.Name.Length));
+            var modules = GetDisplayableModules().OrderByDescending(x => _support.GetModuleTree(x).Select(module => module.Commands.Count).Sum());
 
-            var fields = modules.Select(module => new EmbedFieldBuilder
+            IEnumerable<EmbedFieldBuilder> fields2 = new List<EmbedFieldBuilder>();
+            foreach (var module in modules.Where(x => !x.IsSubmodule))
+            {
+                var localModules = _support.GetModuleTree(module);
+            }
+
+            var fields = modules.Where(x => !x.IsSubmodule).Select(module => new EmbedFieldBuilder
             {
                 Name = module.Name,
-                Value = ModuleCommandsString(module),
+                Value = string.Join("\n", FormatModuleCommands(module, true)),
                 IsInline = true
             });
 
