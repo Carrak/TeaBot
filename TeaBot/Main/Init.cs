@@ -81,6 +81,7 @@ namespace TeaBot.Main
             Logger.Log("Services", "Initializing MessageHandler");
             await _services.GetRequiredService<MessageHandler>().InitAsync();
             Logger.Log("Services", "Initialized MessageHandler");
+            await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
 
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);

@@ -33,9 +33,9 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Registers events and command modules.
+        ///     Installs command modules and commands themselves.
         /// </summary>
-        public async Task InitAsync()
+        public async Task InstallCommandsAsync()
         {
             _client.MessageReceived += HandleMessagesAsync;
             _commands.CommandExecuted += HandleCommandExecuted;
