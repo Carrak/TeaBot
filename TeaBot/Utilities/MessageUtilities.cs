@@ -1,8 +1,13 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using Discord.Net;
+using Discord.WebSocket;
 
 namespace TeaBot.Utilities
 {
-    public static class MentionUtilities
+    static class MessageUtilities
     {
         /// <summary>
         ///     Removes mentions from user input.
@@ -24,5 +29,4 @@ namespace TeaBot.Utilities
             }
             return text;
         }
-    }
-}
+
