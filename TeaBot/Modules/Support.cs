@@ -141,7 +141,7 @@ namespace TeaBot.Modules
             await ReplyAsync(embed: embed);
         }
 
-        [Command("commands", true)]
+        [Command("commands")]
         [Summary("Replies with all commands that the bot has")]
         [Ratelimit(3)]
         public async Task AllCommands()
@@ -170,7 +170,7 @@ namespace TeaBot.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        [Command("invite", true)]
+        [Command("invite")]
         [Summary("A message that contains the bot invite link")]
         [Ratelimit(3)]
         public async Task Invite() => await ReplyAsync("Invite me to your server!\n<https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8>");
