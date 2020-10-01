@@ -2,6 +2,11 @@
 using Discord;
 using Discord.WebSocket;
 using TeaBot.Main;
+using Discord.Commands;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+
 namespace TeaBot.Services
 {
     public class SupportService
@@ -44,3 +49,59 @@ namespace TeaBot.Services
 
             return embed.Build();
         }
+
+        public string GetFullCommandName(CommandInfo command)
+        {
+            string groups = "";
+
+            ModuleInfo currentModule = command.Module;
+
+            while (currentModule != null)
+            {
+                if (currentModule.Group != null)
+                    groups += $"{currentModule.Group} ";
+                currentModule = currentModule.Parent;
+            }
+
+            return $"{groups}{command.Name}";
+        }
+
+        public string GetCommandHeader(CommandInfo command)
+        {
+            string commandName = GetFullCommandName(command);
+
+            List<string> parameters = new List<string>();
+            foreach (var parameter in command.Parameters)
+            {
+                string paramBody = parameter.Type.IsEnum ? string.Join("/", parameter.Type.GetEnumNames().Select(x => x.ToLower())) : parameter.Name;
+                string fullParam = parameter.IsOptional ? $"<{paramBody}>" : $"[{paramBody}]";
+                parameters.Add(fullParam);
+            }
+
+            return $"{commandName}{(parameters.Any() ? $" {string.Join(' ', parameters)}" : "")}";
+        }
+
+        public string GetCommandHeader(string commandName)
+        {
+            var searchResult = _commands.Search(commandName);
+
+            if (!searchResult.IsSuccess)
+                return null;
+
+            return GetCommandHeader(searchResult.Commands[0].Command);
+        }
+
+        public IEnumerable<ModuleInfo> GetModuleTree(ModuleInfo module)
+        {
+            List<ModuleInfo> modules = new List<ModuleInfo>()
+            {
+                module
+            };
+
+            foreach (var submodule in module.Submodules)
+                modules.AddRange(GetModuleTree(submodule));
+
+            return modules;
+        }
+    }
+}
