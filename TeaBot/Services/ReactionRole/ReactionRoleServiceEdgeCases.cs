@@ -12,13 +12,13 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="guildId">The ID of the guild.</param>
         public async Task RemoveGuildFromDbAsync(ulong guildId)
         {
-            string guildDeletionQuery = "DELETE FROM reaction_role_messages.reaction_roles WHERE guildid=@gid; " +
+            string query = "DELETE FROM reaction_role_messages.reaction_roles WHERE guildid=@gid; " +
                         "DELETE FROM reaction_role_messages.emote_role_pairs WHERE rrid IN (SELECT rrid FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)";
-            await using var guildDeletionCmd = _database.GetCommand(guildDeletionQuery);
+            await using var cmd = _database.GetCommand(query, true);
 
-            guildDeletionCmd.Parameters.AddWithValue("gid", (long)guildId);
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
 
-            await guildDeletionCmd.ExecuteNonQueryAsync();
+            await cmd.ExecuteNonQueryAsync();
         }
 
         /// <summary>
@@ -27,12 +27,15 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="channelId">The ID of the channel.</param>
         public async Task RemoveChannelFromDbAsync(ulong channelId)
         {
-            string updateQuery = "UPDATE reaction_role_messages.reaction_roles SET channelid=NULL, messageid=NULL WHERE channelid=@cid";
-            await using var updateCmd = _database.GetCommand(updateQuery);
+            foreach (var rr in displayedRrmsgs.Values.Where(x => x.Message.Channel.Id == channelId))
+                displayedRrmsgs.Remove(rr.Message.Id);
 
-            updateCmd.Parameters.AddWithValue("cid", (long)channelId);
+            string query = "UPDATE reaction_role_messages.reaction_roles SET channelid=NULL, messageid=NULL WHERE channelid=@cid";
+            await using var cmd = _database.GetCommand(query, true);
 
-            await updateCmd.ExecuteNonQueryAsync();
+            cmd.Parameters.AddWithValue("cid", (long)channelId);
+
+            await cmd.ExecuteNonQueryAsync();
         }
 
         /// <summary>
@@ -42,10 +45,10 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="messageId">The ID of the message.</param>
         public async Task RemoveMessageFromDbAsync(ulong channelId, ulong messageId)
         {
-            reactionRoleCallbacks.Remove(messageId);
+            displayedRrmsgs.Remove(messageId);
 
             string query = "UPDATE reaction_role_messages.reaction_roles SET channelid=NULL, messageid=NULL WHERE channelid=@cid AND messageid=@mid";
-            await using var cmd = _database.GetCommand(query);
+            await using var cmd = _database.GetCommand(query, true);
 
             cmd.Parameters.AddWithValue("mid", (long)messageId);
             cmd.Parameters.AddWithValue("cid", (long)channelId);
@@ -59,10 +62,10 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="roleId">The ID of the role.</param>
         public async Task RemoveRoleFromDbAsync(ulong roleId)
         {
-            foreach (var rrmsg in reactionRoleCallbacks.Values.Where(x => x.EmoteRolePairs.Values.Any(y => y.Role.Id == roleId)))
+            foreach (var rrmsg in displayedRrmsgs.Values.Where(x => x.EmoteRolePairs.Values.Any(y => y.Role.Id == roleId)))
             {
-                var key = rrmsg.EmoteRolePairs.FirstOrDefault(x => x.Value.Role.Id == roleId).Key;
-                if (rrmsg.EmoteRolePairs.Remove(key) && rrmsg is FullReactionRoleMessage frrmsg)
+                var emote = rrmsg.EmoteRolePairs.Values.FirstOrDefault(x => x.Role.Id == roleId).Emote;
+                if (rrmsg.EmoteRolePairs.Remove(emote) && rrmsg is FullReactionRoleMessage frrmsg)
                     await frrmsg.DisplayAsync();
             }
 
@@ -71,7 +74,7 @@ namespace TeaBot.Services.ReactionRole
             DELETE FROM reaction_role_messages.allowed_roles WHERE roleid=@rid;
             DELETE FROM reaction_role_messages.prohibited_roles WHERE roleid=@rid;
             ";
-            await using var cmd = _database.GetCommand(query);
+            await using var cmd = _database.GetCommand(query, true);
 
             cmd.Parameters.AddWithValue("rid", (long)roleId);
 

@@ -13,12 +13,17 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
     public class FullReactionRoleMessage : ReactionRoleMessage
     {
         public readonly ReactionRoleMessageData Data;
-        public new readonly Dictionary<IEmote, FullEmoteRolePair> EmoteRolePairs;
 
-        public FullReactionRoleMessage(ReactionRoleMessage rrmsg, IEnumerable<FullEmoteRolePair> fullEmoteRolePairs, ReactionRoleMessageData data) : base(rrmsg.RRService, rrmsg.RRID, rrmsg.Limit, rrmsg.Guild, rrmsg.Channel, rrmsg.Message, rrmsg.EmoteRolePairs, rrmsg.GlobalAllowedRoles, rrmsg.GlobalProhibitedRoles)
+        public new Dictionary<IEmote, FullEmoteRolePair> EmoteRolePairs { 
+            get
+            {
+                return base.EmoteRolePairs.Values.Cast<FullEmoteRolePair>().ToDictionary(x => x.Emote, x => x);
+            } 
+        }
+
+        public FullReactionRoleMessage(ReactionRoleMessage rrmsg, ReactionRoleMessageData data) : base(rrmsg.RRService, rrmsg.RRID, rrmsg.LimitId, rrmsg.Guild, rrmsg.Message, rrmsg.EmoteRolePairs, rrmsg.GlobalAllowedRoles, rrmsg.GlobalProhibitedRoles)
         {
-            Data = data ?? new ReactionRoleMessageData(null, null, null);
-            EmoteRolePairs = fullEmoteRolePairs.ToDictionary(x => x.Emote);
+            Data = data ?? new ReactionRoleMessageData(null, null, null);         
         }
 
         /// <summary>
@@ -28,11 +33,14 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public Embed ConstructEmbed()
         {
             var embed = new EmbedBuilder();
-
+            
             List<string> emoteRolePairs = new List<string>();
 
             foreach (var pair in EmoteRolePairs.Values)
             {
+                if (pair.Blocked)
+                    continue;
+
                 string toAdd = "";
 
                 int allowedRolesCount = pair.AllowedRoles.Count();
@@ -68,7 +76,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 .WithColor(Data.Color ?? TeaEssentials.MainColor)
                 .WithDescription($"{(string.IsNullOrEmpty(Data.Description) ? "" : $"{Data.Description}")}" +
                 $"{(string.IsNullOrEmpty(globalRoleLimitations) ? "" : $"\n{globalRoleLimitations}")}\n" +
-                $"{(Limit.HasValue ? $"You can select **{Limit.Value}** role{(Limit == 1 ? "" : "s")} from the list.\n\n" : "\n")}" +
+                $"{(LimitId.HasValue ? $"You can select **{LimitId.Value}** role{(LimitId == 1 ? "" : "s")} from the list.\n\n" : "\n")}" +
                 $"{string.Join("\n\n", emoteRolePairs)}")
                 .WithFooter("React to give yourself a role from the list.");
 
@@ -76,19 +84,29 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         }
 
         /// <summary>
-        ///     Sends the complete reaction-role message to <see cref="ReactionRoleMessage.Channel"/> 
+        ///     Sends the complete reaction-role message to <paramref name="channel"/> if no message is currently present of it's in a different channel
         ///     or 
         ///     modifies the existing message.
         ///     Both ways use <see cref="ConstructEmbed"/> as the message's embed.
         /// </summary>
-        public async Task DisplayAsync()
+        public async Task DisplayAsync(ITextChannel channel = null)
         {
             var embed = ConstructEmbed();
 
-            if (Message is null)
-                Message = await Channel.SendMessageAsync(embed: embed);
-            else
-                await Message.ModifyAsync(x => x.Embed = embed);
+            switch((Message is null, channel is null))
+            {
+                case (true, true):
+                    return;
+
+                case (false, false) when Message.Channel.Id != channel.Id:
+                case (true, false):
+                    Message = await channel.SendMessageAsync(embed: embed);
+                    break;
+
+                case (false, true):
+                    await Message.ModifyAsync(x => x.Embed = embed);
+                    break;
+            }
 
             await AddReactionCallbackAsync();
         }
@@ -117,7 +135,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
     {
         public readonly EmoteRolePairData Data;
 
-        public FullEmoteRolePair(EmoteRolePair erp, EmoteRolePairData data) : base(erp.PairId, erp.Emote, erp.Role, erp.AllowedRoles, erp.ProhibitedRoles)
+        public FullEmoteRolePair(EmoteRolePair erp, EmoteRolePairData data) : base(erp.PairId, erp.Emote, erp.Role, erp.AllowedRoles, erp.ProhibitedRoles, erp.Blocked)
         {
             Data = data ?? new EmoteRolePairData(null);
         }

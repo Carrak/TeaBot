@@ -8,6 +8,61 @@ namespace TeaBot.Services.ReactionRole
 {
     partial class ReactionRoleService
     {
+
+        /// <summary>
+        ///     Creates an empty entry for a custom reaction-role message in the database.
+        /// </summary>
+        /// <param name="guild">The guild the message is created in.</param>
+        public async Task CreateCustomReactionRoleMessage(SocketGuild guild)
+        {
+            string query = @"
+            INSERT INTO reaction_role_messages.reaction_roles (rrid, guildid, iscustom) VALUES (DEFAULT, @gid, TRUE)
+            ";
+            await using var cmd = _database.GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        ///     Creates an empty entry for a reaction-role message in the database.
+        /// </summary>
+        /// <param name="guild">The guild the message is created in.</param>
+        public async Task CreateReactionRoleMessage(SocketGuild guild)
+        {
+            string query = @"
+            INSERT INTO reaction_role_messages.reaction_roles (rrid, guildid) VALUES (DEFAULT, @gid)
+            ";
+            await using var cmd = _database.GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        ///     Completely removes a reaction-role message (deleting it from the database and, if it is present, from Discord as well).
+        /// </summary>
+        /// <param name="guild">The guild the RR message is from.</param>
+        /// <param name="index">The row number of the message. If null, the latest message is used.</param>
+        public async Task<bool> RemoveReactionRoleMessage(SocketGuild guild, int? index)
+        {
+            string query = $@"
+            DELETE FROM reaction_role_messages.reaction_roles 
+            WHERE rrid = reaction_role_messages.get_rrid(@gid, @rn)
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+
+            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
+
+            int rows = await cmd.ExecuteNonQueryAsync();
+
+            return rows != 0;
+        }
+
         /// <summary>
         ///     Changes the name of a reaction-role message.
         /// </summary>
@@ -62,76 +117,12 @@ namespace TeaBot.Services.ReactionRole
             await cmd.ExecuteNonQueryAsync();
         }
 
-        /// <summary>
-        ///     Changes the channel of a reaction-role message.
-        /// </summary>
-        /// <param name="guild">The guild the RR message is from.</param>
-        /// <param name="index">The row number of the message. If null, the latest message is used.</param>
-        /// <param name="channel">The new channel of the message.</param>
-        public async Task ChangeChannelAsync(SocketGuild guild, int? index, ITextChannel channel)
-        {
-            string query = @$"
-            SELECT reaction_role_messages.ensure_not_custom_on_only_channel_update(reaction_role_messages.get_rrid(@gid, @rn));
-
-            UPDATE reaction_role_messages.reaction_roles AS rr SET channelid = @cid, messageid = NULL
-            WHERE rrid = reaction_role_messages.get_rrid(@gid, @rn)
-            ";
-
-            await using var cmd = _database.GetCommand(query);
-
-            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
-            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
-            cmd.Parameters.AddWithValue("cid", (long)channel.Id);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task ChangeMessageAsync(SocketGuild guild, int? index, IUserMessage message)
-        {
-            string query = @$"
-            SELECT reaction_role_messages.ensure_custom_on_only_message_update(reaction_role_messages.get_rrid(@gid, @rn));
-
-            UPDATE reaction_role_messages.reaction_roles rr SET channelid=@cid, messageid=@mid
-            WHERE rrid=reaction_role_messages.get_rrid(@gid, @rn);
-            ";
-
-            await using var cmd = _database.GetCommand(query);
-
-            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
-            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
-            cmd.Parameters.AddWithValue("cid", (long)message.Channel.Id);
-            cmd.Parameters.AddWithValue("mid", (long)message.Id);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        /// <summary>
-        ///     Changes the reaction limit of a reaction-role message (how many roles a user can assign to themselves through a reaction-role message)
-        /// </summary>
-        /// <param name="guild">The guild the RR message is from.</param>
-        /// <param name="index">The row number of the message. If null, the latest message is used.</param>
-        /// <param name="limit">The new limit to set.</param>
-        public async Task ChangeLimit(SocketGuild guild, int? index, int limit)
-        {
-            string query = @$"
-            UPDATE reaction_role_messages.reaction_roles rr SET reaction_limit=@limit
-            WHERE rr.rrid = reaction_role_messages.get_rrid(@gid, @rn);
-            ";
-
-            await using var cmd = _database.GetCommand(query);
-
-            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
-            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
-            cmd.Parameters.AddWithValue("limit", limit);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task<bool> ToggleCustom(SocketGuild guild, int? index)
+        public async Task<bool> ToggleCustomAsync(SocketGuild guild, int? index)
         {
             string query = $@"
             UPDATE reaction_role_messages.reaction_roles rr SET iscustom = NOT iscustom
-            WHERE rr.rrid = reaction_role_messages.get_rrid(@gid, @rn) RETURNING iscustom, channelid, messageid;
+            WHERE rr.rrid = reaction_role_messages.get_rrid(@gid, @rn) 
+            RETURNING iscustom, channelid, messageid;
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -170,29 +161,6 @@ namespace TeaBot.Services.ReactionRole
 
             cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
-
-            if (string.IsNullOrEmpty(description))
-                cmd.Parameters.AddWithValue("description", DBNull.Value);
-            else
-                cmd.Parameters.AddWithValue("description", description);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-
-        public async Task ChangePairDescription(SocketGuild guild, int? index, IEmote emote, string description)
-        {
-            string query = $@"
-            INSERT INTO reaction_role_messages.emote_role_pairs_data VALUES (reaction_role_messages.get_pairid(reaction_role_messages.get_rrid(@gid, @rn), @emote), @description)
-            ON CONFLICT (pairid)
-                DO UPDATE SET description=@description
-            ";
-
-            await using var cmd = _database.GetCommand(query);
-
-            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
-            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
-            cmd.Parameters.AddWithValue("emote", emote.ToString());
 
             if (string.IsNullOrEmpty(description))
                 cmd.Parameters.AddWithValue("description", DBNull.Value);

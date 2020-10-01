@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
+using System.Collections.Generic;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -15,20 +17,86 @@ namespace TeaBot.Services.ReactionRole
 
         private async Task MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
         {
-            if (reactionRoleCallbacks.Values.Any(x => x.Channel.Id == channel.Id && x.Message.Id == message.Id))
-                await RemoveMessageFromDbAsync(channel.Id, message.Id);
+            displayedRrmsgs.Remove(message.Id);
+            await RemoveMessageFromDbAsync(channel.Id, message.Id);
         }
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (reaction.User.IsSpecified && !reaction.User.Value.IsBot && reactionRoleCallbacks.TryGetValue(message.Id, out var rr))
+            if (reaction.User.IsSpecified && !reaction.User.Value.IsBot && displayedRrmsgs.TryGetValue(message.Id, out var rr))
                 await rr.HandleReactionRemoved(reaction);
         }
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!reaction.User.Value.IsBot && reactionRoleCallbacks.TryGetValue(message.Id, out var rr))
+            if (!reaction.User.Value.IsBot && displayedRrmsgs.TryGetValue(message.Id, out var rr))
                 await rr.HandleReactionAdded(reaction);
+        }
+
+        private async Task RoleUpdated(SocketRole before, SocketRole after)
+        {
+            int maxRolePosition = after.Guild.CurrentUser.Roles.Max(x => x.Position);
+
+            List<ReactionRoleMessage> toUpdate = new List<ReactionRoleMessage>();
+
+            foreach (var rrmsg in displayedRrmsgs.Values)
+                if (rrmsg.EmoteRolePairs.Values.FirstOrDefault(x => x.Role.Id == after.Id) is EmoteRolePair erp)
+                {
+                    erp.Role = after;
+                    rrmsg.EmoteRolePairs[erp.Emote] = erp;
+                    toUpdate.Add(rrmsg);
+                }
+
+            foreach (var rrmsg in toUpdate)
+                await UpdateRRMSGRolesAsync(rrmsg, maxRolePosition);
+        }
+
+        private async Task GuildMemberUpdated(SocketGuildUser userBefore, SocketGuildUser userAfter)
+        {
+            if (userAfter.Guild.CurrentUser.Id != userAfter.Id || userBefore.Roles.Count == userAfter.Roles.Count)
+                return;
+
+            int maxRolePosition = userAfter.Roles.Max(x => x.Position);
+
+            var toUpdate = new List<ReactionRoleMessage>(displayedRrmsgs.Values.Where(x => x.Guild.Id == userAfter.Guild.Id));
+            foreach (var rrmsg in toUpdate)
+                await UpdateRRMSGRolesAsync(rrmsg, maxRolePosition);
+        }
+
+        private async Task UpdateRRMSGRolesAsync(ReactionRoleMessage rrmsg, int maxRolePosition)
+        {
+            bool changeRequired = false;
+
+            Dictionary<IEmote, EmoteRolePair> newPairs = new Dictionary<IEmote, EmoteRolePair>();
+            foreach (var erp in rrmsg.EmoteRolePairs.Values)
+            {
+                if (erp.Role.Position > maxRolePosition)
+                {
+                    erp.Blocked = true;
+                    changeRequired = true;
+                }
+                else if (erp.Blocked)
+                {
+                    erp.Blocked = false;
+                    changeRequired = true;
+                }
+                newPairs.Add(erp.Emote, erp);
+            }
+
+            rrmsg.EmoteRolePairs = newPairs;
+
+            if (changeRequired)
+            {
+                if (rrmsg is FullReactionRoleMessage frrmsg)
+                {
+                    if (!rrmsg.EmoteRolePairs.Values.Any(x => !x.Blocked))
+                        await frrmsg.TryDeleteMessageAsync();
+                    else
+                        await frrmsg.DisplayAsync();
+                }
+                else
+                    await rrmsg.AddReactionCallbackAsync();
+            }
         }
     }
 }

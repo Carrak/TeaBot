@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
+using Discord.Rest;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using TeaBot.Services.ReactionRole;
 
 namespace TeaBot.ReactionCallbackCommands.ReactionRole
@@ -28,11 +30,6 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public IGuild Guild { get; }
 
         /// <summary>
-        ///     Channel the reaction-role message is in.
-        /// </summary>
-        public ITextChannel Channel { get; set; }
-
-        /// <summary>
         ///     Discord message this reaction-role message is attached to.
         /// </summary>
         public IUserMessage Message { get; set; }
@@ -41,7 +38,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     The limit of how many roles from a list the user can assign to themselves from the reaction-role message.
         ///     Null if there's no limit.
         /// </summary>
-        public int? Limit { get; }
+        public int? LimitId { get; }
 
         /// <summary>
         ///     Allowed roles that apply to this reaction-role message
@@ -56,13 +53,12 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         /// <summary>
         ///     Emote-role pairs of the reaction-role message.
         /// </summary>
-        public Dictionary<IEmote, EmoteRolePair> EmoteRolePairs { get; }
+        public Dictionary<IEmote, EmoteRolePair> EmoteRolePairs { get; set; }
 
         public ReactionRoleMessage(ReactionRoleService rrservice,
             int rrid,
-            int? limit,
+            int? limitid,
             IGuild guild,
-            ITextChannel channel,
             IUserMessage message,
             Dictionary<IEmote, EmoteRolePair> pairs,
             IEnumerable<IRole> allowedRoles,
@@ -71,10 +67,9 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
             RRService = rrservice;
 
             RRID = rrid;
-            Limit = limit;
+            LimitId = limitid;
 
             Guild = guild;
-            Channel = channel;
             Message = message;
             EmoteRolePairs = pairs;
 
@@ -86,43 +81,42 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     Creates a "Discord-compatible" reaction-role message using the information from the database.
         /// </summary>
         /// <param name="rrservice">Reaction-role service for error-handling.</param>
-        /// <param name="rawRRmsg">Unprocessed reaction-role message.</param>
+        /// <param name="rawrrmsg">Unprocessed reaction-role message.</param>
         /// <returns>An instance of <see cref="ReactionRoleMessage"/>, or null if the guild is not present.</returns>
-        public static async Task<ReactionRoleMessage> CreateAsync(ReactionRoleService rrservice,
-            RawReactionRoleMessage rawRRmsg)
+        public static async Task<ReactionRoleMessage> CreateAsync(
+            ReactionRoleService rrservice,
+            RawReactionRoleMessage rawrrmsg)
         {
             // The guild the message is in
-            var guild = rrservice._client.GetGuild(rawRRmsg.GuildId);
+            var guild = rrservice._client.GetGuild(rawrrmsg.GuildId);
 
             // Delete this reaction-role message if its guild is not present (either because the guild was deleted or the bot was kicked/banned).
             if (guild is null)
             {
-                await rrservice.RemoveGuildFromDbAsync(rawRRmsg.GuildId);
+                await rrservice.RemoveGuildFromDbAsync(rawrrmsg.GuildId);
                 return null;
             }
 
             // The location of the reaction-role message
-            ITextChannel channel = null;
             IUserMessage message = null;
 
-            if (rawRRmsg.ChannelId.HasValue)
+            if (rawrrmsg.ChannelId.HasValue)
             {
                 // Retrieve the channel
-                channel = guild.GetChannel(rawRRmsg.ChannelId.Value) as ITextChannel;
 
-                if (channel != null)
+                if (guild.GetChannel(rawrrmsg.ChannelId.Value) is ITextChannel channel)
                 {
-                    if (rawRRmsg.MessageId.HasValue)
+                    if (rawrrmsg.MessageId.HasValue)
                     {
                         try
                         {
                             // Retrieve the message
-                            message = await channel.GetMessageAsync(rawRRmsg.MessageId.Value) as IUserMessage;
+                            message = await channel.GetMessageAsync(rawrrmsg.MessageId.Value) as IUserMessage;
 
                             // Remove the reaction-role's info about the message if the message itself is null
                             if (message is null)
                             {
-                                await rrservice.RemoveMessageFromDbAsync(channel.Id, rawRRmsg.MessageId.Value);
+                                await rrservice.RemoveMessageFromDbAsync(channel.Id, rawrrmsg.MessageId.Value);
                             }
                         }
                         // Discard missing permissions
@@ -134,18 +128,12 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 }
                 // If channel is null, remove it from the database
                 else
-                    await rrservice.RemoveChannelFromDbAsync(rawRRmsg.ChannelId.Value);
+                    await rrservice.RemoveChannelFromDbAsync(rawrrmsg.ChannelId.Value);
             }
-
-            // Emote-role pairs of the message
-            var pairs = new List<EmoteRolePair>();
-            foreach (var rerp in rawRRmsg.EmoteRolePairs)
-                if (await EmoteRolePair.CreateAsync(rrservice, guild, rerp) is EmoteRolePair preparedPair)
-                    pairs.Add(preparedPair);
 
             // Get allowed roles
             var allowedRoles = new List<IRole>();
-            foreach (ulong roleid in rawRRmsg.GlobalAllowedRoleIds)
+            foreach (ulong roleid in rawrrmsg.GlobalAllowedRoleIds)
             {
                 var role = guild.GetRole(roleid);
                 if (role is null)
@@ -156,7 +144,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
 
             // Get prohibited roles
             var prohibitedRoles = new List<IRole>();
-            foreach (ulong roleid in rawRRmsg.GlobalProhibitedRoleIds)
+            foreach (ulong roleid in rawrrmsg.GlobalProhibitedRoleIds)
             {
                 var role = guild.GetRole(roleid);
                 if (role is null)
@@ -164,7 +152,26 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 else prohibitedRoles.Add(role);
             }
 
-            return new ReactionRoleMessage(rrservice, rawRRmsg.RRID, rawRRmsg.Limit, guild, channel, message, pairs.ToDictionary(x => x.Emote), allowedRoles, prohibitedRoles);
+            var pairs = new List<EmoteRolePair>();
+            var blockedPairs = new List<EmoteRolePair>();
+
+            int maxRolePosition = guild.CurrentUser.Roles.Max(x => x.Position);
+
+            foreach (var rerp in rawrrmsg.EmoteRolePairs)
+                if (await EmoteRolePair.CreateAsync(rrservice, guild, rerp) is EmoteRolePair preparedPair)
+                {
+                    if (preparedPair.Role.Position > maxRolePosition)
+                        preparedPair.Blocked = true;
+
+                    pairs.Add(preparedPair);
+                }
+
+            var baseMessage = new ReactionRoleMessage(rrservice, rawrrmsg.RRID, rawrrmsg.LimitId, guild, message, pairs.ToDictionary(x => x.Emote), allowedRoles, prohibitedRoles);
+
+            if (rawrrmsg is RawFullReactionRoleMessage frawrrmsg)
+                return new FullReactionRoleMessage(baseMessage, frawrrmsg.Data);
+            else 
+                return baseMessage;
         }
 
         /// <summary>
@@ -176,34 +183,34 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
             // Disable adding reactions if it is possible
             try
             {
-
                 // Change the bot's permissions
+                var channel = Message.Channel as SocketTextChannel;
                 var currentUser = await Guild.GetCurrentUserAsync();
-                var cutempperms = Channel.GetPermissionOverwrite(currentUser);
+                var cutempperms = channel.GetPermissionOverwrite(currentUser);
                 if (cutempperms.HasValue)
                 {
                     var perms = cutempperms.Value;
                     perms = perms.Modify(addReactions: PermValue.Allow);
-                    await Channel.AddPermissionOverwriteAsync(currentUser, perms);
+                    await channel.AddPermissionOverwriteAsync(currentUser, perms);
                 }
                 else
                 {
                     var op = new OverwritePermissions(addReactions: PermValue.Allow);
-                    await Channel.AddPermissionOverwriteAsync(currentUser, op);
+                    await channel.AddPermissionOverwriteAsync(currentUser, op);
                 }
 
                 // Change everyone role
-                var tempperms = Channel.GetPermissionOverwrite(Guild.EveryoneRole);
+                var tempperms = channel.GetPermissionOverwrite(Guild.EveryoneRole);
                 if (tempperms.HasValue)
                 {
                     var perms = tempperms.Value;
                     perms = perms.Modify(addReactions: PermValue.Deny);
-                    await Channel.AddPermissionOverwriteAsync(Guild.EveryoneRole, perms);
+                    await channel.AddPermissionOverwriteAsync(Guild.EveryoneRole, perms);
                 }
                 else
                 {
                     var op = new OverwritePermissions(addReactions: PermValue.Deny);
-                    await Channel.AddPermissionOverwriteAsync(Guild.EveryoneRole, op);
+                    await channel.AddPermissionOverwriteAsync(Guild.EveryoneRole, op);
                 }
             }
             catch (HttpException) { }
@@ -220,15 +227,19 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         {
             if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
+                // Return if the selected pair is blocked
+                if (erp.Blocked)
+                    return;
+
                 // The user who placed the reaction
-                var user = await Guild.GetUserAsync(reaction.User.Value.Id);
+                var user = await Guild.GetUserAsync(reaction.User.Value.Id) as SocketGuildUser;
 
                 // Allowed and prohibited role IDs
                 var allowedRoleIds = erp.AllowedRoles.Select(x => x.Id);
                 var prohibitedRoleIds = erp.ProhibitedRoles.Select(x => x.Id);
                 var globalAllowedRoleIds = GlobalAllowedRoles.Select(x => x.Id);
                 var globalProhibitedRoleIds = GlobalProhibitedRoles.Select(x => x.Id);
-
+                
                 // Check if:
                 // 1. The limit is present => the amount of roles the user has from the offered list exceeds the limit
                 // 2. If the user has any global prohibited roles
@@ -236,12 +247,19 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 // 4  If there are global allowed roles => if the user does not have a global allowed role
                 // 5. If there are any allowed roles => if the user does not have an emote-role pair bound role
                 // If either of the conditions is true, the user is not granted the role
-                if (user.RoleIds.Count(x => EmoteRolePairs.Values.Any(erp => erp.Role.Id == x)) >= Limit ||
-                    user.RoleIds.Any(x => globalProhibitedRoleIds.Contains(x)) ||
-                    user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
-                    (globalAllowedRoleIds.Any() && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
-                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
+                if (LimitId.HasValue && RRService.CheckLimitReached(LimitId.Value, user.Roles) ||
+                    user.Roles.Any(x => globalProhibitedRoleIds.Contains(x.Id)) ||
+                    user.Roles.Any(x => prohibitedRoleIds.Contains(x.Id)) ||
+                    (globalAllowedRoleIds.Any() && !user.Roles.Any(x => globalAllowedRoleIds.Contains(x.Id))) ||
+                    (erp.AllowedRoles.Any() && !user.Roles.Any(x => allowedRoleIds.Contains(x.Id))))
                     return;
+                /*
+                user.RoleIds.Any(x => globalProhibitedRoleIds.Contains(x)) ||
+                user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
+                (globalAllowedRoleIds.Any() && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
+                (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
+                return;
+                */
 
                 // Try to assign the role to the user
                 try
@@ -297,27 +315,23 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public int PairId { get; }
 
         public IEmote Emote { get; }
-        public IRole Role { get; }
+        public IRole Role { get; set; }
 
         public IEnumerable<IRole> AllowedRoles { get; }
         public IEnumerable<IRole> ProhibitedRoles { get; }
 
-        public EmoteRolePair(int pairid, IEmote emote, IRole role, IEnumerable<IRole> allowedRoles, IEnumerable<IRole> prohibitedRoles)
+        public bool Blocked { get; set; } 
+
+        public EmoteRolePair(int pairid, IEmote emote, IRole role, IEnumerable<IRole> allowedRoles, IEnumerable<IRole> prohibitedRoles, bool blocked)
         {
             PairId = pairid;
             Emote = emote;
             Role = role;
             AllowedRoles = allowedRoles;
             ProhibitedRoles = prohibitedRoles;
+            Blocked = blocked;
         }
 
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="rrservice"></param>
-        /// <param name="guild"></param>
-        /// <param name="rerp"></param>
-        /// <returns></returns>
         public static async Task<EmoteRolePair> CreateAsync(
             ReactionRoleService rrservice,
             IGuild guild,
@@ -342,6 +356,9 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 await rrservice.RemoveRoleFromDbAsync(rerp.RoleId);
                 return null;
             }
+
+            var currentUser = await guild.GetCurrentUserAsync() as SocketGuildUser;
+            bool blocked = assignedRole.Position >= currentUser.Roles.Max(x => x.Position);
 
             // Get allowed roles
             List<IRole> allowedRoles = new List<IRole>();
@@ -373,7 +390,11 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 prohibitedRoles.Add(role);
             }
 
-            return new EmoteRolePair(rerp.PairId, emote, assignedRole, allowedRoles, prohibitedRoles);
+            EmoteRolePair erp = new EmoteRolePair(rerp.PairId, emote, assignedRole, allowedRoles, prohibitedRoles, blocked);
+            if (rerp is RawFullEmoteRolePair rferp)
+                return new FullEmoteRolePair(erp, rferp.Data);
+            else
+                return erp;
         }
     }
 }

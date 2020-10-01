@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
@@ -31,7 +32,7 @@ namespace TeaBot.Services.ReactionRole
         }
 
         /// <summary>
-        ///     Remove an emote-role pair frm a reaction-role message.
+        ///     Remove an emote-role pair from a reaction-role message.
         /// </summary>
         /// <param name="guild">The guild the RR message is from.</param>
         /// <param name="index">The row number of the message. If null, the latest message is used.</param>
@@ -145,6 +146,28 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("gid", (long)guild.Id);
             cmd.Parameters.AddWithValue("emotea", emote1.ToString());
             cmd.Parameters.AddWithValue("emoteb", emote2.ToString());
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task ChangePairDescription(SocketGuild guild, int? index, IEmote emote, string description)
+        {
+            string query = $@"
+            INSERT INTO reaction_role_messages.emote_role_pairs_data VALUES (reaction_role_messages.get_pairid(reaction_role_messages.get_rrid(@gid, @rn), @emote), @description)
+            ON CONFLICT (pairid)
+                DO UPDATE SET description=@description
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+
+            cmd.Parameters.AddWithValue("rn", GetIndexForParameter(index));
+            cmd.Parameters.AddWithValue("gid", (long)guild.Id);
+            cmd.Parameters.AddWithValue("emote", emote.ToString());
+
+            if (string.IsNullOrEmpty(description))
+                cmd.Parameters.AddWithValue("description", DBNull.Value);
+            else
+                cmd.Parameters.AddWithValue("description", description);
 
             await cmd.ExecuteNonQueryAsync();
         }

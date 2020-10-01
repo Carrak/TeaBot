@@ -55,12 +55,11 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
                     .WithFooter(fullrrmsg.EmoteRolePairs.Any() ?
                         $"Use {Context.Prefix}rr preview{(_index.HasValue ? $" {_index.Value}" : "")} to see how this message would look like when displayed" :
                         $"This reaction-role message does not have any emote-role pairs.\n" +
-                        $"Use {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "addpair [emote] [role]", _index, false)} to add emote-role pairs.")
+                        $"Use {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "addpair")} to add emote-role pairs.")
                     .AddField("Color", fullrrmsg.Data.Color.HasValue ? fullrrmsg.Data.Color.ToString() : $"Default color ({TeaEssentials.MainColor})", true)
                     .AddField("Name", fullrrmsg.Data.Name ?? emptyPlaceholder, true)
-                    .AddField("Channel", fullrrmsg.Channel?.Mention ?? emptyPlaceholder, true)
                     .AddField("Message", fullrrmsg.Message is null ? emptyPlaceholder : $"[Click here to jump to the message!]({fullrrmsg.Message.GetJumpUrl()})")
-                    .AddField("Limit (how many roles can be assigned)", fullrrmsg.Limit?.ToString() ?? emptyPlaceholder)
+                    .AddField("Limit (how many roles can be assigned)", fullrrmsg.LimitId?.ToString() ?? emptyPlaceholder)
                     .AddField("Role restrictions/limitations",
                     $"Global allowed roles:  {(fullrrmsg.GlobalAllowedRoles.Any() ? string.Join(", ", fullrrmsg.GlobalAllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
                     $"Global prohibited roles: {(fullrrmsg.GlobalProhibitedRoles.Any() ? string.Join(", ", fullrrmsg.GlobalProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}")
@@ -75,9 +74,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
 
             embed.WithColor(TeaEssentials.MainColor)
                     .WithTitle(_index.HasValue ? $"Custom RR Message at index {_index.Value}" : "Latest RR Message (Custom)")
-                    .AddField("Channel", rrmsg.Channel?.Mention ?? emptyPlaceholder, true)
                     .AddField("Message", rrmsg.Message is null ? emptyPlaceholder : $"[Click here to jump to the message!]({rrmsg.Message.GetJumpUrl()})", true)
-                    .AddField("Limit (how many roles can be assigned)", rrmsg.Limit?.ToString() ?? emptyPlaceholder)
+                    .AddField("Limit (how many roles can be assigned)", rrmsg.LimitId?.ToString() ?? emptyPlaceholder)
                     .AddField("Role restrictions/limitations",
                     $"Global allowed roles:  {(rrmsg.GlobalAllowedRoles.Any() ? string.Join(", ", rrmsg.GlobalAllowedRoles.Select(x => x.Mention)) : emptyPlaceholder)}\n" +
                     $"Global prohibited roles: {(rrmsg.GlobalProhibitedRoles.Any() ? string.Join(", ", rrmsg.GlobalProhibitedRoles.Select(x => x.Mention)) : emptyPlaceholder)}")
@@ -85,7 +83,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
 
             if (!rrmsg.EmoteRolePairs.Any())
                 embed.WithFooter($"This reaction-role message does not have any emote-role pairs.\n" +
-                    $"Use {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "addpair [emote] [role]", _index, false)} to add emote-role pairs.");
+                    $"Use {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "addpair")} to add emote-role pairs.");
 
             return embed;
         }

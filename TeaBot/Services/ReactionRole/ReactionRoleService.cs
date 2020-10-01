@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TeaBot.ReactionCallbackCommands.ReactionRole;
 
 namespace TeaBot.Services.ReactionRole
@@ -21,7 +23,7 @@ namespace TeaBot.Services.ReactionRole
         /// <summary>
         ///     Displayed reaction-role messages. The key is the message ID.
         /// </summary>
-        private readonly Dictionary<ulong, ReactionRoleMessage> reactionRoleCallbacks = new Dictionary<ulong, ReactionRoleMessage>();
+        private readonly Dictionary<ulong, ReactionRoleMessage> displayedRrmsgs = new Dictionary<ulong, ReactionRoleMessage>();
 
         public ReactionRoleService(DatabaseService database, DiscordSocketClient client)
         {
@@ -35,6 +37,8 @@ namespace TeaBot.Services.ReactionRole
             _client.LeftGuild += LeftGuild;
             _client.MessageDeleted += MessageDeleted;
             _client.RoleDeleted += RoleDeleted;
+            _client.RoleUpdated += RoleUpdated;
+            _client.GuildMemberUpdated += GuildMemberUpdated;
         }
 
         private object GetIndexForParameter(int? index)
@@ -43,6 +47,16 @@ namespace TeaBot.Services.ReactionRole
                 return index.Value;
             else
                 return DBNull.Value;
+        }
+
+        public RawReactionRoleMessage DeserealizeReactionRoleMessage(string json)
+        {
+            JObject jobj = JObject.Parse(json);
+
+            if ((bool)jobj["iscustom"]) 
+                return JsonConvert.DeserializeObject<RawReactionRoleMessage>(json);
+            else
+                return JsonConvert.DeserializeObject<RawFullReactionRoleMessage>(json);
         }
 
         /// <summary>
@@ -60,10 +74,10 @@ namespace TeaBot.Services.ReactionRole
                 throw new ArgumentException("Cannot add reaction callback to a null message.");
 
             // Delete the previous message if it is found
-            if (reactionRoleCallbacks.Values.FirstOrDefault(x => x.RRID == rrmsg.RRID && x.Channel.Id != rrmsg.Channel.Id) is FullReactionRoleMessage rrtemp)
+            if (displayedRrmsgs.Values.FirstOrDefault(x => x.RRID == rrmsg.RRID && x.Message.Channel.Id != rrmsg.Message.Channel.Id) is FullReactionRoleMessage rrtemp)
                 await rrtemp.TryDeleteMessageAsync();
 
-            reactionRoleCallbacks[message.Id] = rrmsg;
+            displayedRrmsgs[message.Id] = rrmsg;
         }
 
         /// <summary>
@@ -72,10 +86,48 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="message">The message to remove callback from.</param>
         public async Task RemoveReactionCallbackAsync(IUserMessage message)
         {
-            if (reactionRoleCallbacks.GetValueOrDefault(message.Id) is FullReactionRoleMessage frrmsg)
+            if (displayedRrmsgs.GetValueOrDefault(message.Id) is FullReactionRoleMessage frrmsg)
                 await frrmsg.TryDeleteMessageAsync();
 
-            reactionRoleCallbacks.Remove(message.Id);
+            displayedRrmsgs.Remove(message.Id);
+        }
+
+        public async Task InitCallbacksAndLimitsAsync()
+        {
+            string query = @"
+            SELECT reaction_role_messages.get_reaction_role_message(rrid) 
+            FROM reaction_role_messages.reaction_roles rr
+            WHERE rr.channelid IS NOT NULL
+            AND rr.messageid IS NOT NULL;
+
+            SELECT reaction_role_messages.get_reaction_limit(limitid)
+            FROM reaction_role_messages.reaction_limits
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync()) {
+                var rawrrmsg = DeserealizeReactionRoleMessage(reader.GetString(0));
+
+                var rrmsg = await ReactionRoleMessage.CreateAsync(this, rawrrmsg);
+
+                if (rrmsg is null || rrmsg.Message is null)
+                    continue;
+
+                displayedRrmsgs[rrmsg.Message.Id] = rrmsg;
+            }
+
+            await reader.NextResultAsync();
+
+            while (await reader.ReadAsync())
+            {
+                ReactionLimits rl = JsonConvert.DeserializeObject<ReactionLimits>(reader.GetString(0));
+
+                reactionLimits[rl.LimitId] = rl;
+            }
+
+            await reader.CloseAsync();
         }
     }
 }

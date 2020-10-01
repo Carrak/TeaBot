@@ -99,7 +99,7 @@ namespace TeaBot.Main
             TeaEssentials.Ready = false;
 
             Logger.Log("Services", "Initializing ReactionRoleService");
-            await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAsync();
+            await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAndLimitsAsync();
             Logger.Log("Services", "Initialized ReactionRoleService");
 
             TeaEssentials.Ready = true;
