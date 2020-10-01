@@ -173,21 +173,18 @@ namespace TeaBot.Main
                         log.Append($"In {sf.GetFileName()}\nAt line {line}\n");
                     }
 
-                    string exmsg = executeResult.Exception.Message;
-
                     embed.WithColor(Color.Red)
                         .WithTitle($"Command exception")
                         .WithAuthor(_client.CurrentUser)
                         .WithDescription(log.ToString())
                         .WithFooter(footer)
-                        .AddField(executeResult.Exception.GetType().Name, exmsg.Substring(0, Math.Min(exmsg.Length, 1024)));
+                        .AddField(executeResult.Exception.GetType().Name, executeResult.Exception.Message.Substring(0, Math.Min(executeResult.Exception.Message.Length, 1024)));
 
                     // Add all inner exceptions
                     var currentException = executeResult.Exception.InnerException;
                     while (currentException != null)
                     {
-                        string cexmsg = currentException.Message;
-                        embed.AddField(currentException.GetType().Name, cexmsg.Substring(0, Math.Min(cexmsg.Length, 1024)));
+                        embed.AddField(currentException.GetType().Name, currentException.Message.Substring(0, Math.Min(currentException.Message.Length, 1024)));
                         currentException = currentException.InnerException;
                     }
 
