@@ -15,6 +15,8 @@ namespace TeaBot.Services
         /// </summary>
         private NpgsqlConnection Connection { get; set; }
 
+        private string ConnectionString { get; set; }
+
         /// <summary>
         ///     Prefixes for guilds.
         /// </summary>
@@ -31,6 +33,8 @@ namespace TeaBot.Services
         /// <param name="connectionString">The connenction string to use to open connection.</param>
         public async Task InitAsync(string connectionString)
         {
+            ConnectionString = connectionString;
+            
             // Open connection
             Connection = new NpgsqlConnection(connectionString);
             await Connection.OpenAsync();
@@ -101,9 +105,16 @@ namespace TeaBot.Services
         /// </summary>
         /// <param name="query">The query to use in the command</param>
         /// <returns>An instance of an NpgsqlCommand with a set query</returns>
-        public NpgsqlCommand GetCommand(string query)
+        public NpgsqlCommand GetCommand(string query, bool newConnection = false)
         {
-            return new NpgsqlCommand(query, Connection);
+            if (newConnection)
+            {
+                NpgsqlConnection conn = new NpgsqlConnection(ConnectionString);
+                conn.Open();
+                return new NpgsqlCommand(query, conn);
+            }
+            else
+                return new NpgsqlCommand(query, Connection);
         }
 
         /// <summary>
