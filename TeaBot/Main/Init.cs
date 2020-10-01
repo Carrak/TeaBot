@@ -75,12 +75,7 @@ namespace TeaBot.Main
             string token = config["token"].ToString();
 
             // Init services
-            Logger.Log("Services", "Initializing Rule34BlacklistService");
             await _services.GetRequiredService<Rule34BlacklistService>().InitDefaultBlacklistAsync();
-            Logger.Log("Services", "Initialized Rule34BlacklistService");
-            Logger.Log("Services", "Initializing MessageHandler");
-            await _services.GetRequiredService<MessageHandler>().InitAsync();
-            Logger.Log("Services", "Initialized MessageHandler");
             await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
 
             // Login and start
