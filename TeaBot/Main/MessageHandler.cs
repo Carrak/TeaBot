@@ -33,6 +33,9 @@ namespace TeaBot.Main
             _services = services;
             _database = database;
             _support = support;
+
+            _client.MessageReceived += HandleMessagesAsync;
+            _commands.CommandExecuted += HandleCommandExecuted;
         }
 
         /// <summary>
@@ -40,9 +43,6 @@ namespace TeaBot.Main
         /// </summary>
         public async Task InstallCommandsAsync()
         {
-            _client.MessageReceived += HandleMessagesAsync;
-            _commands.CommandExecuted += HandleCommandExecuted;
-
             _commands.AddTypeReader<IEmote>(new IEmoteTypeReader());
             _commands.AddTypeReader<Color>(new ColorTypeReader());
 
