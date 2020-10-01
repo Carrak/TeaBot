@@ -143,7 +143,8 @@ namespace TeaBot.Modules
             embed.WithColor(TeaEssentials.MainColor)
                 .WithTitle("Reaction-role messages for this server")
                 .WithDescription(rrmsgs.Count == 0 ? $"None yet! Create a reaction-role message using {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "create")}." : string.Join("\n\n", rrmsgsDescriptions))
-                .AddField("Limits", string.Join("\n\n", limitsDescriptions))
+                .AddField("Limits", limitsDescriptions.Count > 0 ? string.Join("\n\n", limitsDescriptions) : $"None yet! Set a limit to a message using {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "limit")} " +
+                $"or chain limits between multiple messages using {ReactionRoleServiceMessages.ReactionRoleMessageCommandString(Context.Prefix, "chainlimit")}")
                 .WithFooter($"Use {Context.Prefix}rr info [index] to see detailed info about a reaction-role message");
 
             await ReplyAsync(embed: embed.Build());
