@@ -38,7 +38,7 @@ namespace TeaBot.Modules
 
         [Command("say")]
         [Summary("Make the bot say something!")]
-        [Note("This command does not work if a message contains a ping")]
+        [Note("If you try to do an everyone ping through this, I have bad news for you.")]
         [Ratelimit(3)]
         public async Task Say(
             [Summary("The text to repeat.")][Remainder] string text
