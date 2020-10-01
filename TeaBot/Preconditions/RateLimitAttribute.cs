@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -43,7 +42,7 @@ namespace TeaBot.Preconditions
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             DateTime now = DateTime.UtcNow;
-            ulong key = context.User.Id;
+            ulong key = context.Channel.Id;
 
             CommandTimeout timeout = _invokeTracker.TryGetValue(key, out CommandTimeout t)
                 && now - t.FirstInvoke < InvokeLimitPeriod
