@@ -11,6 +11,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
+using TeaBot.Preconditions;
 using TeaBot.Services;
 using TeaBot.TypeReaders;
 using TeaBot.Utilities;
@@ -23,13 +24,15 @@ namespace TeaBot.Main
         private readonly CommandService _commands;
         private readonly IServiceProvider _services;
         private readonly DatabaseService _database;
+        private readonly SupportService _support;
 
-        public MessageHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client, DatabaseService database)
+        public MessageHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client, DatabaseService database, SupportService support)
         {
             _client = client;
             _commands = commands;
             _services = services;
             _database = database;
+            _support = support;
         }
 
         /// <summary>
@@ -115,7 +118,7 @@ namespace TeaBot.Main
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
 
-                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{command.Name}{(command.Parameters.Any() ? $" {string.Join(" ", command.Parameters.Select(x => x.IsOptional ? $"<{x.Name}>" : $"[{x.Name}]"))}" : "")}`";
+                    string toSend = $"{result.ErrorReason}\n\nUsage: `{_support.GetCommandHeader(command)}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
