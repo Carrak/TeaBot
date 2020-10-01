@@ -185,6 +185,36 @@ namespace TeaBot.Main
                         currentException = currentException.InnerException;
                     }
 
+                    List<string> splitExceptionData = new List<string>();
+
+                    // Add exception data (and split it into groups to fit it into multiple fields
+                    List<string> temp = new List<string>();
+                    string splitter = "\n";
+                    foreach (var data in executeResult.Exception.Data.Cast<System.Collections.DictionaryEntry>())
+                    {
+                        string toAdd = $"{data.Key}: {data.Value}";
+
+                        if (toAdd.Length > 1024)
+                            continue;
+
+                        if (temp.Sum(x => x.Length) + toAdd.Length + (temp.Count - 1) * splitter.Length < 1024)
+                            temp.Add(toAdd);
+                        else
+                        {
+                            splitExceptionData.Add(string.Join(splitter, temp));
+                            temp.Clear();
+                            temp.Add(toAdd);
+                        }
+                    }
+
+                    // Add the remains (if any are present)
+                    if (temp.Count > 0)
+                        splitExceptionData.Add(string.Join(splitter, temp));
+
+                    // Add a field for each exception data fraction
+                    for (int i = 0; i < splitExceptionData.Count; i++)
+                        embed.AddField($"Exception data {i+1}", splitExceptionData[i]);
+
                     // Message info
                     embed.AddField("Message content", context.Message.Content, true)
                         .AddField("Message URL", $"[Take me to the message!]({context.Message.GetJumpUrl()})", true);
