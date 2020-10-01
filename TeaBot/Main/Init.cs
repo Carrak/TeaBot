@@ -50,14 +50,14 @@ namespace TeaBot.Main
                 .AddSingleton<InteractiveService>()
                 .AddSingleton<MessageHandler>()
                 .AddSingleton<DatabaseService>()
-                .AddSingleton<TeaService>()
+                .AddSingleton<SupportService>()
                 .AddSingleton<Rule34BlacklistService>()
                 .AddSingleton<ReactionRoleService>()
                 .BuildServiceProvider();
 
             // Set services
             _database = _services.GetRequiredService<DatabaseService>();
-            _tea = _services.GetRequiredService<TeaService>();
+            _support = _services.GetRequiredService<SupportService>();
 
             // Register events
             _client.Log += Log;
