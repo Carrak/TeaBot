@@ -38,7 +38,7 @@ namespace TeaBot.Utilities
 
             if (timePassed.TotalSeconds < 1)
                 return "Right now";
-            
+
             DateTime span = DateTime.MinValue + timePassed;
 
             List<string> thresholds = new List<string>();

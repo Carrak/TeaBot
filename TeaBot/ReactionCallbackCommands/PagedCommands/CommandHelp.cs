@@ -17,7 +17,7 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
     /// </summary>
     class CommandHelp : SingleItemPagedMessage<CommandInfo>
     {
-        private readonly string _prefix; 
+        private readonly string _prefix;
         private readonly SupportService _tea;
 
         public CommandHelp(InteractiveService interactive,
@@ -40,9 +40,9 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
             embed.WithTitle($"{_prefix}{_tea.GetCommandHeader(cmd)}")
                 .WithDescription($"Module [{cmd.Module.Name}]")
                 .AddField("Description", cmd.Summary?.Replace("{prefix}", _prefix) ?? "No description for this command yet!")
-                .AddField("Parameters", 
+                .AddField("Parameters",
                 cmd.Parameters.Count > 0 ?
-                string.Join("\n\n", cmd.Parameters.Where(x => !x.Type.IsEnum).Select((param, index) => 
+                string.Join("\n\n", cmd.Parameters.Where(x => !x.Type.IsEnum).Select((param, index) =>
                 $"**{index + 1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{param.Summary?.Replace("{prefix}", _prefix) ?? "No description for this parameter yet!"}")) :
                 $"This command does not have any parameters. Its usage would be `{_prefix}{_tea.GetFullCommandName(cmd)}` without any additional parameters.")
                 .AddField("Cooldown", (cmd.Preconditions.FirstOrDefault(x => x is RatelimitAttribute) as RatelimitAttribute)?.InvokeLimitPeriod.TotalSeconds.ToString() + " seconds" ?? "-")

@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using TeaBot.Main;
-using Discord.Commands;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
 namespace TeaBot.Services
 {

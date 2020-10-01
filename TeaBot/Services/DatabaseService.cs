@@ -34,7 +34,7 @@ namespace TeaBot.Services
         public async Task InitAsync(string connectionString)
         {
             ConnectionString = connectionString;
-            
+
             // Open connection
             Connection = new NpgsqlConnection(connectionString);
             await Connection.OpenAsync();

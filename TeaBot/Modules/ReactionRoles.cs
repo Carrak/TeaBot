@@ -793,7 +793,7 @@ namespace TeaBot.Modules
                 }
             }
         }
-        
+
         [Name("Role restrictions")]
         public class RoleRestrictions : TeaInteractiveBase
         {

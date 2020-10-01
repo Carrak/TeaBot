@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using Discord.Net;
 using Discord.WebSocket;
 using TeaBot.Attributes;
 using TeaBot.Commands;
-using TeaBot.Preconditions;
 using TeaBot.Services;
 using TeaBot.TypeReaders;
 using TeaBot.Utilities;
@@ -216,7 +214,7 @@ namespace TeaBot.Main
 
                     // Add a field for each exception data fraction
                     for (int i = 0; i < splitExceptionData.Count; i++)
-                        embed.AddField($"Exception data {i+1}", splitExceptionData[i]);
+                        embed.AddField($"Exception data {i + 1}", splitExceptionData[i]);
 
                     // Message info
                     embed.AddField("Message content", context.Message.Content, true)
@@ -241,8 +239,8 @@ namespace TeaBot.Main
                     // Send the logs to the channel
                     if (_client.GetChannel(TeaEssentials.LogChannelId) is ITextChannel logChannel)
                     {
-                        try 
-                        { 
+                        try
+                        {
                             foreach (string stacktrace in splitStacktrace)
                                 await logChannel.SendMessageAsync($"```{stacktrace}```");
                             await logChannel.SendMessageAsync(embed: embed.Build());

@@ -15,7 +15,7 @@ namespace TeaBot.Services.ReactionRole
             string query = @"
             SELECT reaction_role_messages.get_reaction_limit(@lid);
             ";
-            
+
             await using var cmd = _database.GetCommand(query);
             cmd.Parameters.AddWithValue("lid", limitid);
             await using var reader = await cmd.ExecuteReaderAsync();

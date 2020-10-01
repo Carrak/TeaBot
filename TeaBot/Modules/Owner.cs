@@ -10,11 +10,11 @@ using Discord.Commands;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Newtonsoft.Json.Linq;
 using Npgsql;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Services;
-using Newtonsoft.Json.Linq;
 using TeaBot.Webservices.Rule34;
 
 namespace TeaBot.Modules

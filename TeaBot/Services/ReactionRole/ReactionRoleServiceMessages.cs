@@ -1,5 +1,5 @@
-﻿using Npgsql;
-using System;
+﻿using System;
+using Npgsql;
 
 namespace TeaBot.Services.ReactionRole
 {

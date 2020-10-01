@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -40,10 +40,12 @@ namespace TeaBot.Main
             {
                 AlwaysDownloadUsers = true,
             });
+
             _commands = new CommandService(new CommandServiceConfig()
             {
                 CaseSensitiveCommands = false,
             });
+
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
@@ -58,6 +60,8 @@ namespace TeaBot.Main
             // Set services
             _database = _services.GetRequiredService<DatabaseService>();
             _support = _services.GetRequiredService<SupportService>();
+
+            ReactionRoleServiceMessages.Init(_support);
 
             // Register events
             _client.Log += Log;
@@ -198,11 +202,11 @@ namespace TeaBot.Main
             {
                 try
                 {
-                   // Send the stacktrace
-                   foreach (string stacktrace in splitStacktrace)
+                    // Send the stacktrace
+                    foreach (string stacktrace in splitStacktrace)
                         await logChannel.SendMessageAsync($"```{stacktrace}```");
-                   // Send the exception info
-                   await logChannel.SendMessageAsync(embed: embed.Build());
+                    // Send the exception info
+                    await logChannel.SendMessageAsync(embed: embed.Build());
                 }
                 // Discard missing permissions
                 catch (HttpException) { }

@@ -14,16 +14,17 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
     {
         public readonly ReactionRoleMessageData Data;
 
-        public new Dictionary<IEmote, FullEmoteRolePair> EmoteRolePairs { 
+        public new Dictionary<IEmote, FullEmoteRolePair> EmoteRolePairs
+        {
             get
             {
                 return base.EmoteRolePairs.Values.Cast<FullEmoteRolePair>().ToDictionary(x => x.Emote, x => x);
-            } 
+            }
         }
 
         public FullReactionRoleMessage(ReactionRoleMessage rrmsg, ReactionRoleMessageData data) : base(rrmsg.RRService, rrmsg.RRID, rrmsg.LimitId, rrmsg.Guild, rrmsg.Message, rrmsg.EmoteRolePairs, rrmsg.GlobalAllowedRoles, rrmsg.GlobalProhibitedRoles)
         {
-            Data = data ?? new ReactionRoleMessageData(null, null, null);         
+            Data = data ?? new ReactionRoleMessageData(null, null, null);
         }
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public Embed ConstructEmbed()
         {
             var embed = new EmbedBuilder();
-            
+
             List<string> emoteRolePairs = new List<string>();
 
             foreach (var pair in EmoteRolePairs.Values)
@@ -93,7 +94,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         {
             var embed = ConstructEmbed();
 
-            switch((Message is null, channel is null))
+            switch ((Message is null, channel is null))
             {
                 case (true, true):
                     return;

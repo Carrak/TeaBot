@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using TeaBot.ReactionCallbackCommands.ReactionRole;
-using System.Collections.Generic;
 
 namespace TeaBot.Services.ReactionRole
 {

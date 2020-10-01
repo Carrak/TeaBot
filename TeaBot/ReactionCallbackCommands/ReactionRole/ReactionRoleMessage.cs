@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
-using Discord.Rest;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using TeaBot.Services.ReactionRole;
 
 namespace TeaBot.ReactionCallbackCommands.ReactionRole
@@ -170,7 +168,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
 
             if (rawrrmsg is RawFullReactionRoleMessage frawrrmsg)
                 return new FullReactionRoleMessage(baseMessage, frawrrmsg.Data);
-            else 
+            else
                 return baseMessage;
         }
 
@@ -239,7 +237,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 var prohibitedRoleIds = erp.ProhibitedRoles.Select(x => x.Id);
                 var globalAllowedRoleIds = GlobalAllowedRoles.Select(x => x.Id);
                 var globalProhibitedRoleIds = GlobalProhibitedRoles.Select(x => x.Id);
-                
+
                 // Check if:
                 // 1. The limit is present => the amount of roles the user has from the offered list exceeds the limit
                 // 2. If the user has any global prohibited roles
@@ -320,7 +318,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public IEnumerable<IRole> AllowedRoles { get; }
         public IEnumerable<IRole> ProhibitedRoles { get; }
 
-        public bool Blocked { get; set; } 
+        public bool Blocked { get; set; }
 
         public EmoteRolePair(int pairid, IEmote emote, IRole role, IEnumerable<IRole> allowedRoles, IEnumerable<IRole> prohibitedRoles, bool blocked)
         {

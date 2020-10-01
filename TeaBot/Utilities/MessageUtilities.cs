@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.Net;
 using Discord.WebSocket;
 
 namespace TeaBot.Utilities
@@ -54,7 +53,7 @@ namespace TeaBot.Utilities
             // Check if the message is valid
             if (!ulong.TryParse(match.Groups["Message"].Value, out var messageid))
                 throw new FormatException("Invalid message ID.");
-            
+
             // Check if the channel exists
             if (!(context.Guild.GetTextChannel(channelid) is ITextChannel channel))
                 throw new ChannelNotFoundException($"Channel with ID `{channelid}` does not exist.");
@@ -64,8 +63,8 @@ namespace TeaBot.Utilities
         }
     }
 
-    class ChannelNotFoundException : Exception 
-    { 
-        public ChannelNotFoundException(string message) : base(message) { }    
+    class ChannelNotFoundException : Exception
+    {
+        public ChannelNotFoundException(string message) : base(message) { }
     }
 }

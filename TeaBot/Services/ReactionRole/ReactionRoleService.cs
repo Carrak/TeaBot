@@ -53,7 +53,7 @@ namespace TeaBot.Services.ReactionRole
         {
             JObject jobj = JObject.Parse(json);
 
-            if ((bool)jobj["iscustom"]) 
+            if ((bool)jobj["iscustom"])
                 return JsonConvert.DeserializeObject<RawReactionRoleMessage>(json);
             else
                 return JsonConvert.DeserializeObject<RawFullReactionRoleMessage>(json);
@@ -107,7 +107,8 @@ namespace TeaBot.Services.ReactionRole
             await using var cmd = _database.GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
 
-            while (await reader.ReadAsync()) {
+            while (await reader.ReadAsync())
+            {
                 var rawrrmsg = DeserealizeReactionRoleMessage(reader.GetString(0));
 
                 var rrmsg = await ReactionRoleMessage.CreateAsync(this, rawrrmsg);
