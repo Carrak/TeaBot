@@ -22,7 +22,7 @@ namespace TeaBot.Modules
     [Name("ReactionRole")]
     [Group(Group)]
     [RequireContext(ContextType.Guild)]
-    [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireUserPermission(GuildPermission.Administrator, ErrorMessage = "You need to be an administrator to manage the reaction-role system.")]
     [Alias("rr")]
     [Summary("Commands for managing the reaction-role system.\nFor help on how to set this up, refer to [this guide](https://docs.google.com/document/d/1s7uhKmnxKj25CaB0-92jjikhCXw_Z_P2NmPdRGeyBls).")]
     public class ReactionRoles : TeaInteractiveBase
