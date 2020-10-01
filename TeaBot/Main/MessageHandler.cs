@@ -47,6 +47,9 @@ namespace TeaBot.Main
             _commands.AddTypeReader<Color>(new ColorTypeReader());
 
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+
+            //foreach(var cmd in _commands.Commands.Where(x => !x.Preconditions.Any(attr => attr is RatelimitAttribute)))
+            //    Console.WriteLine($"{cmd.Module.Name} // {cmd.Name} has no cooldown set.");
         }
 
         /// <summary>
