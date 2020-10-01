@@ -18,12 +18,12 @@ namespace TeaBot.Modules
     public class Support : TeaInteractiveBase
     {
         private readonly CommandService _commandService;
-        private readonly TeaService _tea;
+        private readonly SupportService _support;
 
-        public Support(CommandService commandService, TeaService tea)
+        public Support(CommandService commandService, SupportService support)
         {
             _commandService = commandService;
-            _tea = tea;
+            _support = support;
         }
 
         [Command("stats")]
@@ -98,7 +98,7 @@ namespace TeaBot.Modules
                 (result.Commands.Where(x => !x.Command.Module.Attributes.Any(attr => attr is HelpCommandIgnoreAttribute)) is IEnumerable<CommandMatch> commands) &&
                 commands.Any())
             {
-                var commandHelp = new CommandHelp(Interactive, Context, commands.Select(cm => cm.Command));
+                var commandHelp = new CommandHelp(Interactive, _support, Context, commands.Select(cm => cm.Command));
                 await commandHelp.DisplayAsync();
             }
             else
@@ -137,7 +137,7 @@ namespace TeaBot.Modules
         [Ratelimit(3)]
         public async Task Info()
         {
-            var embed = await _tea.GetInfoEmbedAsync(Context.Prefix);
+            var embed = await _support.GetInfoEmbedAsync(Context.Prefix);
             await ReplyAsync(embed: embed);
         }
 

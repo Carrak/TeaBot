@@ -2,23 +2,23 @@
 using Discord;
 using Discord.WebSocket;
 using TeaBot.Main;
-
 namespace TeaBot.Services
 {
-    public class TeaService
+    public class SupportService
     {
-        /// <summary>
-        ///     Discord client to be used by utility methods.
-        /// </summary>
         private readonly DiscordSocketClient _client;
+        private readonly CommandService _commands;
 
-        public TeaService(DiscordSocketClient client)
+        public SupportService(DiscordSocketClient client, CommandService commands)
         {
             _client = client;
+            _commands = commands;
         }
 
+        public string FormatCommandForHelp(ModuleInfo module, CommandInfo command) => $"`{GetFullCommandName(command)}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`";
+
         /// <summary>
-        /// Constructs a predetermined embed which has the primary information about the bot.
+        ///     Constructs a predetermined embed which has the primary information about the bot.
         /// </summary>
         /// <param name="prefix">Prefix used in the embed</param>
         /// <returns>Info embed</returns>
@@ -44,5 +44,3 @@ namespace TeaBot.Services
 
             return embed.Build();
         }
-    }
-}

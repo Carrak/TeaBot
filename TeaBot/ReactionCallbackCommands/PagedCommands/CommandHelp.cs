@@ -16,13 +16,16 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands
     /// </summary>
     class CommandHelp : SingleItemPagedMessage<CommandInfo>
     {
-        private readonly string _prefix;
+        private readonly string _prefix; 
+        private readonly SupportService _tea;
 
         public CommandHelp(InteractiveService interactive,
+            SupportService tea,
             TeaCommandContext context,
             IEnumerable<CommandInfo> commands) : base(interactive, context, commands)
         {
-            _prefix = (context as TeaCommandContext).Prefix;
+            _prefix = context.Prefix;
+            _tea = tea;
         }
 
         /// <inheritdoc/>

@@ -28,7 +28,7 @@ namespace TeaBot.Main
 
         // Services
         private DatabaseService _database;
-        private TeaService _tea;
+        private SupportService _support;
 
         /// <summary>
         ///    Establishes the database connection, instantiates the Discord client, commands and services, registers a few events and starts the bot. 
@@ -215,14 +215,14 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Sends the embed created by <see cref="TeaService.GetInfoEmbedAsync(string)"/> to the system channel of the joined guild if it is present.
+        ///     Sends the embed created by <see cref="SupportService.GetInfoEmbedAsync(string)"/> to the system channel of the joined guild if it is present.
         /// </summary>
         private async Task OnJoin(SocketGuild guild)
         {
             if (guild.SystemChannel != null)
             {
                 string prefix = await _database.GetOrAddPrefixAsync(guild.Id);
-                var embed = await _tea.GetInfoEmbedAsync(prefix);
+                var embed = await _support.GetInfoEmbedAsync(prefix);
                 await guild.SystemChannel.SendMessageAsync(embed: embed);
             }
         }
