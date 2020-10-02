@@ -199,6 +199,6 @@ namespace TeaBot.Modules
         ///     Sorts out modules that are meant to be ignored or that are disabled in the guild.
         /// </summary>
         /// <returns>Collection of modules</returns>
-        private IEnumerable<ModuleInfo> GetDisplayableModules() => _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module.Name.ToLower()));
+        private IEnumerable<ModuleInfo> GetDisplayableModules() => _commandService.Modules.Where(module => !module.Attributes.Any(attribute => attribute is HelpCommandIgnoreAttribute) && !Context.DisabledModules.Contains(module.Name.ToLower()) && !module.IsSubmodule);
     }
 }
