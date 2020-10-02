@@ -19,6 +19,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("gid", (long)guildId);
 
             await cmd.ExecuteNonQueryAsync();
+            await cmd.Connection.CloseAsync();
         }
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("cid", (long)channelId);
 
             await cmd.ExecuteNonQueryAsync();
+            await cmd.Connection.CloseAsync();
         }
 
         /// <summary>
@@ -54,6 +56,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("cid", (long)channelId);
 
             await cmd.ExecuteNonQueryAsync();
+            await cmd.Connection.CloseAsync();
         }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace TeaBot.Services.ReactionRole
             cmd.Parameters.AddWithValue("rid", (long)roleId);
 
             await cmd.ExecuteNonQueryAsync();
+            await cmd.Connection.CloseAsync();
         }
 
     }
