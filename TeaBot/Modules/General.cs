@@ -210,7 +210,7 @@ namespace TeaBot.Modules
         }
 
         [Command("urbandictionary")]
-        [Alias("ud", "urban", "define")]
+        [Alias("ud", "urban", "define", "dictionary", "definition")]
         [Summary("Finds the definitions of a word or a word combination on https://www.urbandictionary.com")]
         [Ratelimit(3)]
         public async Task UrbanDictonary(
