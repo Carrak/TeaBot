@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using TeaBot.ReactionCallbackCommands.ReactionRole;
+using Discord;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -12,8 +13,13 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="guildId">The ID of the guild.</param>
         public async Task RemoveGuildFromDbAsync(ulong guildId)
         {
-            string query = "DELETE FROM reaction_role_messages.reaction_roles WHERE guildid=@gid; " +
-                        "DELETE FROM reaction_role_messages.emote_role_pairs WHERE rrid IN (SELECT rrid FROM reaction_role_messages.reaction_roles WHERE guildid=@gid)";
+            foreach (var rr in displayedRrmsgs.Values.Where(x => (x.Message.Channel as IGuildChannel).Guild.Id  == guildId))
+                displayedRrmsgs.Remove(rr.Message.Id);
+
+            string query = @"
+            DELETE FROM reaction_role_messages.reaction_roles WHERE guildid=@gid;
+            ";
+
             await using var cmd = _database.GetCommand(query, true);
 
             cmd.Parameters.AddWithValue("gid", (long)guildId);
@@ -74,8 +80,8 @@ namespace TeaBot.Services.ReactionRole
 
             string query = @"
             DELETE FROM reaction_role_messages.emote_role_pairs WHERE roleid=@rid;
-            DELETE FROM reaction_role_messages.allowed_roles WHERE roleid=@rid;
-            DELETE FROM reaction_role_messages.prohibited_roles WHERE roleid=@rid;
+            DELETE FROM reaction_role_messages.role_limitations WHERE roleid=@rid;
+            DELETE FROM reaction_role_messages.global_role_limitations WHERE roleid=@rid;
             ";
             await using var cmd = _database.GetCommand(query, true);
 
