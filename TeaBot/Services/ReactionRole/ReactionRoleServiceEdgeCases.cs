@@ -80,8 +80,8 @@ namespace TeaBot.Services.ReactionRole
 
             string query = @"
             DELETE FROM reaction_role_messages.emote_role_pairs WHERE roleid=@rid;
-            DELETE FROM reaction_role_messages.role_limitations WHERE roleid=@rid;
-            DELETE FROM reaction_role_messages.global_role_limitations WHERE roleid=@rid;
+            DELETE FROM reaction_role_messages.role_restrictions WHERE roleid=@rid;
+            DELETE FROM reaction_role_messages.global_role_restrictions WHERE roleid=@rid;
             ";
             await using var cmd = _database.GetCommand(query, true);
 
