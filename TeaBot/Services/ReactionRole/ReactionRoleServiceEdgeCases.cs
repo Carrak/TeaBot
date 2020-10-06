@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using TeaBot.ReactionCallbackCommands.ReactionRole;
 using Discord;
+using TeaBot.ReactionCallbackCommands.ReactionRole;
 
 namespace TeaBot.Services.ReactionRole
 {
@@ -13,7 +13,7 @@ namespace TeaBot.Services.ReactionRole
         /// <param name="guildId">The ID of the guild.</param>
         public async Task RemoveGuildFromDbAsync(ulong guildId)
         {
-            foreach (var rr in displayedRrmsgs.Values.Where(x => (x.Message.Channel as IGuildChannel).Guild.Id  == guildId))
+            foreach (var rr in displayedRrmsgs.Values.Where(x => (x.Message.Channel as IGuildChannel).Guild.Id == guildId))
                 displayedRrmsgs.Remove(rr.Message.Id);
 
             string query = @"
