@@ -547,8 +547,8 @@ namespace TeaBot.Modules
 
                 try
                 {
-
                     await _rrservice.AddPairAsync(Context.Guild, index, emote, role);
+                    await ReplyAsync($"Pair {emote} - `{role.Name}` has been added to {ReactionRoleServiceMessages.SpecifyReactionRoleMessage(index)}.");
                 }
                 catch (PostgresException pe)
                 {
