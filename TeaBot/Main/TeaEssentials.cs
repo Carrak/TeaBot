@@ -24,7 +24,7 @@ namespace TeaBot.Main
         public static Color MainColor { get; } = Color.Green;
 
         /// <summary>
-        ///     The ID of a channel for exception logging.
+        ///     The ID of the channel for exception logging.
         /// </summary>
         public static ulong LogChannelId = 726427607788421132;
 

@@ -70,7 +70,7 @@ namespace TeaBot.Main
             _client.JoinedGuild += OnJoin;
             _client.Ready += Ready;
 
-            // Retrieve the token and the pgsql db connection string
+            // Retrieve the config
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
 
             // Retrieve connection string and init db connection
@@ -91,6 +91,7 @@ namespace TeaBot.Main
             // Start the uptime stopwatch
             TeaEssentials.BotStarted = DateTime.UtcNow;
 
+            // Update status
             await _client.SetGameAsync("Fate | tea help", type: ActivityType.Watching);
 
             // Make sure it doesn't die
