@@ -30,6 +30,8 @@ namespace TeaBot.Main
         private DatabaseService _database;
         private SupportService _support;
 
+        private bool firstReady = true;
+
         /// <summary>
         ///    Establishes the database connection, instantiates the Discord client, commands and services, registers a few events and starts the bot. 
         /// </summary>
@@ -100,13 +102,8 @@ namespace TeaBot.Main
         /// </summary>
         private async Task Ready()
         {
-            TeaEssentials.Ready = false;
-
-            Logger.Log("Services", "Initializing ReactionRoleService");
-            await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAndLimitsAsync();
-            Logger.Log("Services", "Initialized ReactionRoleService");
-
-            TeaEssentials.Ready = true;
+            if (firstReady)
+                await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAndLimitsAsync();
         }
 
         /// <summary>

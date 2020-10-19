@@ -56,9 +56,6 @@ namespace TeaBot.Main
         /// <param name="arg">The received message.</param>
         private async Task HandleMessagesAsync(SocketMessage arg)
         {
-            if (!TeaEssentials.Ready)
-                return;
-
             // Return if the message is from a bot
             if (!(arg is SocketUserMessage message) || message.Author.IsBot)
                 return;
