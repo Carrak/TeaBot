@@ -25,7 +25,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         /// <summary>
         ///     Guild the reaction-role mmessage is in.
         /// </summary>
-        public IGuild Guild { get; }
+        public SocketGuild Guild { get; }
 
         /// <summary>
         ///     Discord message this reaction-role message is attached to.
@@ -56,7 +56,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         public ReactionRoleMessage(ReactionRoleService rrservice,
             int rrid,
             int? limitid,
-            IGuild guild,
+            SocketGuild guild,
             IUserMessage message,
             Dictionary<IEmote, EmoteRolePair> pairs,
             IEnumerable<IRole> allowedRoles,
@@ -183,7 +183,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
             {
                 // Change the bot's permissions
                 var channel = Message.Channel as SocketTextChannel;
-                var currentUser = await Guild.GetCurrentUserAsync();
+                var currentUser = Guild.CurrentUser;
                 var cutempperms = channel.GetPermissionOverwrite(currentUser);
                 if (cutempperms.HasValue)
                 {
@@ -221,7 +221,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     Assign the role to the user if it's in <see cref="EmoteRolePairs"/> and if the user meets all criteria.
         /// </summary>
         /// <param name="reaction">Reaction added by the user.</param>
-        public async Task HandleReactionAdded(SocketReaction reaction)
+        public async Task HandleReactionAdded(SocketReaction reaction, SocketGuildUser user)
         {
             if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
@@ -230,7 +230,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                     return;
 
                 // The user who placed the reaction
-                var user = await Guild.GetUserAsync(reaction.User.Value.Id) as SocketGuildUser;
+                //var user = await Guild.GetUserAsync(reaction.UserId) as SocketGuildUser;
 
                 // Allowed and prohibited role IDs
                 var allowedRoleIds = erp.AllowedRoles.Select(x => x.Id);
@@ -276,12 +276,10 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     Remove the role from the user if it's in <see cref="EmoteRolePairs"/> and if the user meets all criteria.
         /// </summary>
         /// <param name="reaction">Reaction removed by the user.</param>
-        public async Task HandleReactionRemoved(SocketReaction reaction)
+        public async Task HandleReactionRemoved(SocketReaction reaction, SocketGuildUser user)
         {
             if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
-                var user = await Guild.GetUserAsync(reaction.User.Value.Id);
-
                 // Allowed and prohibited role IDs
                 var allowedRoleIds = erp.AllowedRoles.Select(x => x.Id);
                 var prohibitedRoleIds = erp.ProhibitedRoles.Select(x => x.Id);
@@ -290,8 +288,8 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 // 1. If the user has any prohibited roles (ones that prevent them from acquiring a role from the list)
                 // 2. If there are any allowed roles => if the user does not have any allowed roles
                 // If either of the conditions is true, cancel all interactions
-                if (user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
-                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
+                if (user.Roles.Any(x => prohibitedRoleIds.Contains(x.Id)) ||
+                    (erp.AllowedRoles.Any() && !user.Roles.Any(x => allowedRoleIds.Contains(x.Id))))
                     return;
 
                 // Try removing the role from the user
