@@ -23,14 +23,24 @@ namespace TeaBot.Services.ReactionRole
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (reaction.User.IsSpecified && !reaction.User.Value.IsBot && displayedRrmsgs.TryGetValue(message.Id, out var rr))
-                await rr.HandleReactionRemoved(reaction);
+            if (displayedRrmsgs.TryGetValue(message.Id, out var rr))
+            {
+                var user = rr.Guild.GetUser(reaction.UserId);
+
+                if (!user.IsBot)
+                    await rr.HandleReactionRemoved(reaction, user);
+            }
         }
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!reaction.User.Value.IsBot && displayedRrmsgs.TryGetValue(message.Id, out var rr))
-                await rr.HandleReactionAdded(reaction);
+            if (displayedRrmsgs.TryGetValue(message.Id, out var rr))
+            {
+                var user = rr.Guild.GetUser(reaction.UserId);
+
+                if (!user.IsBot)
+                    await rr.HandleReactionAdded(reaction, user);
+            }
         }
 
         private async Task RoleUpdated(SocketRole before, SocketRole after)
