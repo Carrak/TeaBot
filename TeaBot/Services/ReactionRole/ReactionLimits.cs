@@ -33,7 +33,7 @@ namespace TeaBot.Services.ReactionRole
             }
         }
 
-        public bool CheckLimitReached(int limitid, IEnumerable<IRole> currentRoles)
+        public bool CheckLimitReached(int limitid, IEnumerable<ulong> currentRoleIds)
         {
             var sharedLimit = reactionLimits.GetValueOrDefault(limitid);
 
@@ -48,7 +48,7 @@ namespace TeaBot.Services.ReactionRole
                     roles.AddRange(rrmsg.EmoteRolePairs.Values.Select(x => x.Role));
             }
 
-            int count = currentRoles.Count(x => roles.Any(y => y.Id == x.Id));
+            int count = currentRoleIds.Count(x => roles.Any(y => y.Id == x));
 
             if (count >= sharedLimit.Limit)
                 return true;
@@ -68,7 +68,6 @@ namespace TeaBot.Services.ReactionRole
         [JsonProperty("rrmsgs")]
         public IEnumerable<int> ReactionRoleMesageRRIDs;
 
-        [JsonConstructor]
         public ReactionLimits(int limitid, int limit, IEnumerable<int> reactionRoleMesages)
         {
             LimitId = limitid;
