@@ -25,7 +25,7 @@ namespace TeaBot.Services.ReactionRole
         {
             if (displayedRrmsgs.TryGetValue(message.Id, out var rr))
             {
-                var user = rr.Guild.GetUser(reaction.UserId);
+                var user = await _client.Rest.GetGuildUserAsync(rr.Guild.Id, reaction.UserId);
 
                 if (!user.IsBot)
                     await rr.HandleReactionRemoved(reaction, user);
@@ -36,7 +36,7 @@ namespace TeaBot.Services.ReactionRole
         {
             if (displayedRrmsgs.TryGetValue(message.Id, out var rr))
             {
-                var user = rr.Guild.GetUser(reaction.UserId);
+                var user = await _client.Rest.GetGuildUserAsync(rr.Guild.Id, reaction.UserId);
 
                 if (!user.IsBot)
                     await rr.HandleReactionAdded(reaction, user);

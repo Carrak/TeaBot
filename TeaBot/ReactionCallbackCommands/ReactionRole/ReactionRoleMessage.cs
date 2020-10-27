@@ -221,7 +221,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     Assign the role to the user if it's in <see cref="EmoteRolePairs"/> and if the user meets all criteria.
         /// </summary>
         /// <param name="reaction">Reaction added by the user.</param>
-        public async Task HandleReactionAdded(SocketReaction reaction, SocketGuildUser user)
+        public async Task HandleReactionAdded(SocketReaction reaction, IGuildUser user)
         {
             if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
@@ -245,19 +245,12 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 // 4  If there are global allowed roles => if the user does not have a global allowed role
                 // 5. If there are any allowed roles => if the user does not have an emote-role pair bound role
                 // If either of the conditions is true, the user is not granted the role
-                if (LimitId.HasValue && RRService.CheckLimitReached(LimitId.Value, user.Roles) ||
-                    user.Roles.Any(x => globalProhibitedRoleIds.Contains(x.Id)) ||
-                    user.Roles.Any(x => prohibitedRoleIds.Contains(x.Id)) ||
-                    (globalAllowedRoleIds.Any() && !user.Roles.Any(x => globalAllowedRoleIds.Contains(x.Id))) ||
-                    (erp.AllowedRoles.Any() && !user.Roles.Any(x => allowedRoleIds.Contains(x.Id))))
+                if (LimitId.HasValue && RRService.CheckLimitReached(LimitId.Value, user.RoleIds) ||
+                    user.RoleIds.Any(x => globalProhibitedRoleIds.Contains(x)) ||
+                    user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
+                    (globalAllowedRoleIds.Any() && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
+                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
                     return;
-                /*
-                user.RoleIds.Any(x => globalProhibitedRoleIds.Contains(x)) ||
-                user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
-                (globalAllowedRoleIds.Any() && !user.RoleIds.Any(x => globalAllowedRoleIds.Contains(x))) ||
-                (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
-                return;
-                */
 
                 // Try to assign the role to the user
                 try
@@ -276,7 +269,7 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
         ///     Remove the role from the user if it's in <see cref="EmoteRolePairs"/> and if the user meets all criteria.
         /// </summary>
         /// <param name="reaction">Reaction removed by the user.</param>
-        public async Task HandleReactionRemoved(SocketReaction reaction, SocketGuildUser user)
+        public async Task HandleReactionRemoved(SocketReaction reaction, IGuildUser user)
         {
             if (EmoteRolePairs.TryGetValue(reaction.Emote, out var erp))
             {
@@ -288,8 +281,8 @@ namespace TeaBot.ReactionCallbackCommands.ReactionRole
                 // 1. If the user has any prohibited roles (ones that prevent them from acquiring a role from the list)
                 // 2. If there are any allowed roles => if the user does not have any allowed roles
                 // If either of the conditions is true, cancel all interactions
-                if (user.Roles.Any(x => prohibitedRoleIds.Contains(x.Id)) ||
-                    (erp.AllowedRoles.Any() && !user.Roles.Any(x => allowedRoleIds.Contains(x.Id))))
+                if (user.RoleIds.Any(x => prohibitedRoleIds.Contains(x)) ||
+                    (erp.AllowedRoles.Any() && !user.RoleIds.Any(x => allowedRoleIds.Contains(x))))
                     return;
 
                 // Try removing the role from the user
