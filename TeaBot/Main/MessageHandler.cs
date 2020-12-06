@@ -116,7 +116,7 @@ namespace TeaBot.Main
                 case CommandError.ParseFailed:
                     var command = _commands.Search(context, argPosition).Commands[0].Command;
 
-                    string toSend = $"{result.ErrorReason}\n\nUsage: `{_support.GetCommandHeader(command)}`";
+                    string toSend = $"{result.ErrorReason}\n\nUsage: `{context.Prefix}{_support.GetCommandHeader(command)}`";
 
                     if (command.Attributes.Where(x => x is NoteAttribute).FirstOrDefault() is NoteAttribute notes)
                     {
