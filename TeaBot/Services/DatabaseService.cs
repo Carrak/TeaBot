@@ -88,15 +88,11 @@ namespace TeaBot.Services
         /// </summary>
         private void ConnectionStateChanged(object sender, StateChangeEventArgs e)
         {
-            Console.WriteLine($"--- StateChange event received at {DateTime.UtcNow:dd.MM.yyyy HH:mm:ss} ---");
-            Console.WriteLine($"Original state: {e.OriginalState}");
-            Console.WriteLine($"Current state: {e.CurrentState}");
             if (e.CurrentState != ConnectionState.Open)
             {
-                Console.WriteLine("Closing and reopening connection...");
                 Connection.Close();
                 Connection.Open();
-                Console.WriteLine($"Reopened connection");
+                Logger.Log("Database", "Reopened connection");
             }
         }
 
