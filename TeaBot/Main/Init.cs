@@ -104,7 +104,15 @@ namespace TeaBot.Main
         private async Task Ready()
         {
             if (firstReady)
-                await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAndLimitsAsync();
+            {
+                await FirstReady();
+                firstReady = false;
+            }
+        }
+
+        private async Task FirstReady()
+        {
+            await _services.GetRequiredService<ReactionRoleService>().InitCallbacksAndLimitsAsync();
         }
 
         /// <summary>
