@@ -36,26 +36,6 @@ namespace TeaBot.Modules
             await message.ModifyAsync(x => x.Content = $"Pong! | `Ping: {sw.ElapsedMilliseconds}ms` | `Latency: {Context.Client.Latency}ms`");
         }
 
-        [Command("say")]
-        [Summary("Make the bot say something!")]
-        [Note("If you try to do an everyone ping through this, I have bad news for you.")]
-        [Ratelimit(3)]
-        public async Task Say(
-            [Summary("The text to repeat.")][Remainder] string text
-            )
-        {
-            text = text.DeafenMentionsFromMessage(Context.Message);
-            try
-            {
-                await Context.Message.DeleteAsync();
-            }
-            catch (HttpException)
-            {
-
-            }
-            await ReplyAsync(text);
-        }
-
         [Command("rate", true)]
         [Summary("Rates whatever you throw at it")]
         [Ratelimit(3)]
