@@ -24,6 +24,9 @@ namespace TeaBot.Main
         private readonly DatabaseService _database;
         private readonly SupportService _support;
 
+        public void BlockReceivingMessages() => _client.MessageReceived -= HandleMessagesAsync;
+        public void EnableReceivingMessages() => _client.MessageReceived += HandleMessagesAsync;
+
         public MessageHandler(IServiceProvider services, CommandService commands, DiscordSocketClient client, DatabaseService database, SupportService support)
         {
             _client = client;
