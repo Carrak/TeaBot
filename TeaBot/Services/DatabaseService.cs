@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Microsoft.Collections.Extensions;
 using Npgsql;
 using TeaBot.Main;
 
@@ -20,12 +21,12 @@ namespace TeaBot.Services
         /// <summary>
         ///     Prefixes for guilds.
         /// </summary>
-        private Dictionary<ulong, string> Prefixes { get; set; }
+        private Dictionary<ulong, string> CustomPrefixes { get; set; }
 
         /// <summary>
         ///     Modules disabled in guilds.
         /// </summary>
-        private Dictionary<ulong, List<string>> GuildDisabledModules { get; set; }
+        private MultiValueDictionary<ulong, string> GuildDisabledModules { get; set; }
 
         /// <summary>
         ///     Initialize a database connection with the provided connection string.
@@ -46,35 +47,21 @@ namespace TeaBot.Services
             await using var reader = await cmd.ExecuteReaderAsync();
 
             // Init prefixes
-            Prefixes = new Dictionary<ulong, string>();
+            CustomPrefixes = new Dictionary<ulong, string>();
             while (await reader.ReadAsync())
-            {
-                Prefixes.Add((ulong)reader.GetInt64(0), reader.IsDBNull(1) ? null : reader.GetString(1));
-            }
+                CustomPrefixes.Add((ulong)reader.GetInt64(0), reader.GetString(1));
 
             // Advance to disabled modules
             await reader.NextResultAsync();
 
             // Init disabled modules
-            GuildDisabledModules = new Dictionary<ulong, List<string>>();
+            GuildDisabledModules = MultiValueDictionary<ulong, string>.Create<HashSet<string>>();
             while (await reader.ReadAsync())
             {
                 ulong guildId = (ulong)reader.GetInt64(0);
                 string moduleName = reader.GetString(1);
 
-                if (GuildDisabledModules.TryGetValue(guildId, out var modules))
-                {
-                    modules.Add(moduleName);
-                    GuildDisabledModules[guildId] = modules;
-                }
-                else
-                {
-                    var list = new List<string>
-                    {
-                        moduleName
-                    };
-                    GuildDisabledModules.Add(guildId, list);
-                }
+                GuildDisabledModules.Add(guildId, moduleName);
             }
 
             await reader.CloseAsync();
@@ -124,17 +111,19 @@ namespace TeaBot.Services
 
             ulong guildId = context.Guild.Id;
             ulong userId = context.User.Id;
-            ulong channelId = context.Channel.Id;
-            ulong messageId = context.Message.Id;
 
-            string query = "DO $$ BEGIN " +
-                    $"PERFORM conditional_insert('guilds', 'guilds.id = {guildId}', 'id', '{guildId}'); " +
-                    $"PERFORM conditional_insert('guildusers', 'guildusers.userid = {userId} AND guildusers.guildid = {guildId}', 'userid, guildid', '{userId}, {guildId}'); " +
-                    $"UPDATE guildusers SET (channelid, messageid, last_message_timestamp) = ({channelId}, {messageId}, now()::timestamp) " +
-                    $"WHERE userid={userId} AND guildid={guildId}; " +
-                    "END $$ LANGUAGE plpgsql; ";
+            string query = @"
+            INSERT INTO guildusers (userid, guildid, last_message_timestamp) VALUES (@gid, @uid, @last_message)
+            ON CONFLICT (userid, guildid) DO UPDATE
+                SET last_message_timestamp = @last_message
+            ";
 
             var cmd = GetCommand(query);
+
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+            cmd.Parameters.AddWithValue("uid", (long)userId);
+            cmd.Parameters.AddWithValue("last_message", DateTime.UtcNow);
+
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -145,21 +134,27 @@ namespace TeaBot.Services
         /// <param name="newPrefix">The new prefix to set.</param>
         public async Task ChangePrefix(ulong guildId, string newPrefix)
         {
-            bool isDefaultPrefix = newPrefix == TeaEssentials.DefaultPrefix;
-            newPrefix = isDefaultPrefix ? null : newPrefix;
-
-            string query = $"UPDATE guilds SET prefix=@prefix WHERE id=@gid";
+            string query = "UPDATE guilds SET prefix=@prefix WHERE id=@gid";
             await using var cmd = GetCommand(query);
 
             cmd.Parameters.AddWithValue("gid", (long)guildId);
-            if (newPrefix is null)
-                cmd.Parameters.AddWithValue("prefix", DBNull.Value);
-            else
-                cmd.Parameters.AddWithValue("prefix", newPrefix);
+            cmd.Parameters.AddWithValue("prefix", newPrefix);
 
             await cmd.ExecuteNonQueryAsync();
 
-            Prefixes[guildId] = isDefaultPrefix ? null : newPrefix;
+            CustomPrefixes[guildId] = newPrefix;
+        }
+
+        public async Task RemovePrefix(ulong guildId)
+        {
+            CustomPrefixes.Remove(guildId);
+
+            string query = "DELETE FROM guilds WHERE id=@gid";
+
+            await using var cmd = GetCommand(query);
+            cmd.Parameters.AddWithValue("gid", (long)guildId);
+
+            await cmd.ExecuteNonQueryAsync();
         }
 
         /// <summary>
@@ -177,19 +172,7 @@ namespace TeaBot.Services
 
             await cmd.ExecuteNonQueryAsync();
 
-            if (GuildDisabledModules.TryGetValue(guildId, out var disabledModules))
-            {
-                disabledModules.Add(moduleName);
-                GuildDisabledModules[guildId] = disabledModules;
-            }
-            else
-            {
-                var list = new List<string>
-                    {
-                        moduleName
-                    };
-                GuildDisabledModules.Add(guildId, list);
-            }
+            GuildDisabledModules.Add(guildId, moduleName);
         }
 
         /// <summary>
@@ -207,36 +190,21 @@ namespace TeaBot.Services
 
             await cmd.ExecuteNonQueryAsync();
 
-            var disabledModules = GuildDisabledModules[guildId];
-            disabledModules.Remove(moduleName);
-            GuildDisabledModules[guildId] = disabledModules;
+            GuildDisabledModules.Remove(guildId, moduleName);
         }
 
         /// <summary>
-        ///     Gets the prefix for the given guild if it is in the Prefix collection. If it isn't, adds and returns the default prefix.
+        ///     Gets the prefix for the given guild if it is in the Prefix collection. If it isn't, returns the default prefix.
         /// </summary>
         /// <param name="guildId">The guild ID to retrieve the prefix for.</param>
         /// <returns>Prefix used in the provided guild.</returns>
-        public async Task<string> GetOrAddPrefixAsync(ulong? guildId)
+        public string GetPrefix(ulong? guildId)
         {
-            if (guildId is null)
-                return TeaEssentials.DefaultPrefix;
+            if (guildId.HasValue && CustomPrefixes.TryGetValue(guildId.Value, out var prefix))
+                return prefix;
 
-            if (Prefixes.TryGetValue(guildId.Value, out var prefix))
-            {
-                return prefix ?? TeaEssentials.DefaultPrefix;
-            }
-            else
-            {
-                string query = $"INSERT INTO guilds (id) VALUES (@gid)";
-                await using var cmd = GetCommand(query);
-                cmd.Parameters.AddWithValue("gid", (long)guildId);
-                await cmd.ExecuteNonQueryAsync();
-
-                Prefixes.Add(guildId.Value, null);
-
-                return TeaEssentials.DefaultPrefix;
-            }
+            return TeaEssentials.DefaultPrefix;
+            
         }
 
         /// <summary>
@@ -244,7 +212,7 @@ namespace TeaBot.Services
         /// </summary>
         /// <param name="guildId">The ID of the guild to retrieve disabled modules for.</param>
         /// <returns>List containing the lowercase names of disabled modules, or an empty list if </returns>
-        public List<string> GetDisabledModules(ulong? guildId)
+        public IReadOnlyCollection<string> GetDisabledModules(ulong? guildId)
         {
             if (guildId is null)
                 return new List<string>();
