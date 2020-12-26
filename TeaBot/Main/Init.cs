@@ -214,7 +214,7 @@ namespace TeaBot.Main
         }
 
         /// <summary>
-        ///     Sends the embed created by <see cref="SupportService.GetInfoEmbedAsync(string)"/> to the system channel of the joined guild if it is present.
+        ///     Sends the embed created by <see cref="SupportService.GetInfoEmbedAsync(IGuild)"/> to the system channel of the joined guild if it is present.
         /// </summary>
         private async Task OnJoin(SocketGuild guild)
         {

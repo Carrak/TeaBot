@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using TeaBot.Attributes;
 using TeaBot.Main;
 
 namespace TeaBot.Services
@@ -12,11 +13,13 @@ namespace TeaBot.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
+        private readonly DatabaseService _database;
 
-        public SupportService(DiscordSocketClient client, CommandService commands)
+        public SupportService(DiscordSocketClient client, CommandService commands, DatabaseService database)
         {
             _client = client;
             _commands = commands;
+            _database = database;
         }
 
         public string FormatCommandForHelp(ModuleInfo module, CommandInfo command) => $"`{GetFullCommandName(command)}{(module.Commands.Count(x => x.Name == command.Name) > 1 ? "*" : "")}`";
@@ -24,9 +27,9 @@ namespace TeaBot.Services
         /// <summary>
         ///     Constructs a predetermined embed which has the primary information about the bot.
         /// </summary>
-        /// <param name="prefix">Prefix used in the embed</param>
+        /// <param name="guild">Guild for determining prefix</param>
         /// <returns>Info embed</returns>
-        public async Task<Embed> GetInfoEmbedAsync(string prefix)
+        public async Task<Embed> GetInfoEmbedAsync(IGuild guild)
         {
             var embed = new EmbedBuilder();
 
@@ -38,7 +41,7 @@ namespace TeaBot.Services
                 IconUrl = owner.GetAvatarUrl()
             };
 
-            embed.AddField("Getting started", $"Use `{prefix}help` for the list of command modules and more info.")
+            embed.AddField("Getting started", $"Use `{_database.GetPrefix(guild.Id)}help` for the list of command modules and more info.")
                 .AddField("Invite the bot!", "[Click me to invite!](https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8)")
                 .WithTitle("I am TeaBot!")
                 .WithDescription("TeaBot is a bot created for various handy features, fun commands, math, anime art search and detailed server statistics.")
