@@ -70,7 +70,7 @@ namespace TeaBot.Main
             if (guild != null && (!guild.CurrentUser.GuildPermissions.SendMessages || !guild.CurrentUser.GetPermissions(channel).SendMessages))
                 return;
 
-            string prefix = await _database.GetOrAddPrefixAsync(guild?.Id);
+            string prefix = _database.GetPrefix(guild?.Id);
             var disabledModules = _database.GetDisabledModules(guild?.Id);
 
             var context = new TeaCommandContext(_client, message, prefix, disabledModules);
