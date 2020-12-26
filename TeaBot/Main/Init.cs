@@ -220,8 +220,7 @@ namespace TeaBot.Main
         {
             if (guild.SystemChannel != null)
             {
-                string prefix = await _database.GetOrAddPrefixAsync(guild.Id);
-                var embed = await _support.GetInfoEmbedAsync(prefix);
+                var embed = await _support.GetInfoEmbedAsync(guild);
                 await guild.SystemChannel.SendMessageAsync(embed: embed);
             }
         }
