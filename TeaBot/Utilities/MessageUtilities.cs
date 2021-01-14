@@ -16,7 +16,16 @@ namespace TeaBot.Utilities
         /// <returns>String with deafened mentions.</returns>
         public static string DeafenMentionsFromMessage(this string text, SocketMessage message)
         {
-            text = text.Replace("@everyone", "").Replace("@here", "");
+            while (true)
+            {
+                string changed = text.Replace("@everyone", "").Replace("@here", "");
+
+                if (text != changed)
+                    text = changed;
+                else
+                    break;
+            }
+
             foreach (var role in message.MentionedRoles)
             {
                 text = text.Replace(role.Mention, $"@{role}");
