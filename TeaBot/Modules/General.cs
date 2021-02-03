@@ -131,6 +131,7 @@ namespace TeaBot.Modules
             [Summary("The options to choose from.")][Remainder] string options
             )
         {
+            options = options.DeafenMentionsFromMessage(Context.Message);
             var optionsArray = options.Contains('|') ? options.Split('|') : options.Split(' ');
             await ReplyAsync(optionsArray[new Random().Next(0, optionsArray.Length)]);
         }
