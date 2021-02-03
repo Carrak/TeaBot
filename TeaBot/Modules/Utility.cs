@@ -97,29 +97,6 @@ namespace TeaBot.Modules
             {
                 var guildUser = Context.Guild.GetUser(user.Id);
 
-                string query = $"SELECT last_message_timestamp, guildid, channelid, messageid FROM guildusers WHERE userid=@uid AND guildid=@gid";
-                var cmd = _database.GetCommand(query);
-
-                cmd.Parameters.AddWithValue("uid", (long)guildUser.Id);
-                cmd.Parameters.AddWithValue("gid", (long)Context.Guild.Id);
-
-                // Get last message
-                var reader = await cmd.ExecuteReaderAsync();
-                string lastMessage = "No information";
-                if (reader.HasRows)
-                {
-                    await reader.ReadAsync();
-
-                    DateTime sent = reader.GetDateTime(0);
-                    long gid = reader.GetInt64(1);
-                    long cid = reader.GetInt64(2);
-                    long mid = reader.GetInt64(3);
-
-                    string messageUrl = $"https://discordapp.com/channels/{gid}/{cid}/{mid}";
-                    lastMessage = $"{TimeUtilities.DateString(sent, true)}\n[Click here to jump to the message!]({messageUrl})";
-                }
-                await reader.CloseAsync();
-
                 // Roles of the user
                 IEnumerable<SocketRole> roles = guildUser.Roles.Where(x => !x.IsEveryone).OrderByDescending(x => x.Position);
 
@@ -137,7 +114,6 @@ namespace TeaBot.Modules
                         break;
 
                 embed.AddField($"Joined {Context.Guild}", TimeUtilities.DateString(joined), true)
-                    .AddField($"Last message in {Context.Guild.Name}", lastMessage)
                     .AddField($"Roles{(shortenedRoles.Count() != roles.Count() ? $" (shortened, displaying highest {shortenedRoles.Count()} roles)" : "")}", guildUser.Roles.Count == 1 ? "-" : string.Join(" ", shortenedRoles))
                     .AddField("Main permissions", PermissionUtilities.MainGuildPermissionsString(guildUser.GuildPermissions))
                     .AddField("Join position", joinPosition + 1, true)
