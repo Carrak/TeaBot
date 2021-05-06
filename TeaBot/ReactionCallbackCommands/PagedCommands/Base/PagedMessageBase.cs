@@ -22,12 +22,12 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         public TeaCommandContext Context { get; }
         public InteractiveService Interactive { get; }
 
-        SocketCommandContext IReactionCallback.Context => Context as SocketCommandContext;
+        SocketCommandContext IReactionCallback.Context => Context;
 
         /// <summary>
         ///     The message with the paged embed.
         /// </summary>
-        private IUserMessage message;
+        private IUserMessage _message;
 
         private static readonly Emoji arrowForward = new Emoji("▶️");
         private static readonly Emoji arrowBackward = new Emoji("◀️");
@@ -89,19 +89,24 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         }
 
         /// <summary>
-        ///     Instantiates <see cref="message"/> by sending to the channel the command was invoked in and adds reaction callback if necessary.
+        ///     Creates a new message and adds reaction callback if necessary.
         /// </summary>
-        public async Task DisplayAsync()
+        public async Task DisplayAsync() => await DisplayAsync(await Context.Channel.SendMessageAsync(embed: ConstructEmbed(CurrentPage())));
+
+        /// <summary>
+        ///     Sets the message and adds reaction callback if necessary.
+        /// </summary>
+        public async Task DisplayAsync(IUserMessage message)
         {
-            message = await Context.Channel.SendMessageAsync(embed: ConstructEmbed(CurrentPage()));
+            _message = message;
             if (TotalPages > 1)
-                await AddCallback();
+                await AddCallbackAsync();
         }
 
         /// <summary>
-        ///     Adds reaction callback to <see cref="message"/> that timeouts after the value of <see cref="Timeout"/>
+        ///     Adds reaction callback to <see cref="_message"/> that timeouts after the value of <see cref="Timeout"/>
         /// </summary>
-        private async Task AddCallback()
+        public async Task AddCallbackAsync()
         {
             await _message.AddReactionAsync(arrowBackward);
             await Task.Delay(300);
@@ -115,8 +120,13 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
             });
         }
 
+        public void RemoveCallback()
+        {
+            Interactive.RemoveReactionCallback(_message);
+        }
+
         /// <summary>
-        ///     Triggers when a reaction is added to <see cref="message"/> 
+        ///     Triggers when a reaction is added to <see cref="_message"/> 
         ///     and modifies the message if the reaction is 
         ///     either <see cref="arrowBackward"/> or <see cref="arrowForward"/>
         /// </summary>
@@ -142,8 +152,8 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
 
             var embed = ConstructEmbed(CurrentPage());
 
-            await message.ModifyAsync(x => x.Embed = embed);
-            await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+            await _message.ModifyAsync(x => x.Embed = embed);
+            await _message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 
             return false;
         }
