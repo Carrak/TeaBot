@@ -153,7 +153,6 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
             var embed = ConstructEmbed(CurrentPage());
 
             await _message.ModifyAsync(x => x.Embed = embed);
-            await _message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 
             return false;
         }
