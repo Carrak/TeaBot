@@ -103,13 +103,15 @@ namespace TeaBot.ReactionCallbackCommands.PagedCommands.Base
         /// </summary>
         private async Task AddCallback()
         {
-            await message.AddReactionsAsync(new Emoji[] { arrowBackward, arrowForward });
-            Interactive.AddReactionCallback(message, this);
+            await _message.AddReactionAsync(arrowBackward);
+            await Task.Delay(300);
+            await _message.AddReactionAsync(arrowForward);
+
+            Interactive.AddReactionCallback(_message, this);
 
             _ = Task.Delay(Timeout.Value).ContinueWith(_ =>
             {
-                Interactive.RemoveReactionCallback(message);
-                message.RemoveReactionsAsync(Context.Client.CurrentUser, new Emoji[] { arrowBackward, arrowForward });
+                Interactive.RemoveReactionCallback(_message);
             });
         }
 
