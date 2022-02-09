@@ -17,6 +17,17 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : TeaInteractiveBase
     {
+        [Command("anon")]
+        [RequireContext(ContextType.DM)]
+        [Ratelimit(2)]
+        public async Task Anon([Remainder] string text)
+        {
+            var guild = Context.Client.GetGuild(573103176321073172);
+            var channel = Context.Client.GetChannel(940766709831323658) as ITextChannel;
+            if (guild.Users.Any(x => x.Id == Context.User.Id) && channel != null)
+                await channel.SendMessageAsync(text);
+        }
+
         [Command("quote")]
         [Exclusive(364771834325106689)]
         [Ratelimit(2)]
