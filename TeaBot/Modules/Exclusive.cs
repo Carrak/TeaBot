@@ -45,7 +45,7 @@ namespace TeaBot.Modules
                 {
                     lastSenderId = Context.User.Id;
                     var newName = currName == anon1 ? anon2 : anon1;
-                    await webhookClient.ModifyWebhookAsync(x => x.Name = anon2);
+                    await webhookClient.ModifyWebhookAsync(x => x.Name = newName);
                     currName = newName;
                 }
 
