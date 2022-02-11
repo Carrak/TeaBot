@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Webhook;
 using Discord.WebSocket;
+using Newtonsoft.Json.Linq;
 using TeaBot.Attributes;
 using TeaBot.Commands;
 using TeaBot.Main;
@@ -17,6 +20,15 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : TeaInteractiveBase
     {
+        private static ulong lastSenderId;
+        private static DiscordWebhookClient webhookClient;
+
+        public Exclusive()
+        {
+            JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json")); ;
+            webhookClient = new DiscordWebhookClient($"https://discord.com/api/webhooks/941771001602134096/{config["whtoken"]}");
+        }
+
         [Command("anon")]
         [RequireContext(ContextType.DM)]
         [Ratelimit(2)]
@@ -25,7 +37,15 @@ namespace TeaBot.Modules
             var guild = Context.Client.GetGuild(573103176321073172);
             var channel = Context.Client.GetChannel(940766709831323658) as ITextChannel;
             if (guild.Users.Any(x => x.Id == Context.User.Id) && channel != null)
-                await channel.SendMessageAsync(text);
+            {
+                if (Context.User.Id != lastSenderId)
+                {
+                    lastSenderId = Context.User.Id;
+                    await webhookClient.ModifyWebhookAsync(x => x.Name = "Anon");
+                }
+
+                await webhookClient.SendMessageAsync(text);
+            }
         }
 
         [Command("quote")]
