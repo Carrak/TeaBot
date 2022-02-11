@@ -22,6 +22,9 @@ namespace TeaBot.Modules
     {
         private static ulong lastSenderId;
         private static DiscordWebhookClient webhookClient;
+        private const string anon1 = "Anon";
+        private const string anon2 = "Anоn";
+        private static string currName = anon1;
 
         public Exclusive()
         {
@@ -41,7 +44,9 @@ namespace TeaBot.Modules
                 if (Context.User.Id != lastSenderId)
                 {
                     lastSenderId = Context.User.Id;
-                    await webhookClient.ModifyWebhookAsync(x => x.Name = "Anon");
+                    var newName = currName == anon1 ? anon2 : anon1;
+                    await webhookClient.ModifyWebhookAsync(x => x.Name = anon2);
+                    currName = newName;
                 }
 
                 await webhookClient.SendMessageAsync(text);
