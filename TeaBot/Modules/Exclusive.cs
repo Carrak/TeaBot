@@ -26,7 +26,7 @@ namespace TeaBot.Modules
         public Exclusive()
         {
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json")); ;
-            webhookClient = new DiscordWebhookClient($"https://discord.com/api/webhooks/941771001602134096/{config["whtoken"]}");
+            webhookClient = new DiscordWebhookClient(941771001602134096, config["whtoken"].ToString());
         }
 
         [Command("anon")]
