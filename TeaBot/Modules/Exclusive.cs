@@ -24,7 +24,7 @@ namespace TeaBot.Modules
 
         public Exclusive()
         {
-            JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json")); ;
+            JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
             webhookClient = new DiscordWebhookClient(941771001602134096, config["whtoken"].ToString());
         }
 
@@ -36,7 +36,12 @@ namespace TeaBot.Modules
             var guild = Context.Client.GetGuild(573103176321073172);
             var channel = Context.Client.GetChannel(940766709831323658) as ITextChannel;
             if (guild.Users.Any(x => x.Id == Context.User.Id) && channel != null)
-                await webhookClient.SendMessageAsync(text);
+            {
+                if (Context.Message.Attachments.Count > 0)
+                    text += string.Join('\n', Context.Message.Attachments.Select(x => x.Url));
+
+                await webhookClient.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
+            }
         }
 
         [Command("quote")]
