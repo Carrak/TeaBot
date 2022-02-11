@@ -30,7 +30,7 @@ namespace TeaBot.Modules
         {
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
             webhookClient1 = new DiscordWebhookClient(941771001602134096, config["whtoken1"].ToString());
-            webhookClient2 = new DiscordWebhookClient(941791186237136927, config["whtoken1"].ToString());
+            webhookClient2 = new DiscordWebhookClient(941791186237136927, config["whtoken2"].ToString());
         }
 
         [Command("anon")]
@@ -54,7 +54,6 @@ namespace TeaBot.Modules
                     await webhookClient1.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
                 else
                     await webhookClient2.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
-
             }
         }
 
