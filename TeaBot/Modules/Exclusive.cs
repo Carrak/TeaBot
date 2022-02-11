@@ -21,7 +21,7 @@ namespace TeaBot.Modules
     public class Exclusive : TeaInteractiveBase
     {
         private static ulong lastSenderId;
-        private bool currentState = true;
+        private static bool currentState = true;
 
         private static DiscordWebhookClient webhookClient1;
         private static DiscordWebhookClient webhookClient2;
