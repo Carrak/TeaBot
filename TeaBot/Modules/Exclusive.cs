@@ -20,12 +20,17 @@ namespace TeaBot.Modules
     [Summary("Commands that can only be executed in specific servers")]
     public class Exclusive : TeaInteractiveBase
     {
-        private static DiscordWebhookClient webhookClient;
+        private static ulong lastSenderId;
+        private bool currentState = true;
+
+        private static DiscordWebhookClient webhookClient1;
+        private static DiscordWebhookClient webhookClient2;
 
         public Exclusive()
         {
             JObject config = JObject.Parse(File.ReadAllText($"{TeaEssentials.ProjectDirectory}teabotconfig.json"));
-            webhookClient = new DiscordWebhookClient(941771001602134096, config["whtoken"].ToString());
+            webhookClient1 = new DiscordWebhookClient(941771001602134096, config["whtoken1"].ToString());
+            webhookClient2 = new DiscordWebhookClient(941791186237136927, config["whtoken1"].ToString());
         }
 
         [Command("anon")]
@@ -34,14 +39,32 @@ namespace TeaBot.Modules
         public async Task Anon([Remainder] string text)
         {
             var guild = Context.Client.GetGuild(573103176321073172);
-            var channel = Context.Client.GetChannel(940766709831323658) as ITextChannel;
-            if (guild.Users.Any(x => x.Id == Context.User.Id) && channel != null)
+            if (guild.Users.Any(x => x.Id == Context.User.Id))
             {
                 if (Context.Message.Attachments.Count > 0)
                     text += string.Join('\n', Context.Message.Attachments.Select(x => x.Url));
 
-                await webhookClient.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
+                if (Context.User.Id != lastSenderId)
+                {
+                    currentState = !currentState;
+                    lastSenderId = Context.User.Id;
+                }
+
+                if (currentState)
+                    await webhookClient1.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
+                else
+                    await webhookClient2.SendMessageAsync(text, allowedMentions: AllowedMentions.None);
+
             }
+        }
+
+        [Command("anon")]
+        [RequireContext(ContextType.DM)]
+        [Ratelimit(2)]
+        public async Task Anon()
+        {
+            if (Context.Message.Attachments.Count > 0)
+                await Anon("");
         }
 
         [Command("quote")]
